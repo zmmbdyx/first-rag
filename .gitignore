@@ -1,0 +1,22 @@
+***REMOVED*** ===== 密钥与环境变量（严禁提交）=====
+.env
+.env.*
+!.env.example
+
+***REMOVED*** ===== 向量库 / 索引 / 评测缓存 =====
+chroma_db/
+data/index/
+eval/.eval_db/
+*.pkl
+
+***REMOVED*** ===== Python =====
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+.pytest_cache/
+*.egg-info/
+
+***REMOVED*** ===== 系统与临时文件 =====
+.DS_Store
+Thumbs.db

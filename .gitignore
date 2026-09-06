@@ -7,7 +7,9 @@
 chroma_db/
 data/index/
 eval/.eval_db/
+logs/
 *.pkl
+data/.cache/
 
 ***REMOVED*** ===== Python =====
 __pycache__/

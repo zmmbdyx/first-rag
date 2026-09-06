@@ -15,7 +15,7 @@ import re
 from dataclasses import dataclass
 
 from .config import CHUNK_SIZE, MIN_CHUNK_CHARS, NAIVE_CHUNK_SIZE, NAIVE_STRIDE, OVERLAP_SENTENCES
-from .parsers import ParsedDoc
+from .parsers import ParsedDoc, render_table
 
 _RE_SENT = re.compile(r"[^。！？!?；;\n]+(?:[。！？!?；;]+|\n+|$)")
 
@@ -45,6 +45,22 @@ def split_sentences(text: str) -> list[str]:
 ***REMOVED*** ---------- 智能切分 ----------
 
 
+def table_groups(header: list[str] | None, rows: list[list[str]], budget: int) -> list[str]:
+    """大表格按行分组渲染，每组独立携带表头——保证任一组被召回时都有列语义。"""
+    if not rows:
+        return []
+    groups: list[str] = []
+    cur: list[list[str]] = []
+    for r in rows:
+        cur.append(r)
+        if len(render_table(header, cur)) >= budget:
+            groups.append(render_table(header, cur))
+            cur = []
+    if cur:
+        groups.append(render_table(header, cur))
+    return groups
+
+
 def smart_chunk(
     doc: ParsedDoc,
     chunk_size: int = CHUNK_SIZE,
@@ -62,8 +78,10 @@ def smart_chunk(
         else:
             if not sections:
                 sections.append(([], []))
-            if b.kind == "table":
-                sections[-1][1].append((b.text, b.page))
+            if b.kind == "table" and b.rows:
+                ***REMOVED*** 表格特殊处理：不跨表格切分；大表按行分组，每组带表头上下文
+                for gtext in table_groups(b.header, b.rows, budget=max(120, chunk_size // 2)):
+                    sections[-1][1].append((gtext, b.page))
             else:
                 for p in re.split(r"\n{2,}", b.text):
                     p = p.strip()

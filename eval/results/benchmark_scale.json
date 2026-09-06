@@ -1,0 +1,17 @@
+{
+  "docs": 1000,
+  "chunks": 5000,
+  "ingest_seconds": 255.3,
+  "chunks_per_second": 19.6,
+  "incremental_seconds": 1.25,
+  "skipped_on_incremental": 1000,
+  "retrieval_p50_ms": 83.6,
+  "retrieval_p95_ms": 108.9,
+  "memory_mb": {
+    "before": 118,
+    "after_ingest": 957,
+    "after_query": 951
+  },
+  "note": "延迟仅含检索链路（向量编码+双路召回+RRF），不含大模型生成",
+  "time": "2026-09-06 15:33:33"
+}

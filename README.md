@@ -1,8 +1,10 @@
 ***REMOVED*** 企业知识库 RAG 问答系统（带混合检索与答案溯源）
 
 基于 **检索增强生成（RAG）** 的中文企业知识库问答系统：支持 PDF / Word / TXT / Markdown 多格式文档入库，
-**结构感知的智能切分**、**向量 + BM25 关键词混合检索（RRF 融合）**、**段落级答案溯源**，
-并附带一套 **30 题评测集与可复现的评测脚本**——在 30 个测试问题上，端到端回答准确率从基线的 **84.6% 提升到 96.2%**。
+**结构感知的智能切分**、**向量 + BM25 关键词混合检索（RRF 融合）**、**段落级答案溯源**、**多轮对话查询改写**，
+并附带一套 **206 题评测集与可复现的评测框架**（bootstrap 置信区间、忠实度/相关性指标、逐模块消融与显著性检验）——
+升级前在 30 题评测上端到端准确率从基线 **84.6% 提升到 96.2%**，升级后评测体系扩展至 22 篇语料 / 206 题
+（详见 `eval/results/` 下各报告）。
 
 > 技术栈：Python · Chroma · sentence-transformers(text2vec-base-chinese) · BM25(jieba) · OpenAI 兼容大模型 · Streamlit
 
@@ -21,12 +23,15 @@
 
 | 功能 | 说明 |
 |---|---|
-| 📄 多格式文档解析 | PDF（PyMuPDF，按字体大小识别标题层级）、Word（python-docx，识别标题样式与表格）、TXT/Markdown（正则识别章节与 FAQ 问答体） |
-| ✂️ 智能切分 | 按标题还原"文档 > 章节"层级，切分不跨章节；段落贪心打包，超长段落按句子边界下切；相邻块保留句子级重叠；每个块携带 文档名/章节路径/页码 元数据 |
-| 🔍 混合检索 | 向量语义召回 + BM25 关键词召回（jieba 分词），RRF（Reciprocal Rank Fusion）融合排序，可用 `RETRIEVAL_MODE` 一键切换 vector / keyword / hybrid 对比 |
+| 📄 多格式文档解析 | PDF（PyMuPDF，按字体大小识别标题层级，find_tables 结构化提取表格）、Word（python-docx，标题样式与表格）、TXT/Markdown（正则识别章节与 FAQ 问答体） |
+| ✂️ 智能切分 | 按标题还原"文档 > 章节"层级，切分不跨章节；段落贪心打包，超长段落按句子边界下切；相邻块保留句子级重叠；**表格按行分组、每组携带表头，跨页表格自动合并** |
+| 🔍 混合检索 | 向量语义召回 + BM25 关键词召回（jieba 分词，支持精确/搜索模式与自定义词典），RRF 融合（`score=Σ1/(k+rank)^p`，参数可调），`RETRIEVAL_MODE` 一键切换 |
 | 🧠 大模型生成 | OpenAI 兼容接口（DeepSeek / 通义 / 智谱 / OpenAI 均可），仅基于检索片段作答，强制拒答知识库外问题 |
-| 📎 答案溯源 | 答案中 `[1][2]` 引用标注 ↔ 检索块一一对应，可追溯到 **文档名 · 章节路径 · 页码**（Web 界面与 CLI 均支持） |
-| 📊 效果评测 | 30 题评测集（26 道可回答 + 4 道知识库未覆盖的拒答题）、三种配置消融对比、检索指标 + LLM-as-Judge 回答判分，一条命令复现 |
+| 📎 答案溯源 | 答案中 `[1][2]` 引用标注 ↔ 检索块一一对应，可追溯到 **文档名 · 章节路径 · 页码**；引用编号经校验，伪造编号自动重生成 |
+| 💬 多轮对话 | `chat(message, history)` 统一入口；"规则 + LLM"两步式查询改写完成指代消解与省略补全（"那转正后呢？"→ 独立问题） |
+| 🛡️ 安全加固 | 提示注入检测与拦截（含日志）、输入长度/控制字符过滤、引用编号校验与自动重生成、全链路审计日志（prompt/检索/答案/引用映射） |
+| 📊 效果评测 | 22 篇语料 / 206 题评测集（拒答题 16.5%、16 道多轮指代题），五项指标（Recall/MRR/准确率/忠实度/相关性），95% bootstrap 置信区间、分文档类型分项、配对显著性检验、RRF 网格搜索与 BM25 变体消融 |
+| ⚡ 性能与规模化 | MD5 增量入库、多线程解析、ONNX/INT8 嵌入加速对比、1000 篇入库与 P50/P95 延迟基准、Milvus 迁移脚本 |
 
 ***REMOVED******REMOVED*** 3. 系统架构
 
@@ -102,10 +107,18 @@ flowchart TB
 ***REMOVED******REMOVED******REMOVED*** 5.4 复现评测
 
 ```bash
-python scripts/make_samples.py          ***REMOVED*** 生成评测用示例文档
-python scripts/run_eval.py --retrieval-only   ***REMOVED*** 只跑检索指标（无需 API Key）
-python scripts/run_eval.py                    ***REMOVED*** 检索 + 生成 + LLM 判分（需 .env 配置 API_KEY）
-***REMOVED*** 结果输出至 eval/results/eval_results.json 与 eval/results/report.md
+python scripts/make_samples.py          ***REMOVED*** 生成 v1 评测用示例文档（4 篇）
+python scripts/run_eval.py --legacy --retrieval-only   ***REMOVED*** v1 30 题回归（检索指标）
+python scripts/run_eval.py --legacy                    ***REMOVED*** v1 30 题全量评测
+
+***REMOVED*** 升级版评测（22 篇语料 / 206 题，含置信区间与消融）
+python scripts/make_corpus.py                        ***REMOVED*** 生成语料与评测集
+python scripts/run_eval.py                           ***REMOVED*** 四配置全量评测（五项指标 + CI）
+python scripts/run_eval.py --retrieval-only          ***REMOVED*** 仅检索指标（无需 API Key）
+python scripts/tune_retrieval.py                     ***REMOVED*** RRF 网格搜索 / BM25 变体 / 查询扩展
+python scripts/benchmark_scale.py                    ***REMOVED*** 1000 篇入库与延迟基准
+python scripts/benchmark_embedding.py                ***REMOVED*** PyTorch vs ONNX fp32/int8
+***REMOVED*** 结果输出至 eval/results/（report_v2.md / tuning.md / benchmark_*.md）
 ```
 
 ***REMOVED******REMOVED*** 6. 快速开始
@@ -136,27 +149,39 @@ streamlit run app.py
 
 ```
 rag/
-├── app.py                  ***REMOVED*** Streamlit 演示界面（流式回答 + 引用来源展示）
+├── app.py                  ***REMOVED*** Streamlit 演示界面（多轮对话 + 流式回答 + 引用来源展示）
 ├── rag/                    ***REMOVED*** 核心包（与 UI 解耦，可独立复用）
-│   ├── parsers.py          ***REMOVED***   PDF/Word/TXT/MD → 结构化 Block（标题层级/页码/表格）
-│   ├── chunking.py         ***REMOVED***   智能切分（章节感知+句子边界+重叠）与朴素切分基线
+│   ├── parsers.py          ***REMOVED***   PDF/Word/TXT/MD → 结构化 Block（标题层级/页码/结构化表格）
+│   ├── chunking.py         ***REMOVED***   智能切分（章节感知+句子边界+重叠+表格分组）与朴素切分基线
 │   ├── embeddings.py       ***REMOVED***   本地句向量模型（CPU/CUDA 自适应）
 │   ├── vector_store.py     ***REMOVED***   Chroma 封装（幂等入库/查询/导出）
-│   ├── bm25.py             ***REMOVED***   BM25 索引（jieba 分词，持久化）
-│   ├── retriever.py        ***REMOVED***   统一检索入口：vector / keyword / hybrid(RRF)
-│   ├── llm.py              ***REMOVED***   带引用的答案生成 + 评测判分（LLM-as-Judge）
-│   ├── pipeline.py         ***REMOVED***   入库与问答编排
+│   ├── bm25.py             ***REMOVED***   BM25 索引（jieba 分词 4 种变体 + 自定义词典，持久化）
+│   ├── retriever.py        ***REMOVED***   统一检索入口：vector / keyword / hybrid(RRF, k/p 可调)
+│   ├── rewrite.py          ***REMOVED***   多轮查询改写（规则 + LLM 两步式）
+│   ├── security.py         ***REMOVED***   注入拦截/输入过滤/引用校验/审计日志
+│   ├── stats.py            ***REMOVED***   bootstrap 置信区间与配对显著性检验
+│   ├── llm.py              ***REMOVED***   带引用的答案生成 + 五维评测判分（judge/忠实度/相关性）
+│   ├── pipeline.py         ***REMOVED***   入库（MD5 增量）与 chat/ask 编排
 │   └── config.py           ***REMOVED***   全部配置（.env 驱动）
 ├── scripts/
 │   ├── build_kb.py         ***REMOVED*** 入库 CLI（支持指定目录、重建、朴素切分开关）
-│   ├── ask.py              ***REMOVED*** 问答 CLI（打印来源与命中路径）
-│   ├── make_samples.py     ***REMOVED*** 生成评测用示例文档
-│   └── run_eval.py         ***REMOVED*** 评测：三配置消融 + 检索/生成指标 + 报告输出
+│   ├── ask.py              ***REMOVED*** 问答 CLI（多轮交互、来源与命中路径展示）
+│   ├── make_samples.py     ***REMOVED*** 生成 v1 评测示例文档（4 篇）
+│   ├── make_corpus.py      ***REMOVED*** 生成升级版语料（22 篇）与 206 题评测集
+│   ├── run_eval.py         ***REMOVED*** 评测 v2：四配置消融 + 五项指标 + bootstrap CI + 显著性
+│   ├── tune_retrieval.py   ***REMOVED*** RRF 网格搜索 / BM25 变体对比 / 查询扩展实验
+│   ├── benchmark_scale.py  ***REMOVED*** 1000 篇入库/增量/延迟/内存基准
+│   ├── benchmark_embedding.py  ***REMOVED*** PyTorch vs ONNX fp32/int8 编码加速对比
+│   └── migrate_to_milvus.py    ***REMOVED*** Chroma → Milvus 迁移脚本（10 万块级方案）
 ├── eval/
-│   ├── questions.jsonl     ***REMOVED*** 30 题评测集（26 可回答 + 4 拒答）
-│   └── results/            ***REMOVED*** 评测结果 JSON 与报告（已提交，可直接查看）
-├── data/samples/           ***REMOVED*** 示例文档
-└── tests/                  ***REMOVED*** 单元测试（切分/BM25/RRF，离线可跑）
+│   ├── questions.jsonl     ***REMOVED*** v1 评测集（30 题）
+│   ├── questions_v2.jsonl  ***REMOVED*** 升级版评测集（206 题：156 单轮 + 16 多轮 + 34 拒答）
+│   └── results/            ***REMOVED*** 全部评测报告与明细（已提交，可直接查看）
+├── data/
+│   ├── samples/            ***REMOVED*** v1 示例文档
+│   ├── corpus/             ***REMOVED*** 升级版语料（22 篇：制度/合同/说明书/表格/FAQ/技术文档）
+│   └── user_dict.txt       ***REMOVED*** jieba 自定义词典（型号/缩写/术语）
+└── tests/                  ***REMOVED*** 32 个单元测试（解析/切分/表格/BM25/改写/安全/统计）
 ```
 
 ***REMOVED******REMOVED*** 8. 关键实现细节
@@ -175,10 +200,14 @@ rag/
 
 ***REMOVED******REMOVED*** 10. Roadmap
 
+- [x] 表格结构化解析（表头携带切分、跨页合并）与表格专项评测题
+- [x] 多轮对话与查询改写（规则 + LLM）
+- [x] 忠实度 / 答案相关性指标（RAGAS 式，LLM 实现）
+- [x] 提示注入防御、引用校验与审计日志
+- [x] MD5 增量入库、ONNX/INT8 加速、Milvus 迁移脚本
 - [ ] 重排序（bge-reranker 或 LLM Listwise Rerank）作为混合检索后的第三层
-- [ ] 多轮对话中的问题改写（指代消解后再检索）
-- [ ] 评测扩展：忠实度（faithfulness）/ 答案相关性指标，接入 RAGAS
-- [ ] 增量入库与文档变更检测（当前同文档覆盖式更新）
+- [ ] 评测扩展：接入 RAGAS 官方实现做交叉校验
+- [ ] Chroma 多集合分片的自动化路由
 
 ***REMOVED******REMOVED*** License
 

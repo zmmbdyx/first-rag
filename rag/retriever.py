@@ -16,6 +16,7 @@ from .config import (
     KEYWORD_TOP_K,
     RETRIEVAL_MODE,
     RRF_K,
+    RRF_P,
     VECTOR_TOP_K,
 )
 from .embeddings import embed_query
@@ -92,16 +93,26 @@ class Retriever:
 
     ***REMOVED*** ---------- 混合检索 ----------
 
-    def retrieve(self, question: str, mode: str = RETRIEVAL_MODE,
-                 k_final: int = FINAL_TOP_K, k_each: int | None = None) -> list[Hit]:
-        k_each = k_each or max(VECTOR_TOP_K, KEYWORD_TOP_K)
-        if mode == "vector":
-            return self.vector_search(question, k_final)
-        if mode == "keyword":
-            return self.keyword_search(question, k_final)
+    def retrieve(self, question: str, mode: str = RETRIEVAL_MODE, k_final: int = FINAL_TOP_K,
+                 k_each: int | None = None, rrf_k: int | None = None,
+                 rrf_p: float | None = None, expansion: str | None = None) -> list[Hit]:
+        """统一检索入口。
 
-        vec_hits = self.vector_search(question, k_each)
-        kw_hits = self.keyword_search(question, k_each)
+        - mode: vector / keyword / hybrid；
+        - rrf_k / rrf_p: 融合超参（score = Σ 1/(k+rank)^p），None 时用全局配置；
+        - expansion: 查询扩展词串（LLM 生成），拼接到查询后用于两路召回。
+        """
+        rrf_k = RRF_K if rrf_k is None else rrf_k
+        rrf_p = RRF_P if rrf_p is None else rrf_p
+        k_each = k_each or max(VECTOR_TOP_K, KEYWORD_TOP_K)
+        query = f"{question} {expansion}".strip() if expansion else question
+        if mode == "vector":
+            return self.vector_search(query, k_final)
+        if mode == "keyword":
+            return self.keyword_search(query, k_final)
+
+        vec_hits = self.vector_search(query, k_each)
+        kw_hits = self.keyword_search(query, k_each)
         if not kw_hits:      ***REMOVED*** 查询词完全不在语料中（如纯英文问题）→ 回退向量
             return vec_hits[:k_final]
         if not vec_hits:
@@ -119,15 +130,19 @@ class Retriever:
                 h.kw_rank, h.sources = rank, ["keyword"]
                 fused[h.chunk_id] = h
         for h in fused.values():
-            h.score = sum(1.0 / (RRF_K + r) for r in (h.vec_rank, h.kw_rank) if r is not None)
+            h.score = sum(1.0 / (rrf_k + r) ** rrf_p
+                          for r in (h.vec_rank, h.kw_rank) if r is not None)
         ranked = sorted(fused.values(), key=lambda h: h.score, reverse=True)
         return ranked[:k_final]
 
     ***REMOVED*** ---------- 索引维护 ----------
 
-    def rebuild_bm25(self) -> int:
+    def rebuild_bm25(self, variant: str | None = None) -> int:
+        from .config import BM25_VARIANT
+
         chunks = vector_store.hydrate_all(self.collection)
-        self.bm25 = build_from_chunks(chunks)
+        v = variant or (self.bm25.variant if self.bm25 else BM25_VARIANT)
+        self.bm25 = build_from_chunks(chunks, v)
         if self.bm25_path:
             self.bm25.save(self.bm25_path)
         return len(chunks)

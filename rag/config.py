@@ -40,3 +40,7 @@ VECTOR_TOP_K = int(os.getenv("VECTOR_TOP_K", "10"))     ***REMOVED*** 召回阶�
 KEYWORD_TOP_K = int(os.getenv("KEYWORD_TOP_K", "10"))
 FINAL_TOP_K = int(os.getenv("FINAL_TOP_K", "5"))        ***REMOVED*** 送入大模型的最终条数
 RRF_K = int(os.getenv("RRF_K", "60"))                   ***REMOVED*** RRF 融合常数
+RRF_P = float(os.getenv("RRF_P", "1.0"))                ***REMOVED*** 加权 RRF 指数: score = Σ 1/(k+rank)^p
+BM25_VARIANT = os.getenv("BM25_VARIANT", "precise_dict")  ***REMOVED*** precise | precise_dict | search | search_dict
+CUSTOM_DICT = DATA_DIR / "user_dict.txt"                ***REMOVED*** jieba 自定义词典（型号/缩写/术语）
+EXPAND_QUERY = os.getenv("EXPAND_QUERY", "0") == "1"    ***REMOVED*** 是否用 LLM 做查询扩展

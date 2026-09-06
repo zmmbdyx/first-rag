@@ -20,7 +20,13 @@ python-docx>=1.1
 streamlit>=1.36
 ddgs>=9.0
 
-***REMOVED*** 示例文档生成（仅 scripts/make_samples.py 需要）
+***REMOVED*** 性能基准（可选，scripts/benchmark_*.py 使用）
+psutil>=5.9
+onnxruntime>=1.17          ***REMOVED*** ONNX/INT8 嵌入加速对比
+onnx>=1.15
+onnxscript>=0.1            ***REMOVED*** torch 2.14 onnx 导出依赖
+
+***REMOVED*** 示例文档生成（仅 scripts/make_samples.py / make_corpus.py 需要）
 reportlab>=4.0
 
 ***REMOVED*** 测试

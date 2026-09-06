@@ -1,0 +1,15 @@
+{
+  "model": "shibing624/text2vec-base-chinese",
+  "n_texts": 256,
+  "repeat": 3,
+  "pytorch_seconds": 6.942,
+  "onnx_fp32_seconds": 8.559,
+  "onnx_int8_seconds": 4.981,
+  "pytorch_texts_per_sec": 36.9,
+  "onnx_fp32_texts_per_sec": 29.9,
+  "onnx_int8_texts_per_sec": 51.4,
+  "speedup_fp32": 0.81,
+  "speedup_int8": 1.39,
+  "note": "同机同批大小对比；PyTorch 编码含 sentence-transformers 归一化流水线",
+  "time": "2026-09-06 15:25:48"
+}

@@ -123,6 +123,8 @@ python scripts/benchmark_embedding.py                ***REMOVED*** PyTorch vs ON
 
 ***REMOVED******REMOVED*** 6. 快速开始
 
+> 📖 更详细的图文教程（含界面导览、多模型配置、常见问题）见 [USAGE.md](USAGE.md)。
+
 ```bash
 ***REMOVED*** 1. 安装依赖（建议 Python 3.10+）
 pip install -r requirements.txt

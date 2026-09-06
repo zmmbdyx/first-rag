@@ -12,6 +12,7 @@ from .retriever import Hit
 from .security import needs_citation, validate_citations
 
 _clients: dict[tuple[str, str], "OpenAI"] = {}
+_last_usage = None  ***REMOVED*** 最近一次调用的 token 用量（评测/成本核算用）
 
 
 def get_client(model: str | None = None) -> tuple["OpenAI", str]:
@@ -52,6 +53,8 @@ def chat(messages: list[dict], model: str = LLM_MODEL, temperature: float = 0.2,
             if extra:
                 kw["extra_body"] = extra
             resp = client.chat.completions.create(**kw)
+            global _last_usage
+            _last_usage = getattr(resp, "usage", None)
             return (resp.choices[0].message.content or "").strip()
         except Exception as e:  ***REMOVED*** noqa: BLE001
             last_err = e

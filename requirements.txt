@@ -1,0 +1,27 @@
+***REMOVED*** LLM 服务
+openai>=1.40
+python-dotenv>=1.0
+
+***REMOVED*** 嵌入与向量库
+sentence-transformers>=3.0
+torch>=2.2
+chromadb>=1.0
+numpy>=1.26
+
+***REMOVED*** 检索
+jieba>=0.42
+rank-bm25>=0.2.2
+
+***REMOVED*** 文档解析
+pymupdf>=1.24
+python-docx>=1.1
+
+***REMOVED*** Web 界面与联网搜索
+streamlit>=1.36
+ddgs>=9.0
+
+***REMOVED*** 示例文档生成（仅 scripts/make_samples.py 需要）
+reportlab>=4.0
+
+***REMOVED*** 测试
+pytest>=8.0

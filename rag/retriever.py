@@ -1,0 +1,133 @@
+"""统一检索入口：向量检索 / 关键词检索 / 混合检索（RRF 融合）。
+
+混合检索采用 Reciprocal Rank Fusion：
+    RRF(d) = Σ_路 1 / (RRF_K + rank_路(d))
+只用排名不用原始分数，避免向量余弦距离与 BM25 分数两种量纲不可比的问题。
+"""
+
+from dataclasses import dataclass, field
+from pathlib import Path
+
+from . import vector_store
+from .bm25 import BM25Index, build_from_chunks
+from .config import (
+    COLLECTION_NAME,
+    FINAL_TOP_K,
+    KEYWORD_TOP_K,
+    RETRIEVAL_MODE,
+    RRF_K,
+    VECTOR_TOP_K,
+)
+from .embeddings import embed_query
+
+
+@dataclass
+class Hit:
+    chunk_id: str
+    text: str
+    doc_name: str
+    section_path: str
+    page: int
+    score: float = 0.0
+    vec_rank: int | None = None
+    kw_rank: int | None = None
+    sources: list[str] = field(default_factory=list)  ***REMOVED*** 命中路径：vector/keyword
+
+    @property
+    def location(self) -> str:
+        loc = self.doc_name
+        if self.section_path:
+            loc += f" · {self.section_path}"
+        if self.page and self.page > 0:
+            loc += f"（第{self.page}页）"
+        return loc
+
+
+class Retriever:
+    """加载向量库 + BM25 索引，提供 vector / keyword / hybrid 三种检索模式。"""
+
+    def __init__(self, index_dir, collection_name: str = COLLECTION_NAME, normalize: bool | None = None):
+        client = vector_store.get_client(index_dir)
+        self.collection = vector_store.get_collection(client, collection_name, create=True)
+        ***REMOVED*** 余弦空间配归一化向量；旧集合（无 metadata，默认 l2）保持未归一化以兼容历史向量
+        if normalize is None:
+            normalize = (self.collection.metadata or {}).get("hnsw:space") == "cosine"
+        self.normalize = normalize
+        ***REMOVED*** BM25 索引按集合隔离，避免多集合共享同一 pickle 串位
+        self.bm25_path = Path(index_dir) / f"bm25_{collection_name}.pkl"
+        self.bm25: BM25Index | None = BM25Index.load(self.bm25_path)
+
+    ***REMOVED*** ---------- 单路检索 ----------
+
+    def vector_search(self, question: str, k: int = VECTOR_TOP_K) -> list[Hit]:
+        if self.collection.count() == 0:
+            return []
+        qvec = embed_query(question, normalize=self.normalize)
+        hits = []
+        for h in vector_store.query(self.collection, qvec, k):
+            dist = h.pop("distance", None)
+            hits.append(Hit(**h, score=-dist if dist is not None else 0.0))
+        return hits
+
+    def keyword_search(self, question: str, k: int = KEYWORD_TOP_K) -> list[Hit]:
+        if self.bm25 is None:
+            return []
+        hits = []
+        for cid, score in self.bm25.search(question, k):
+            got = self.collection.get(ids=[cid], include=["documents", "metadatas"])
+            if not got["ids"]:
+                continue
+            meta = got["metadatas"][0] or {}
+            hits.append(
+                Hit(
+                    chunk_id=cid,
+                    text=got["documents"][0] or "",
+                    doc_name=meta.get("doc_name", ""),
+                    section_path=meta.get("section_path", ""),
+                    page=meta.get("page", -1),
+                    score=score,
+                )
+            )
+        return hits
+
+    ***REMOVED*** ---------- 混合检索 ----------
+
+    def retrieve(self, question: str, mode: str = RETRIEVAL_MODE,
+                 k_final: int = FINAL_TOP_K, k_each: int | None = None) -> list[Hit]:
+        k_each = k_each or max(VECTOR_TOP_K, KEYWORD_TOP_K)
+        if mode == "vector":
+            return self.vector_search(question, k_final)
+        if mode == "keyword":
+            return self.keyword_search(question, k_final)
+
+        vec_hits = self.vector_search(question, k_each)
+        kw_hits = self.keyword_search(question, k_each)
+        if not kw_hits:      ***REMOVED*** 查询词完全不在语料中（如纯英文问题）→ 回退向量
+            return vec_hits[:k_final]
+        if not vec_hits:
+            return kw_hits[:k_final]
+
+        fused: dict[str, Hit] = {}
+        for rank, h in enumerate(vec_hits, start=1):
+            h.vec_rank, h.sources = rank, ["vector"]
+            fused[h.chunk_id] = h
+        for rank, h in enumerate(kw_hits, start=1):
+            if h.chunk_id in fused:
+                fused[h.chunk_id].kw_rank = rank
+                fused[h.chunk_id].sources.append("keyword")
+            else:
+                h.kw_rank, h.sources = rank, ["keyword"]
+                fused[h.chunk_id] = h
+        for h in fused.values():
+            h.score = sum(1.0 / (RRF_K + r) for r in (h.vec_rank, h.kw_rank) if r is not None)
+        ranked = sorted(fused.values(), key=lambda h: h.score, reverse=True)
+        return ranked[:k_final]
+
+    ***REMOVED*** ---------- 索引维护 ----------
+
+    def rebuild_bm25(self) -> int:
+        chunks = vector_store.hydrate_all(self.collection)
+        self.bm25 = build_from_chunks(chunks)
+        if self.bm25_path:
+            self.bm25.save(self.bm25_path)
+        return len(chunks)

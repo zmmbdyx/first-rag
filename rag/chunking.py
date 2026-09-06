@@ -1,0 +1,149 @@
+"""文档切分。
+
+smart_chunk：结构感知切分——
+  1. 依据标题还原「文档 > 章节」层级，切分不跨章节；
+  2. 章节内按段落贪心打包到 chunk_size，超长段落按句子边界下切；
+  3. 相邻块保留 1 句重叠，避免答案恰好被切分点截断；
+  4. 每个 chunk 携带 doc_name / section_path / page 元数据（溯源依据），
+     并在向量入库时拼接「上下文头」提升检索质量。
+
+naive_chunk：固定窗口滑动的朴素切分，仅用于评测对比基线。
+"""
+
+import hashlib
+import re
+from dataclasses import dataclass
+
+from .config import CHUNK_SIZE, MIN_CHUNK_CHARS, NAIVE_CHUNK_SIZE, NAIVE_STRIDE, OVERLAP_SENTENCES
+from .parsers import ParsedDoc
+
+_RE_SENT = re.compile(r"[^。！？!?；;\n]+(?:[。！？!?；;]+|\n+|$)")
+
+
+@dataclass
+class Chunk:
+    chunk_id: str
+    doc_name: str
+    section_path: str  ***REMOVED*** 例："入职与试用期 > 试用期"，空字符串表示无结构
+    page: int | None
+    text: str
+
+    @property
+    def header(self) -> str:
+        loc = f"{self.doc_name} · {self.section_path}" if self.section_path else self.doc_name
+        return f"【{loc}】"
+
+    def embed_text(self) -> str:
+        """向量入库/检索用的文本：拼接文档名与章节路径作为上下文增强。"""
+        return f"{self.header}\n{self.text}"
+
+
+def split_sentences(text: str) -> list[str]:
+    return [s.strip() for s in _RE_SENT.findall(text) if s.strip()]
+
+
+***REMOVED*** ---------- 智能切分 ----------
+
+
+def smart_chunk(
+    doc: ParsedDoc,
+    chunk_size: int = CHUNK_SIZE,
+    overlap_sentences: int = OVERLAP_SENTENCES,
+    min_chars: int = MIN_CHUNK_CHARS,
+) -> list[Chunk]:
+    ***REMOVED*** 1) 标题 → 章节路径，收集各章节的 (text, page) 单元
+    sections: list[tuple[list[str], list[tuple[str, int | None]]]] = []
+    path: list[str] = []
+    for b in doc.blocks:
+        if b.kind == "heading":
+            level = b.level or 1
+            path = path[: level - 1] + [b.text]
+            sections.append((path.copy(), []))
+        else:
+            if not sections:
+                sections.append(([], []))
+            if b.kind == "table":
+                sections[-1][1].append((b.text, b.page))
+            else:
+                for p in re.split(r"\n{2,}", b.text):
+                    p = p.strip()
+                    if p:
+                        sections[-1][1].append((p, b.page))
+
+    ***REMOVED*** 2) 章节内贪心打包；超长段落按句子边界下切；块间保留句子级重叠
+    chunks: list[Chunk] = []
+
+    def new_chunk_id(doc_name: str, idx: int) -> str:
+        tag = hashlib.md5(doc_name.encode("utf-8")).hexdigest()[:6]
+        return f"{tag}-{idx:04d}"
+
+    idx = 0
+    for sec_path, units in sections:
+        flat: list[tuple[str, int | None]] = []
+        for text, page in units:
+            if len(text) > chunk_size:
+                flat.extend((s, page) for s in split_sentences(text))
+            else:
+                flat.append((text, page))
+
+        cur: list[tuple[str, int | None]] = []
+        cur_len = 0
+
+        def flush() -> None:
+            nonlocal idx, cur, cur_len
+            if not cur:
+                return
+            text = "\n".join(t for t, _ in cur).strip()
+            page = next((pg for _, pg in cur if pg is not None), None)
+            chunks.append(Chunk(new_chunk_id(doc.doc_name, idx), doc.doc_name,
+                                " > ".join(sec_path[-3:]), page, text))
+            idx += 1
+            cur, cur_len = [], 0
+
+        for text, page in flat:
+            if cur and cur_len + len(text) + 1 > chunk_size:
+                flush()
+                ***REMOVED*** 重叠：取上一块结尾句子，避免答案在切分点被截断
+                prev = chunks[-1].text if chunks else ""
+                tail = "\n".join(split_sentences(prev)[-overlap_sentences:]) if prev else ""
+                if tail and len(tail) <= chunk_size * 0.4:
+                    cur, cur_len = [(tail, page)], len(tail)
+            cur.append((text, page))
+            cur_len += len(text) + 1
+        flush()
+
+    ***REMOVED*** 3) 过短块并入同章节的前一块
+    merged: list[Chunk] = []
+    for c in chunks:
+        if merged and len(c.text) < min_chars and c.section_path == merged[-1].section_path \
+                and len(merged[-1].text) + len(c.text) <= chunk_size + 120:
+            merged[-1].text = merged[-1].text + "\n" + c.text
+        else:
+            merged.append(c)
+    return merged
+
+
+***REMOVED*** ---------- 朴素切分（评测基线） ----------
+
+
+def naive_chunk(text: str, doc_name: str, size: int = NAIVE_CHUNK_SIZE, stride: int = NAIVE_STRIDE) -> list[Chunk]:
+    """固定窗口滑动切分：无结构感知、无章节信息，仅按字数推进。"""
+    text = re.sub(r"\s+", " ", text).strip()
+    chunks = []
+    tag = hashlib.md5(doc_name.encode("utf-8")).hexdigest()[:6]
+    idx = 0
+    start = 0
+    while start < len(text):
+        piece = text[start : start + size]
+        chunks.append(Chunk(f"{tag}-{idx:04d}", doc_name, "", None, piece))
+        idx += 1
+        if start + size >= len(text):
+            break
+        start += stride
+    return chunks
+
+
+def flatten_doc_text(doc: ParsedDoc) -> str:
+    """把解析结果压平成纯文本（供朴素切分等基线使用）。"""
+    parts = [b.text for b in doc.blocks if b.text.strip()]
+    return "\n".join(parts)

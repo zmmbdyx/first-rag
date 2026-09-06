@@ -1,13 +1,13 @@
 import os
+import re
+import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 
 import streamlit as st
 from ddgs import DDGS
 from openai import OpenAI
-
-from langchain_chroma import Chroma
-from langchain_huggingface import HuggingFaceEmbeddings
 
 try:
     from dotenv import load_dotenv
@@ -15,12 +15,26 @@ try:
 except ImportError:
     pass
 
+ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT))
+
+from rag import vector_store  ***REMOVED*** noqa: E402
+from rag.pipeline import load_retriever  ***REMOVED*** noqa: E402
+from rag.retriever import Retriever  ***REMOVED*** noqa: E402
+
 ***REMOVED*** ============ 配置 ============
 API_KEY = os.getenv("API_KEY", "")
-BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
-DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "chroma_db")
+BASE_URL = os.getenv(
+    "BASE_URL",
+    "https://dashscope.aliyuncs.com/compatible-mode/v1",
+)
+INDEX_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "chroma_db")
 MODEL_OPTIONS = ["qwen3.5-flash", "deepseek-v4-pro"]
-EMBED_MODEL = "shibing624/text2vec-base-chinese"
+MODE_LABELS = {
+    "hybrid": "混合检索（向量+关键词，RRF 融合）",
+    "vector": "纯向量检索",
+    "keyword": "纯关键词检索（BM25）",
+}
 SUGGESTIONS = [
     "什么是 Transformer 的自注意力机制？",
     "简单介绍一下 RLHF 的训练流程",
@@ -105,16 +119,15 @@ if "messages" not in st.session_state:
 
 ***REMOVED*** ---------- 资源加载（懒加载，只加载一次） ----------
 @st.cache_resource
-def get_db():
-    try:
-        import torch
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-    except Exception:
-        device = "cpu"
-    embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL, model_kwargs={"device": device})
-    db = Chroma(persist_directory=DB_PATH, embedding_function=embeddings)
-    embeddings.embed_query("预热")  ***REMOVED*** 启动时预热模型，避免第一个问题变慢
-    return db
+def get_retriever() -> Retriever:
+    """加载检索器：优先使用智能切分入库的 rag_chunks 集合，否则回退旧 langchain 集合。"""
+    client = vector_store.get_client(INDEX_DIR)
+    name = "rag_chunks" if vector_store.get_collection(client, "rag_chunks", create=False) is not None else "langchain"
+    retriever = load_retriever(INDEX_DIR, name)
+    if retriever.bm25 is None:  ***REMOVED*** 首次运行：现场构建一次 BM25 关键词索引并缓存
+        with st.spinner("首次运行：正在构建 BM25 关键词索引（一次性）..."):
+            retriever.rebuild_bm25()
+    return retriever
 
 
 @st.cache_resource
@@ -127,10 +140,9 @@ client = load_client()
 
 ***REMOVED*** ---------- 知识库操作 ----------
 @st.cache_data(ttl=1800, show_spinner=False)
-def cached_retrieve(query: str, k: int):
+def cached_retrieve(query: str, k: int, mode: str):
     """检索结果缓存：相同问题 30 分钟内不再重复向量化与检索。"""
-    docs = get_db().similarity_search(query, k=k)
-    return [(d.page_content, dict(d.metadata)) for d in docs]
+    return get_retriever().retrieve(query, mode=mode, k_final=k)
 
 
 def do_web_search(query: str, n: int):
@@ -230,7 +242,9 @@ with st.sidebar:
     max_tokens = st.selectbox("最大回复长度", ["自动", 1024, 2048, 4096, 8192], index=0)
     if max_tokens == "自动":
         max_tokens = None
-    top_k = st.slider("知识库检索条数", 1, 8, 3, help="每次回答参考的片段数，越少越快")
+    top_k = st.slider("知识库检索条数", 1, 8, 5, help="每次回答参考的片段数，越少越快")
+    retrieval_mode = st.selectbox("检索模式", list(MODE_LABELS), format_func=lambda m: MODE_LABELS[m],
+                                  help="混合检索同时做向量与关键词召回，用 RRF 融合排序，通常召回最准")
     history_rounds = st.slider("对话记忆轮数", 0, 5, 2,
                                help="携带的最近对话轮数，0 为单轮最快")
 
@@ -249,7 +263,7 @@ with st.sidebar:
 ***REMOVED*** 标题和侧边栏设置先渲染出来，加载过程放在这里明确提示，避免打开时白屏让人以为界面丢了
 if "kb_ready" not in st.session_state:
     with st.spinner("🔄 正在加载向量数据库与嵌入模型（首次约需 10-20 秒）..."):
-        get_db()
+        get_retriever()
     st.session_state.kb_ready = True
 
 
@@ -298,17 +312,16 @@ if prompt:
 
         t0 = time.time()
         with st.spinner("🔎 检索知识库中..."):
-            hits = cached_retrieve(prompt, top_k)
+            hits = cached_retrieve(prompt, top_k, retrieval_mode)
         t_retrieval = time.time() - t0
 
         context_parts, sources_info = [], []
-        for i, (content, meta) in enumerate(hits, 1):
-            context_parts.append(f"[文档片段 {i}]\n{content}")
-            src = meta.get("source", "未知")
-            if meta.get("page"):
-                src += f" · 第{meta['page']}页"
+        for i, h in enumerate(hits, 1):
+            ***REMOVED*** 上下文编号 [i] 与答案中的引用标注一一对应，实现答案溯源
+            context_parts.append(f"[{i}] 来源：{h.location or h.doc_name}\n{h.text}")
             sources_info.append({"type": "本地文档", "title": f"来源 {i}",
-                                 "content": content, "source": src})
+                                 "content": h.text, "source": h.location or h.doc_name,
+                                 "via": h.sources})
 
         t_web = None
         if web_future is not None:
@@ -325,7 +338,8 @@ if prompt:
 
         final_context = "\n\n---\n\n".join(context_parts) or "（无参考资料）"
         system_prompt = f"""你是一个专业的AI助手，请严格基于以下参考资料回答用户问题。
-参考资料可能来自本地知识库和互联网搜索。请综合所有信息，给出清晰、有条理的回答。
+参考资料来自本地知识库（编号 [1]、[2]…）和互联网搜索。请综合所有信息，给出清晰、有条理的回答。
+要求：仅根据资料回答，不要编造；在关键结论后用 [编号] 标注引用的资料来源。
 如果所有资料中都没有相关信息，请说"根据现有资料，我无法回答这个问题"。
 
 参考资料：
@@ -355,10 +369,13 @@ if prompt:
             st.markdown(answer)
 
             if sources_info:
-                with st.expander("📎 查看引用来源", expanded=False):
-                    for source in sources_info:
+                cited = {int(n) for n in re.findall(r"\[(\d+)\]", answer or "") if int(n) <= len(hits)}
+                with st.expander("📎 查看引用来源（⭐ 为回答中引用的来源）", expanded=False):
+                    for idx, source in enumerate(sources_info, 1):
                         if source["type"] == "本地文档":
-                            st.markdown(f"**📄 {source['title']}**（{source['source']}）")
+                            via = "/".join(source.get("via", [])) or "vector"
+                            star = " ⭐" if idx in cited else ""
+                            st.markdown(f"**📄 {source['title']}{star}**（{source['source']} · 经{via}命中）")
                         else:
                             st.markdown(f"**🌐 [{source['title']}]({source.get('href', '')}）**")
                         st.markdown(f"> {source['content'][:200]}...")

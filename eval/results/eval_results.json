@@ -1,0 +1,3280 @@
+{
+  "_meta": {
+    "n_questions": 30,
+    "n_answerable": 26,
+    "n_unanswerable": 4,
+    "time": "2026-09-06 13:53:17",
+    "final_top_k": 5,
+    "retrieval_only": false
+  },
+  "baseline": {
+    "retrieval": {
+      "n": 26,
+      "answer_recall@1": 0.7308,
+      "answer_recall@3": 0.8846,
+      "answer_recall@5": 0.8846,
+      "doc_recall@5": 1.0,
+      "mrr": 0.8077
+    },
+    "generation": {
+      "n_answerable": 26,
+      "n_unanswerable": 4,
+      "accuracy": 0.8462,
+      "accuracy_soft": 0.8846,
+      "n_partial": 2,
+      "n_wrong": 2,
+      "n_error": 0,
+      "citation_rate": 0.9615,
+      "citation_accuracy": 0.0,
+      "avg_latency": 1.11,
+      "refusal_correct": 0.75
+    },
+    "generation_detail": [
+      {
+        "id": 1,
+        "question": "试用期一般是多长时间？",
+        "answerable": true,
+        "answer": "试用期一般为 3 个月；管理岗位及核心技术岗位经审批可延长至 6 个月 [1]。",
+        "latency": 2.37,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答的关键信息与标准答案完全一致，仅末尾多了一个引用标记，不影响内容正确性。",
+        "citation_correct": false
+      },
+      {
+        "id": 2,
+        "question": "新员工办理入职需要携带哪些材料？",
+        "answerable": true,
+        "answer": "新员工办理入职手续时，需携带以下材料：\n1. 身份证原件及复印件；\n2. 学历学位证书原件；\n3. 上一家单位的离职证明；\n4. 三个月内的体检报告；\n5. 本人银行卡（用于工资发放）[1]。",
+        "latency": 2.61,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答完整覆盖了标准答案中列出的所有关键材料，且补充的用途说明与标准答案不冲突。",
+        "citation_correct": false
+      },
+      {
+        "id": 3,
+        "question": "公司的工作时间是怎么安排的？",
+        "answerable": true,
+        "answer": "根据参考资料，公司工作时间安排如下：\n\n1. **坐班时间**：员工需在9:30之前弹性到岗，到岗后开始计算工时 [1]。\n2. **远程办公时间**：远程办公期间的工作时间与坐班一致，为9:00-18:00 [3]。",
+        "latency": 2.8,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "",
+            "page": -1
+          },
+          {
+            "doc_name": "远程办公管理制度.txt",
+            "section_path": "",
+            "page": -1
+          }
+        ],
+        "verdict": "wrong",
+        "judge_reason": "{\"verdict\": \"wrong\", \"reason\": \"模型回答将弹性到岗时间错误表述为\"9:30之前”，而标准答案明确为\"8:30-9:30之间”，且遗漏了具体的午餐休息时间信息。\"}",
+        "citation_correct": false
+      },
+      {
+        "id": 4,
+        "question": "工作日加班怎么调休？",
+        "answerable": true,
+        "answer": "工作日加班按1:1比例调休 [1]。",
+        "latency": 2.31,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答准确复述了标准答案中关于工作日加班调休比例的核心信息，且未包含矛盾内容。",
+        "citation_correct": false
+      },
+      {
+        "id": 5,
+        "question": "员工年假有几天？",
+        "answerable": true,
+        "answer": "员工年假天数根据入职年限确定：\n- 入职满1年不满3年的，每年享有5天带薪年假；\n- 满3年不满5年的，每年10天；\n- 满5年及以上的，每年15天 [2]。\n\n年假当年有效，最多可顺延至次年3月底 [2]。",
+        "latency": 1.7,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答中关于年假天数的关键信息与标准答案完全一致，额外补充的顺延规则未与标准答案矛盾。",
+        "citation_correct": false
+      },
+      {
+        "id": 6,
+        "question": "病假期间工资怎么算？",
+        "answerable": true,
+        "answer": "根据参考资料，病假期间工资按本人日工资的60%发放 [2]。",
+        "latency": 0.7,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "",
+            "page": -1
+          }
+        ],
+        "verdict": "partial",
+        "judge_reason": "模型回答遗漏了标准答案中关于病假需提供二级及以上医院诊断证明的关键信息。",
+        "citation_correct": false
+      },
+      {
+        "id": 7,
+        "question": "事假是带薪的吗？",
+        "answerable": true,
+        "answer": "事假为无薪假 [1]。",
+        "latency": 0.5,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答准确指出事假为无薪假，与标准答案核心信息一致。",
+        "citation_correct": false
+      },
+      {
+        "id": 8,
+        "question": "出差的住宿和餐补标准是多少？",
+        "answerable": true,
+        "answer": "根据参考资料，出差标准如下：\n\n*   **住宿标准**：一线城市（北京、上海、广州、深圳）每晚400元，其他城市每晚300元 [1][3]。\n*   **餐补标准**：每天100元 [1][3]。",
+        "latency": 1.21,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "",
+            "page": -1
+          },
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答中的住宿和餐补标准与标准答案完全一致。",
+        "citation_correct": false
+      },
+      {
+        "id": 9,
+        "question": "费用报销的审批流程是怎样的？多久到账？",
+        "answerable": true,
+        "answer": "费用报销的审批流程为：审核、分管总监审批三级。报销款在审批通过后5个工作日内到账 [1]。",
+        "latency": 0.86,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "",
+            "page": -1
+          }
+        ],
+        "verdict": "partial",
+        "judge_reason": "模型回答遗漏了标准答案中明确提到的“直属上级审批”和“财务审核”环节，仅概括为三级流程，导致关键信息缺失。",
+        "citation_correct": false
+      },
+      {
+        "id": 10,
+        "question": "转正员工辞职需要提前多久提出？",
+        "answerable": true,
+        "answer": "根据知识库中的资料，未找到相关内容。",
+        "latency": 0.84,
+        "has_citation": false,
+        "cited": [],
+        "verdict": "wrong",
+        "judge_reason": "模型回答声称未找到相关内容，未能提供标准答案中关于转正员工需提前30天提出辞职的关键信息。",
+        "citation_correct": false
+      },
+      {
+        "id": 11,
+        "question": "云滴C3咖啡机的额定功率是多少？",
+        "answerable": true,
+        "answer": "云滴C3咖啡机的额定功率为1350W [1]。",
+        "latency": 0.56,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "云滴咖啡机C3产品说明书.docx",
+            "section_path": "",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答中关于云滴C3咖啡机额定功率的关键信息（1350W）与标准答案完全一致。",
+        "citation_correct": false
+      },
+      {
+        "id": 12,
+        "question": "C3咖啡机的水箱容量是多大？",
+        "answerable": true,
+        "answer": "C3咖啡机的水箱容量为1.5L [2]。",
+        "latency": 0.57,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "云滴咖啡机C3产品说明书.docx",
+            "section_path": "",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答的水箱容量1.5L与标准答案完全一致。",
+        "citation_correct": false
+      },
+      {
+        "id": 13,
+        "question": "咖啡机研磨有几档？哪一档最细？",
+        "answerable": true,
+        "answer": "云滴咖啡机C3的研磨档位共9档，其中1档最细 [2]。",
+        "latency": 0.63,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "云滴咖啡机C3产品说明书.docx",
+            "section_path": "",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答准确指出了研磨共9档且1档最细，与标准答案关键信息完全一致。",
+        "citation_correct": false
+      },
+      {
+        "id": 14,
+        "question": "C3咖啡机的泵压是多少？",
+        "answerable": true,
+        "answer": "云滴咖啡机C3的泵压为20bar，采用意大利进口高压泵 [1]。",
+        "latency": 0.81,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "云滴咖啡机C3产品说明书.docx",
+            "section_path": "",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答明确指出泵压为20bar，与标准答案一致。",
+        "citation_correct": false
+      },
+      {
+        "id": 15,
+        "question": "咖啡机多久需要除垢一次？怎么操作？",
+        "answerable": true,
+        "answer": "根据参考资料，云滴咖啡机C3建议每2个月进行一次除垢 [1][2]。\n\n操作步骤如下：\n1. 长按除垢键3秒进入除垢模式 [1][2]。\n2. 使用食品级柠檬酸按说明书比例溶解后执行 [1][2]。",
+        "latency": 1.33,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "云滴咖啡机C3产品说明书.docx",
+            "section_path": "",
+            "page": -1
+          },
+          {
+            "doc_name": "云滴咖啡机C3产品说明书.docx",
+            "section_path": "",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答准确涵盖了除垢频率（每2个月）和操作步骤（长按除垢键3秒、使用食品级柠檬酸），与标准答案关键信息一致。",
+        "citation_correct": false
+      },
+      {
+        "id": 16,
+        "question": "整机和研磨电机分别保修多久？",
+        "answerable": true,
+        "answer": "整机自购买之日起保修2年，研磨电机保修3年 [1]。",
+        "latency": 0.56,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "云滴咖啡机C3产品说明书.docx",
+            "section_path": "",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答中关于整机和研磨电机的保修时长与标准答案完全一致。",
+        "citation_correct": false
+      },
+      {
+        "id": 17,
+        "question": "咖啡口感过淡应该怎么调整？",
+        "answerable": true,
+        "answer": "若咖啡口感过淡，可将研磨档位调小（更细），或增加粉量设置 [1]。",
+        "latency": 0.61,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "云滴咖啡机C3产品说明书.docx",
+            "section_path": "",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答的核心调整方案（调细研磨或增加粉量）与标准答案完全一致，仅末尾多了一个引用标记，不影响内容正确性。",
+        "citation_correct": false
+      },
+      {
+        "id": 18,
+        "question": "每周最多可以申请几天远程办公？",
+        "answerable": true,
+        "answer": "员工每周申请远程办公不得超过2天 [1]。",
+        "latency": 0.6,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "远程办公管理制度.txt",
+            "section_path": "",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答的核心信息与标准答案完全一致，均指出每周远程办公申请不得超过2天。",
+        "citation_correct": false
+      },
+      {
+        "id": 19,
+        "question": "远程办公需要如何申请？",
+        "answerable": true,
+        "answer": "远程办公需提前1个工作日在OA系统提交申请，经直属上级审批后生效 [1]。",
+        "latency": 0.74,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "远程办公管理制度.txt",
+            "section_path": "",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答的关键信息与标准答案完全一致，仅末尾多了一个引用标记，不影响内容正确性。",
+        "citation_correct": false
+      },
+      {
+        "id": 20,
+        "question": "远程办公访问公司系统有什么安全要求？",
+        "answerable": true,
+        "answer": "根据参考资料，远程办公访问公司系统的安全要求如下：\n\n1.  **必须使用公司配发的设备并通过 VPN 访问**：远程办公期间需使用公司配发的笔记本电脑，且必须通过公司 VPN 访问内部系统 [1]。\n2.  **禁止在公共 Wi-Fi 环境下访问核心业务**：禁止在公共 Wi-Fi 环境下访问内网核心业务系统 [1]。\n3.  **视频会议需开启虚拟背景**：进行视频会议时需开启虚拟背景，以防止家庭环境信息泄露 [1]。",
+        "latency": 1.51,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "远程办公管理制度.txt",
+            "section_path": "",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答完整涵盖了标准答案中关于必须使用VPN和禁止在公共Wi-Fi访问核心业务的关键安全要求，且补充内容不矛盾。",
+        "citation_correct": false
+      },
+      {
+        "id": 21,
+        "question": "远程办公有补贴吗？",
+        "answerable": true,
+        "answer": "是的，远程办公有补贴。公司按每月100元标准发放远程办公补贴，用于补偿电费与网络费用，随工资发放 [1][2]。",
+        "latency": 0.7,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "远程办公管理制度.txt",
+            "section_path": "",
+            "page": -1
+          },
+          {
+            "doc_name": "远程办公管理制度.txt",
+            "section_path": "",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答准确复述了标准答案中关于补贴金额、用途及发放方式的关键信息，且额外补充的引用标记不影响核心内容的一致性。",
+        "citation_correct": false
+      },
+      {
+        "id": 22,
+        "question": "未经申请擅自远程办公会怎么处理？",
+        "answerable": true,
+        "answer": "未经申请擅自远程办公的，当天按事假处理；若一个月内违规累计3次，将取消当月剩余远程办公资格，并通报部门负责人 [1][2]。",
+        "latency": 0.78,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "远程办公管理制度.txt",
+            "section_path": "",
+            "page": -1
+          },
+          {
+            "doc_name": "远程办公管理制度.txt",
+            "section_path": "",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答完整涵盖了标准答案中关于擅自远程办公的处罚措施及累计违规后果，关键信息与标准答案一致。",
+        "citation_correct": false
+      },
+      {
+        "id": 23,
+        "question": "忘记OA系统密码怎么办？",
+        "answerable": true,
+        "answer": "忘记OA系统密码，可通过以下方式重置：\n\n1. 在OA登录页点击“忘记密码”，通过绑定手机号自助重置；[1]\n2. 携带工牌到3楼IT服务台，由管理员人工重置。[1]",
+        "latency": 1.06,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "IT服务常见问题FAQ.txt",
+            "section_path": "",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答完整涵盖了标准答案中提到的两种重置密码方式（手机号自助重置和人工重置），关键信息与标准答案一致。",
+        "citation_correct": false
+      },
+      {
+        "id": 24,
+        "question": "如何申请VPN权限？",
+        "answerable": true,
+        "answer": "在OA系统提交\"VPN开通申请”，注明使用事由，经部门负责人审批后，IT部门将在1个工作日内开通 [1]。",
+        "latency": 0.67,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "IT服务常见问题FAQ.txt",
+            "section_path": "",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答完整包含了申请渠道、流程及审批时效等关键信息，与标准答案一致。",
+        "citation_correct": false
+      },
+      {
+        "id": 25,
+        "question": "办公Wi-Fi密码在哪里查看？",
+        "answerable": true,
+        "answer": "办公 Wi-Fi 密码可在登录 OA 首页，在\"IT 服务公告”栏目查看最新一期 Wi-Fi 密码 [1]。该密码每季度更换一次 [1]。",
+        "latency": 0.79,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "IT服务常见问题FAQ.txt",
+            "section_path": "",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答准确包含了查看位置（IT服务公告）和更换频率（每季度一次）两个关键信息，与标准答案一致。",
+        "citation_correct": false
+      },
+      {
+        "id": 26,
+        "question": "门禁卡丢失如何补办？",
+        "answerable": true,
+        "answer": "门禁卡丢失后，需携带工牌到一楼行政前台办理补办手续 [1]。补办费用为工本费 50 元，将从当月工资中代扣，旧卡会即时挂失失效 [1]。",
+        "latency": 0.98,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "IT服务常见问题FAQ.txt",
+            "section_path": "",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答涵盖了补办地点、费用及旧卡处理等所有关键信息，且补充的扣款方式与标准答案不矛盾。",
+        "citation_correct": false
+      },
+      {
+        "id": 27,
+        "question": "公司提供住房补贴吗？",
+        "answerable": false,
+        "answer": "根据知识库中的资料，未找到相关内容。\n\n（注：参考资料中提到了“远程办公补贴”标准为每月100元 [3]，以及出差住宿标准 [1][2]，但未提及针对员工住房的专项补贴。）",
+        "latency": 0.92,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "",
+            "page": -1
+          },
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "",
+            "page": -1
+          },
+          {
+            "doc_name": "远程办公管理制度.txt",
+            "section_path": "",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型准确指出知识库中未包含关于住房补贴的信息，符合正确回答标准。",
+        "citation_correct": false
+      },
+      {
+        "id": 28,
+        "question": "C3咖啡机支持手机App远程控制吗？",
+        "answerable": false,
+        "answer": "根据提供的参考资料，未找到关于云滴咖啡机C3支持手机App远程控制的相关内容。\n\n参考资料中仅提及该机器为“全自动研磨一体式咖啡机”，具备“一键出杯”功能，操作方式为“放入咖啡豆，选择杯量（单杯/双杯），一键启动”[1][2]，并未提及任何手机App或远程连接功能。",
+        "latency": 1.26,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "云滴咖啡机C3产品说明书.docx",
+            "section_path": "",
+            "page": -1
+          },
+          {
+            "doc_name": "云滴咖啡机C3产品说明书.docx",
+            "section_path": "",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型准确指出知识库中未包含该信息，未进行编造。",
+        "citation_correct": false
+      },
+      {
+        "id": 29,
+        "question": "远程办公期间可以选择在咖啡馆办公吗？",
+        "answerable": false,
+        "answer": "根据提供的参考资料，**不可以**在咖啡馆等公共 Wi-Fi 环境下进行远程办公。\n\n参考资料明确规定：禁止在公共 Wi-Fi 环境下访问内网核心业务系统 [1]。由于远程办公必须通过公司 VPN 访问内部系统 [1]，而咖啡馆通常属于公共网络环境，因此不符合制度要求。",
+        "latency": 1.33,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "远程办公管理制度.txt",
+            "section_path": "",
+            "page": -1
+          }
+        ],
+        "verdict": "wrong",
+        "judge_reason": "知识库中未提及任何关于远程办公地点或咖啡馆的规定，模型却编造了具体的禁止条款。",
+        "citation_correct": false
+      },
+      {
+        "id": 30,
+        "question": "IT服务台的QQ群号是多少？",
+        "answerable": false,
+        "answer": "根据知识库中的资料，未找到相关内容。",
+        "latency": 0.44,
+        "has_citation": false,
+        "cited": [],
+        "verdict": "correct",
+        "judge_reason": "模型明确说明知识库中未找到相关内容，符合评判标准。",
+        "citation_correct": false
+      }
+    ],
+    "retrieval_detail": [
+      {
+        "id": 1,
+        "question": "试用期一般是多长时间？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "星辰科技员工手册.pdf",
+          "星辰科技员工手册.pdf",
+          "星辰科技员工手册.pdf",
+          "星辰科技员工手册.pdf",
+          "远程办公管理制度.txt"
+        ]
+      },
+      {
+        "id": 2,
+        "question": "新员工办理入职需要携带哪些材料？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "星辰科技员工手册.pdf",
+          "IT服务常见问题FAQ.txt",
+          "远程办公管理制度.txt",
+          "星辰科技员工手册.pdf",
+          "星辰科技员工手册.pdf"
+        ]
+      },
+      {
+        "id": 3,
+        "question": "公司的工作时间是怎么安排的？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": false,
+        "doc_hit@3": true,
+        "ans_hit@3": false,
+        "doc_hit@5": true,
+        "ans_hit@5": false,
+        "first_hit_rank": null,
+        "retrieved": [
+          "星辰科技员工手册.pdf",
+          "星辰科技员工手册.pdf",
+          "远程办公管理制度.txt",
+          "星辰科技员工手册.pdf",
+          "远程办公管理制度.txt"
+        ]
+      },
+      {
+        "id": 4,
+        "question": "工作日加班怎么调休？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "星辰科技员工手册.pdf",
+          "星辰科技员工手册.pdf",
+          "星辰科技员工手册.pdf",
+          "远程办公管理制度.txt",
+          "远程办公管理制度.txt"
+        ]
+      },
+      {
+        "id": 5,
+        "question": "员工年假有几天？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": false,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 2,
+        "retrieved": [
+          "星辰科技员工手册.pdf",
+          "星辰科技员工手册.pdf",
+          "远程办公管理制度.txt",
+          "星辰科技员工手册.pdf",
+          "远程办公管理制度.txt"
+        ]
+      },
+      {
+        "id": 6,
+        "question": "病假期间工资怎么算？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": false,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 2,
+        "retrieved": [
+          "星辰科技员工手册.pdf",
+          "星辰科技员工手册.pdf",
+          "星辰科技员工手册.pdf",
+          "远程办公管理制度.txt",
+          "远程办公管理制度.txt"
+        ]
+      },
+      {
+        "id": 7,
+        "question": "事假是带薪的吗？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "星辰科技员工手册.pdf",
+          "星辰科技员工手册.pdf",
+          "远程办公管理制度.txt",
+          "星辰科技员工手册.pdf",
+          "远程办公管理制度.txt"
+        ]
+      },
+      {
+        "id": 8,
+        "question": "出差的住宿和餐补标准是多少？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "星辰科技员工手册.pdf",
+          "远程办公管理制度.txt",
+          "星辰科技员工手册.pdf",
+          "星辰科技员工手册.pdf",
+          "远程办公管理制度.txt"
+        ]
+      },
+      {
+        "id": 9,
+        "question": "费用报销的审批流程是怎样的？多久到账？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": false,
+        "doc_hit@3": true,
+        "ans_hit@3": false,
+        "doc_hit@5": true,
+        "ans_hit@5": false,
+        "first_hit_rank": null,
+        "retrieved": [
+          "星辰科技员工手册.pdf",
+          "远程办公管理制度.txt",
+          "远程办公管理制度.txt",
+          "IT服务常见问题FAQ.txt",
+          "星辰科技员工手册.pdf"
+        ]
+      },
+      {
+        "id": 10,
+        "question": "转正员工辞职需要提前多久提出？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": false,
+        "doc_hit@3": true,
+        "ans_hit@3": false,
+        "doc_hit@5": true,
+        "ans_hit@5": false,
+        "first_hit_rank": null,
+        "retrieved": [
+          "星辰科技员工手册.pdf",
+          "远程办公管理制度.txt",
+          "星辰科技员工手册.pdf",
+          "星辰科技员工手册.pdf",
+          "IT服务常见问题FAQ.txt"
+        ]
+      },
+      {
+        "id": 11,
+        "question": "云滴C3咖啡机的额定功率是多少？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "云滴咖啡机C3产品说明书.docx",
+          "云滴咖啡机C3产品说明书.docx",
+          "星辰科技员工手册.pdf",
+          "远程办公管理制度.txt",
+          "远程办公管理制度.txt"
+        ]
+      },
+      {
+        "id": 12,
+        "question": "C3咖啡机的水箱容量是多大？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": false,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 2,
+        "retrieved": [
+          "云滴咖啡机C3产品说明书.docx",
+          "云滴咖啡机C3产品说明书.docx",
+          "IT服务常见问题FAQ.txt",
+          "星辰科技员工手册.pdf",
+          "星辰科技员工手册.pdf"
+        ]
+      },
+      {
+        "id": 13,
+        "question": "咖啡机研磨有几档？哪一档最细？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": false,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 2,
+        "retrieved": [
+          "云滴咖啡机C3产品说明书.docx",
+          "云滴咖啡机C3产品说明书.docx",
+          "星辰科技员工手册.pdf",
+          "远程办公管理制度.txt",
+          "IT服务常见问题FAQ.txt"
+        ]
+      },
+      {
+        "id": 14,
+        "question": "C3咖啡机的泵压是多少？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "云滴咖啡机C3产品说明书.docx",
+          "云滴咖啡机C3产品说明书.docx",
+          "IT服务常见问题FAQ.txt",
+          "星辰科技员工手册.pdf",
+          "星辰科技员工手册.pdf"
+        ]
+      },
+      {
+        "id": 15,
+        "question": "咖啡机多久需要除垢一次？怎么操作？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "云滴咖啡机C3产品说明书.docx",
+          "云滴咖啡机C3产品说明书.docx",
+          "IT服务常见问题FAQ.txt",
+          "远程办公管理制度.txt",
+          "星辰科技员工手册.pdf"
+        ]
+      },
+      {
+        "id": 16,
+        "question": "整机和研磨电机分别保修多久？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "云滴咖啡机C3产品说明书.docx",
+          "云滴咖啡机C3产品说明书.docx",
+          "星辰科技员工手册.pdf",
+          "星辰科技员工手册.pdf",
+          "IT服务常见问题FAQ.txt"
+        ]
+      },
+      {
+        "id": 17,
+        "question": "咖啡口感过淡应该怎么调整？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "云滴咖啡机C3产品说明书.docx",
+          "云滴咖啡机C3产品说明书.docx",
+          "IT服务常见问题FAQ.txt",
+          "星辰科技员工手册.pdf",
+          "远程办公管理制度.txt"
+        ]
+      },
+      {
+        "id": 18,
+        "question": "每周最多可以申请几天远程办公？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "远程办公管理制度.txt",
+          "远程办公管理制度.txt",
+          "星辰科技员工手册.pdf",
+          "星辰科技员工手册.pdf",
+          "IT服务常见问题FAQ.txt"
+        ]
+      },
+      {
+        "id": 19,
+        "question": "远程办公需要如何申请？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "远程办公管理制度.txt",
+          "远程办公管理制度.txt",
+          "IT服务常见问题FAQ.txt",
+          "星辰科技员工手册.pdf",
+          "星辰科技员工手册.pdf"
+        ]
+      },
+      {
+        "id": 20,
+        "question": "远程办公访问公司系统有什么安全要求？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "远程办公管理制度.txt",
+          "远程办公管理制度.txt",
+          "IT服务常见问题FAQ.txt",
+          "星辰科技员工手册.pdf",
+          "星辰科技员工手册.pdf"
+        ]
+      },
+      {
+        "id": 21,
+        "question": "远程办公有补贴吗？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "远程办公管理制度.txt",
+          "远程办公管理制度.txt",
+          "星辰科技员工手册.pdf",
+          "星辰科技员工手册.pdf",
+          "星辰科技员工手册.pdf"
+        ]
+      },
+      {
+        "id": 22,
+        "question": "未经申请擅自远程办公会怎么处理？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "远程办公管理制度.txt",
+          "远程办公管理制度.txt",
+          "IT服务常见问题FAQ.txt",
+          "星辰科技员工手册.pdf",
+          "星辰科技员工手册.pdf"
+        ]
+      },
+      {
+        "id": 23,
+        "question": "忘记OA系统密码怎么办？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "IT服务常见问题FAQ.txt",
+          "远程办公管理制度.txt",
+          "远程办公管理制度.txt",
+          "星辰科技员工手册.pdf",
+          "云滴咖啡机C3产品说明书.docx"
+        ]
+      },
+      {
+        "id": 24,
+        "question": "如何申请VPN权限？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "IT服务常见问题FAQ.txt",
+          "远程办公管理制度.txt",
+          "星辰科技员工手册.pdf",
+          "星辰科技员工手册.pdf",
+          "远程办公管理制度.txt"
+        ]
+      },
+      {
+        "id": 25,
+        "question": "办公Wi-Fi密码在哪里查看？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "IT服务常见问题FAQ.txt",
+          "远程办公管理制度.txt",
+          "远程办公管理制度.txt",
+          "星辰科技员工手册.pdf",
+          "星辰科技员工手册.pdf"
+        ]
+      },
+      {
+        "id": 26,
+        "question": "门禁卡丢失如何补办？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "IT服务常见问题FAQ.txt",
+          "远程办公管理制度.txt",
+          "星辰科技员工手册.pdf",
+          "远程办公管理制度.txt",
+          "星辰科技员工手册.pdf"
+        ]
+      },
+      {
+        "id": 27,
+        "question": "公司提供住房补贴吗？",
+        "answerable": false
+      },
+      {
+        "id": 28,
+        "question": "C3咖啡机支持手机App远程控制吗？",
+        "answerable": false
+      },
+      {
+        "id": 29,
+        "question": "远程办公期间可以选择在咖啡馆办公吗？",
+        "answerable": false
+      },
+      {
+        "id": 30,
+        "question": "IT服务台的QQ群号是多少？",
+        "answerable": false
+      }
+    ]
+  },
+  "smart_vector": {
+    "retrieval": {
+      "n": 26,
+      "answer_recall@1": 0.8846,
+      "answer_recall@3": 0.9231,
+      "answer_recall@5": 1.0,
+      "doc_recall@5": 1.0,
+      "mrr": 0.9192
+    },
+    "generation": {
+      "n_answerable": 26,
+      "n_unanswerable": 4,
+      "accuracy": 0.9615,
+      "accuracy_soft": 0.9808,
+      "n_partial": 1,
+      "n_wrong": 0,
+      "n_error": 0,
+      "citation_rate": 1.0,
+      "citation_accuracy": 1.0,
+      "avg_latency": 0.78,
+      "refusal_correct": 1.0
+    },
+    "generation_detail": [
+      {
+        "id": 1,
+        "question": "试用期一般是多长时间？",
+        "answerable": true,
+        "answer": "试用期一般为3个月；管理岗位及核心技术岗位经审批可延长至6个月 [1]。",
+        "latency": 1.06,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "第二章 入职与试用期 > 2.2 试用期",
+            "page": 1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答的关键信息与标准答案完全一致，仅末尾多了一个引用标记，不影响内容正确性。",
+        "citation_correct": true
+      },
+      {
+        "id": 2,
+        "question": "新员工办理入职需要携带哪些材料？",
+        "answerable": true,
+        "answer": "新员工办理入职手续时，需携带以下材料：身份证原件及复印件、学历学位证书原件、上一家单位的离职证明、三个月内的体检报告、本人银行卡（用于工资发放）[1]。",
+        "latency": 1.08,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "第二章 入职与试用期 > 2.1 入职材料",
+            "page": 1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答完整涵盖了标准答案中列出的所有关键材料，且补充的用途说明与标准答案不矛盾。",
+        "citation_correct": true
+      },
+      {
+        "id": 3,
+        "question": "公司的工作时间是怎么安排的？",
+        "answerable": true,
+        "answer": "公司实行每周五天工作制，标准工作时间为 9:00-18:00，其中 12:00-13:30 为午餐及休息时间 [1]。员工可在 8:30-9:30 之间弹性到岗，到岗后开始计算工时 [1]。远程办公期间的工作时间与坐班一致，同样为 9:00-18:00 [4]。",
+        "latency": 1.53,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "第三章 考勤制度 > 3.1 工作时间",
+            "page": 1
+          },
+          {
+            "doc_name": "远程办公管理制度.txt",
+            "section_path": "三、工作规范",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答涵盖了标准答案中关于工作制、具体时间段及弹性到岗的所有关键信息，且补充内容不与标准答案矛盾。",
+        "citation_correct": true
+      },
+      {
+        "id": 4,
+        "question": "工作日加班怎么调休？",
+        "answerable": true,
+        "answer": "工作日加班按1:1比例调休 [1]。",
+        "latency": 0.8,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "第三章 考勤制度 > 3.2 加班与调休",
+            "page": 1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答准确复述了标准答案中关于工作日加班调休比例的核心信息，且未包含矛盾内容。",
+        "citation_correct": true
+      },
+      {
+        "id": 5,
+        "question": "员工年假有几天？",
+        "answerable": true,
+        "answer": "员工年假天数根据入职年限确定：入职满1年不满3年的，每年享有5天带薪年假；满3年不满5年的，每年10天；满5年及以上的，每年15天 [1]。",
+        "latency": 0.84,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "第四章 请假制度 > 4.1 年假",
+            "page": 1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答中关于年假天数的关键信息与标准答案完全一致，额外补充的表述不影响判断。",
+        "citation_correct": true
+      },
+      {
+        "id": 6,
+        "question": "病假期间工资怎么算？",
+        "answerable": true,
+        "answer": "病假期间工资按本人日工资的60%发放 [1]。",
+        "latency": 0.57,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "第四章 请假制度 > 4.2 病假",
+            "page": 1
+          }
+        ],
+        "verdict": "partial",
+        "judge_reason": "模型回答遗漏了标准答案中关于病假需提供二级及以上医院诊断证明的关键信息。",
+        "citation_correct": true
+      },
+      {
+        "id": 7,
+        "question": "事假是带薪的吗？",
+        "answerable": true,
+        "answer": "事假不是带薪的。根据资料，事假为无薪假 [2]。",
+        "latency": 0.63,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "第四章 请假制度 > 4.3 事假",
+            "page": 2
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答明确指出事假不是带薪的（即无薪），与标准答案核心信息一致。",
+        "citation_correct": true
+      },
+      {
+        "id": 8,
+        "question": "出差的住宿和餐补标准是多少？",
+        "answerable": true,
+        "answer": "根据参考资料，出差住宿标准为：一线城市（北京、上海、广州、深圳）每晚 400 元，其他城市每晚 300 元 [1]；出差餐补为每天 100 元 [1]。",
+        "latency": 0.93,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "第六章 费用报销 > 6.2 差旅标准",
+            "page": 2
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答中的住宿和餐补标准与标准答案完全一致，关键信息无遗漏且无矛盾。",
+        "citation_correct": true
+      },
+      {
+        "id": 9,
+        "question": "费用报销的审批流程是怎样的？多久到账？",
+        "answerable": true,
+        "answer": "费用报销的审批流程为：直属上级审批、财务审核、分管总监审批三级 [1]。报销款在审批通过后5个工作日内到账 [1]。",
+        "latency": 0.75,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "第六章 费用报销 > 6.1 报销时限与流程",
+            "page": 2
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答完整涵盖了审批流程（直属上级、财务、分管总监）和到账时间（5个工作日）两个关键信息，与标准答案一致。",
+        "citation_correct": true
+      },
+      {
+        "id": 10,
+        "question": "转正员工辞职需要提前多久提出？",
+        "answerable": true,
+        "answer": "转正员工辞职需提前30天提交书面申请 [1]。",
+        "latency": 0.48,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "第八章 离职流程",
+            "page": 3
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答准确包含了转正员工辞职需提前30天提出这一关键信息，与标准答案一致。",
+        "citation_correct": true
+      },
+      {
+        "id": 11,
+        "question": "云滴C3咖啡机的额定功率是多少？",
+        "answerable": true,
+        "answer": "云滴C3咖啡机的额定功率为1350W [1]。",
+        "latency": 0.53,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "云滴咖啡机C3产品说明书.docx",
+            "section_path": "规格参数",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答的额定功率数值与标准答案完全一致。",
+        "citation_correct": true
+      },
+      {
+        "id": 12,
+        "question": "C3咖啡机的水箱容量是多大？",
+        "answerable": true,
+        "answer": "C3咖啡机的水箱容量为1.5L [5]。",
+        "latency": 0.6,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "云滴咖啡机C3产品说明书.docx",
+            "section_path": "规格参数",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答的水箱容量1.5L与标准答案完全一致。",
+        "citation_correct": true
+      },
+      {
+        "id": 13,
+        "question": "咖啡机研磨有几档？哪一档最细？",
+        "answerable": true,
+        "answer": "云滴咖啡机C3的研磨档位共9档，其中1档最细 [5]。",
+        "latency": 0.65,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "云滴咖啡机C3产品说明书.docx",
+            "section_path": "规格参数",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答准确指出了研磨共9档且1档最细，与标准答案关键信息完全一致。",
+        "citation_correct": true
+      },
+      {
+        "id": 14,
+        "question": "C3咖啡机的泵压是多少？",
+        "answerable": true,
+        "answer": "C3咖啡机的泵压为20bar，采用意大利进口高压泵 [1]。",
+        "latency": 0.62,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "云滴咖啡机C3产品说明书.docx",
+            "section_path": "规格参数",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答明确指出了C3咖啡机的泵压为20bar，与标准答案一致。",
+        "citation_correct": true
+      },
+      {
+        "id": 15,
+        "question": "咖啡机多久需要除垢一次？怎么操作？",
+        "answerable": true,
+        "answer": "建议每 2 个月进行一次除垢 [1]。操作方法是：长按除垢键 3 秒进入除垢模式，使用食品级柠檬酸按说明书比例溶解后执行 [1]。若显示屏出现 E3 代码，也代表需要尽快执行除垢程序 [3]。",
+        "latency": 0.93,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "云滴咖啡机C3产品说明书.docx",
+            "section_path": "清洁与保养",
+            "page": -1
+          },
+          {
+            "doc_name": "云滴咖啡机C3产品说明书.docx",
+            "section_path": "故障排除",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答完整涵盖了除垢频率和操作步骤等关键信息，与标准答案一致，且补充的 E3 代码细节未与标准答案矛盾。",
+        "citation_correct": true
+      },
+      {
+        "id": 16,
+        "question": "整机和研磨电机分别保修多久？",
+        "answerable": true,
+        "answer": "整机自购买之日起保修2年，研磨电机保修3年 [1]。",
+        "latency": 0.52,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "云滴咖啡机C3产品说明书.docx",
+            "section_path": "保修与售后",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答中关于整机和研磨电机的保修时长与标准答案完全一致。",
+        "citation_correct": true
+      },
+      {
+        "id": 17,
+        "question": "咖啡口感过淡应该怎么调整？",
+        "answerable": true,
+        "answer": "若咖啡口感过淡，可将研磨档位调小（更细），或增加粉量设置 [1]。",
+        "latency": 0.72,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "云滴咖啡机C3产品说明书.docx",
+            "section_path": "故障排除",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答的核心调整方案（调细研磨或增加粉量）与标准答案完全一致。",
+        "citation_correct": true
+      },
+      {
+        "id": 18,
+        "question": "每周最多可以申请几天远程办公？",
+        "answerable": true,
+        "answer": "员工每周申请远程办公不得超过2天 [1]。",
+        "latency": 0.52,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "远程办公管理制度.txt",
+            "section_path": "一、总则",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答的核心信息与标准答案完全一致，均指出每周最多申请2天远程办公。",
+        "citation_correct": true
+      },
+      {
+        "id": 19,
+        "question": "远程办公需要如何申请？",
+        "answerable": true,
+        "answer": "远程办公需提前 1 个工作日在 OA 系统提交申请，经直属上级审批后生效 [1]。",
+        "latency": 0.61,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "远程办公管理制度.txt",
+            "section_path": "一、总则",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答的关键信息与标准答案完全一致，仅末尾多了一个引用标记，不影响内容正确性。",
+        "citation_correct": true
+      },
+      {
+        "id": 20,
+        "question": "远程办公访问公司系统有什么安全要求？",
+        "answerable": true,
+        "answer": "远程办公访问公司系统的安全要求如下：\n\n1.  **必须使用公司VPN**：远程办公期间使用公司配发的笔记本电脑办公，必须通过公司VPN访问内部系统 [1]。\n2.  **禁止公共Wi-Fi**：禁止在公共Wi-Fi环境下访问内网核心业务系统 [1]。\n3.  **视频会议背景设置**：视频会议需开启虚拟背景，防止家庭环境信息泄露 [1]。\n4.  **数据上传限制**：员工不得将公司代码、文档、客户数据上传至个人网盘或社交平台 [5]。",
+        "latency": 1.33,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "远程办公管理制度.txt",
+            "section_path": "二、设备与信息安全",
+            "page": -1
+          },
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "第七章 信息安全与保密 > 7.2 保密义务",
+            "page": 3
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答完整包含了标准答案中关于必须使用VPN和禁止公共Wi-Fi的核心安全要求，且补充内容不与标准答案矛盾。",
+        "citation_correct": true
+      },
+      {
+        "id": 21,
+        "question": "远程办公有补贴吗？",
+        "answerable": true,
+        "answer": "是的，远程办公有补贴。公司按每月100元标准发放远程办公补贴，用于补偿电费与网络费用，随工资发放 [1]。",
+        "latency": 0.81,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "远程办公管理制度.txt",
+            "section_path": "四、考勤与补贴",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答准确复述了标准答案中关于补贴金额、用途及发放方式的关键信息，且无矛盾内容。",
+        "citation_correct": true
+      },
+      {
+        "id": 22,
+        "question": "未经申请擅自远程办公会怎么处理？",
+        "answerable": true,
+        "answer": "未经申请擅自远程办公的，当天按事假处理；一个月内违规累计3次的，取消当月剩余远程办公资格，并通报部门负责人 [1]。",
+        "latency": 0.72,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "远程办公管理制度.txt",
+            "section_path": "五、违规处理",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答的关键信息与标准答案完全一致，仅末尾多了一个引用标记，不影响内容正确性。",
+        "citation_correct": true
+      },
+      {
+        "id": 23,
+        "question": "忘记OA系统密码怎么办？",
+        "answerable": true,
+        "answer": "忘记OA系统密码，可在OA登录页点击\"忘记密码\"，通过绑定手机号自助重置；也可携带工牌到3楼IT服务台，由管理员人工重置 [1]。",
+        "latency": 0.79,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "IT服务常见问题FAQ.txt",
+            "section_path": "Q1：忘记OA系统密码怎么办？",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答完整包含了标准答案中的两种重置方式（手机号自助和人工重置），且补充的登录页操作细节与标准答案不矛盾。",
+        "citation_correct": true
+      },
+      {
+        "id": 24,
+        "question": "如何申请VPN权限？",
+        "answerable": true,
+        "answer": "在OA系统提交\"VPN开通申请”，注明使用事由，经部门负责人审批后，IT部门将在1个工作日内开通 [1]。",
+        "latency": 0.72,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "IT服务常见问题FAQ.txt",
+            "section_path": "Q2：如何申请VPN权限？",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答的核心流程、审批环节及开通时效与标准答案完全一致，末尾的引用标记不影响关键信息的准确性。",
+        "citation_correct": true
+      },
+      {
+        "id": 25,
+        "question": "办公Wi-Fi密码在哪里查看？",
+        "answerable": true,
+        "answer": "办公 Wi-Fi 密码可在登录 OA 首页的\"IT 服务公告”栏目查看最新一期内容 [1]。该密码每季度更换一次 [1]。",
+        "latency": 0.71,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "IT服务常见问题FAQ.txt",
+            "section_path": "Q3：办公Wi-Fi密码在哪里查看？",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答准确包含了查看位置（IT 服务公告）和更换频率（每季度一次）两个关键信息，与标准答案一致。",
+        "citation_correct": true
+      },
+      {
+        "id": 26,
+        "question": "门禁卡丢失如何补办？",
+        "answerable": true,
+        "answer": "携带工牌到一楼行政前台办理补办，工本费50元，从当月工资中代扣，旧卡即时挂失失效 [1]。",
+        "latency": 0.84,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "IT服务常见问题FAQ.txt",
+            "section_path": "Q5：门禁卡丢失如何补办？",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答涵盖了补办地点、费用及挂失等所有关键信息，且补充的扣款方式与标准答案不矛盾。",
+        "citation_correct": true
+      },
+      {
+        "id": 27,
+        "question": "公司提供住房补贴吗？",
+        "answerable": false,
+        "answer": "根据知识库中的资料，未找到相关内容。",
+        "latency": 0.46,
+        "has_citation": false,
+        "cited": [],
+        "verdict": "correct",
+        "judge_reason": "模型准确指出知识库中未找到关于住房补贴的相关信息，符合评判标准。",
+        "citation_correct": false
+      },
+      {
+        "id": 28,
+        "question": "C3咖啡机支持手机App远程控制吗？",
+        "answerable": false,
+        "answer": "根据知识库中的资料，未找到相关内容。",
+        "latency": 0.54,
+        "has_citation": false,
+        "cited": [],
+        "verdict": "correct",
+        "judge_reason": "模型准确指出知识库中未找到关于C3咖啡机是否支持手机App远程控制的相关信息。",
+        "citation_correct": false
+      },
+      {
+        "id": 29,
+        "question": "远程办公期间可以选择在咖啡馆办公吗？",
+        "answerable": false,
+        "answer": "根据知识库资料，**未找到相关内容**。\n\n参考资料中仅规定了远程办公需使用公司配发设备并通过VPN访问系统、禁止在公共Wi-Fi环境下访问内网核心业务系统 [2]，但未明确说明是否允许在咖啡馆等外部场所进行办公。",
+        "latency": 1.05,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "远程办公管理制度.txt",
+            "section_path": "二、设备与信息安全",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型准确指出知识库中未包含关于是否允许在咖啡馆办公的具体规定。",
+        "citation_correct": false
+      },
+      {
+        "id": 30,
+        "question": "IT服务台的QQ群号是多少？",
+        "answerable": false,
+        "answer": "根据知识库中的资料，未找到相关内容。",
+        "latency": 0.54,
+        "has_citation": false,
+        "cited": [],
+        "verdict": "correct",
+        "judge_reason": "模型明确说明知识库中未找到相关内容，符合评判标准。",
+        "citation_correct": false
+      }
+    ],
+    "retrieval_detail": [
+      {
+        "id": 1,
+        "question": "试用期一般是多长时间？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "星辰科技员工手册.pdf · 第二章 入职与试用期 > 2.2 试用期（第1页）",
+          "星辰科技员工手册.pdf · 第四章 请假制度 > 4.1 年假（第1页）",
+          "星辰科技员工手册.pdf · 第三章 考勤制度 > 3.1 工作时间（第1页）",
+          "星辰科技员工手册.pdf · 第二章 入职与试用期 > 2.1 入职材料（第1页）",
+          "星辰科技员工手册.pdf · 第四章 请假制度 > 4.3 事假（第2页）"
+        ]
+      },
+      {
+        "id": 2,
+        "question": "新员工办理入职需要携带哪些材料？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "星辰科技员工手册.pdf · 第二章 入职与试用期 > 2.1 入职材料（第1页）",
+          "IT服务常见问题FAQ.txt · Q5：门禁卡丢失如何补办？",
+          "星辰科技员工手册.pdf · 第八章 离职流程（第3页）",
+          "IT服务常见问题FAQ.txt · Q6：如何申请安装新软件？",
+          "星辰科技员工手册.pdf · 星辰科技员工手册（第1页）"
+        ]
+      },
+      {
+        "id": 3,
+        "question": "公司的工作时间是怎么安排的？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "星辰科技员工手册.pdf · 第三章 考勤制度 > 3.1 工作时间（第1页）",
+          "星辰科技员工手册.pdf · 第三章 考勤制度 > 3.2 加班与调休（第1页）",
+          "星辰科技员工手册.pdf · 第四章 请假制度 > 4.3 事假（第2页）",
+          "远程办公管理制度.txt · 三、工作规范",
+          "远程办公管理制度.txt · 一、总则"
+        ]
+      },
+      {
+        "id": 4,
+        "question": "工作日加班怎么调休？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "星辰科技员工手册.pdf · 第三章 考勤制度 > 3.2 加班与调休（第1页）",
+          "星辰科技员工手册.pdf · 第三章 考勤制度 > 3.1 工作时间（第1页）",
+          "星辰科技员工手册.pdf · 第四章 请假制度 > 4.3 事假（第2页）",
+          "星辰科技员工手册.pdf · 第五章 薪酬与福利 > 5.1 发薪日（第2页）",
+          "星辰科技员工手册.pdf · 第四章 请假制度 > 4.1 年假（第1页）"
+        ]
+      },
+      {
+        "id": 5,
+        "question": "员工年假有几天？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "星辰科技员工手册.pdf · 第四章 请假制度 > 4.1 年假（第1页）",
+          "星辰科技员工手册.pdf · 第五章 薪酬与福利 > 5.4 年终奖（第2页）",
+          "星辰科技员工手册.pdf · 第四章 请假制度 > 4.3 事假（第2页）",
+          "星辰科技员工手册.pdf · 第四章 请假制度 > 4.2 病假（第1页）",
+          "星辰科技员工手册.pdf · 第五章 薪酬与福利 > 5.1 发薪日（第2页）"
+        ]
+      },
+      {
+        "id": 6,
+        "question": "病假期间工资怎么算？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "星辰科技员工手册.pdf · 第四章 请假制度 > 4.2 病假（第1页）",
+          "星辰科技员工手册.pdf · 第四章 请假制度 > 4.1 年假（第1页）",
+          "星辰科技员工手册.pdf · 第四章 请假制度 > 4.4 婚假、产假与丧假（第2页）",
+          "星辰科技员工手册.pdf · 第五章 薪酬与福利 > 5.4 年终奖（第2页）",
+          "星辰科技员工手册.pdf · 第四章 请假制度 > 4.3 事假（第2页）"
+        ]
+      },
+      {
+        "id": 7,
+        "question": "事假是带薪的吗？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": false,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 2,
+        "retrieved": [
+          "星辰科技员工手册.pdf · 第四章 请假制度 > 4.1 年假（第1页）",
+          "星辰科技员工手册.pdf · 第四章 请假制度 > 4.3 事假（第2页）",
+          "星辰科技员工手册.pdf · 第四章 请假制度 > 4.2 病假（第1页）",
+          "星辰科技员工手册.pdf · 第三章 考勤制度 > 3.2 加班与调休（第1页）",
+          "星辰科技员工手册.pdf · 第五章 薪酬与福利 > 5.1 发薪日（第2页）"
+        ]
+      },
+      {
+        "id": 8,
+        "question": "出差的住宿和餐补标准是多少？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "星辰科技员工手册.pdf · 第六章 费用报销 > 6.2 差旅标准（第2页）",
+          "星辰科技员工手册.pdf · 第五章 薪酬与福利 > 5.3 补充福利（第2页）",
+          "远程办公管理制度.txt · 四、考勤与补贴",
+          "星辰科技员工手册.pdf · 第四章 请假制度 > 4.2 病假（第1页）",
+          "星辰科技员工手册.pdf · 第五章 薪酬与福利 > 5.2 社保与公积金（第2页）"
+        ]
+      },
+      {
+        "id": 9,
+        "question": "费用报销的审批流程是怎样的？多久到账？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "星辰科技员工手册.pdf · 第六章 费用报销 > 6.1 报销时限与流程（第2页）",
+          "IT服务常见问题FAQ.txt · Q6：如何申请安装新软件？",
+          "星辰科技员工手册.pdf · 第六章 费用报销 > 6.3 发票要求（第2页）",
+          "星辰科技员工手册.pdf · 第六章 费用报销 > 6.2 差旅标准（第2页）",
+          "IT服务常见问题FAQ.txt · Q2：如何申请VPN权限？"
+        ]
+      },
+      {
+        "id": 10,
+        "question": "转正员工辞职需要提前多久提出？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "星辰科技员工手册.pdf · 第八章 离职流程（第3页）",
+          "星辰科技员工手册.pdf · 第二章 入职与试用期 > 2.1 入职材料（第1页）",
+          "星辰科技员工手册.pdf · 第二章 入职与试用期 > 2.2 试用期（第1页）",
+          "远程办公管理制度.txt · 一、总则",
+          "星辰科技员工手册.pdf · 第四章 请假制度 > 4.3 事假（第2页）"
+        ]
+      },
+      {
+        "id": 11,
+        "question": "云滴C3咖啡机的额定功率是多少？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "云滴咖啡机C3产品说明书.docx · 规格参数",
+          "云滴咖啡机C3产品说明书.docx · 产品概述",
+          "云滴咖啡机C3产品说明书.docx",
+          "云滴咖啡机C3产品说明书.docx · 快速上手 > 日常制作",
+          "云滴咖啡机C3产品说明书.docx · 快速上手 > 首次使用"
+        ]
+      },
+      {
+        "id": 12,
+        "question": "C3咖啡机的水箱容量是多大？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": false,
+        "doc_hit@3": true,
+        "ans_hit@3": false,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 5,
+        "retrieved": [
+          "云滴咖啡机C3产品说明书.docx · 快速上手 > 首次使用",
+          "云滴咖啡机C3产品说明书.docx · 故障排除",
+          "云滴咖啡机C3产品说明书.docx · 快速上手 > 日常制作",
+          "云滴咖啡机C3产品说明书.docx · 清洁与保养",
+          "云滴咖啡机C3产品说明书.docx · 规格参数"
+        ]
+      },
+      {
+        "id": 13,
+        "question": "咖啡机研磨有几档？哪一档最细？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": false,
+        "doc_hit@3": true,
+        "ans_hit@3": false,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 5,
+        "retrieved": [
+          "云滴咖啡机C3产品说明书.docx · 故障排除",
+          "云滴咖啡机C3产品说明书.docx · 快速上手 > 首次使用",
+          "云滴咖啡机C3产品说明书.docx · 快速上手 > 日常制作",
+          "云滴咖啡机C3产品说明书.docx · 产品概述",
+          "云滴咖啡机C3产品说明书.docx · 规格参数"
+        ]
+      },
+      {
+        "id": 14,
+        "question": "C3咖啡机的泵压是多少？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "云滴咖啡机C3产品说明书.docx · 规格参数",
+          "云滴咖啡机C3产品说明书.docx · 产品概述",
+          "云滴咖啡机C3产品说明书.docx · 故障排除",
+          "云滴咖啡机C3产品说明书.docx · 快速上手 > 日常制作",
+          "云滴咖啡机C3产品说明书.docx · 快速上手 > 首次使用"
+        ]
+      },
+      {
+        "id": 15,
+        "question": "咖啡机多久需要除垢一次？怎么操作？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "云滴咖啡机C3产品说明书.docx · 清洁与保养",
+          "云滴咖啡机C3产品说明书.docx · 快速上手 > 首次使用",
+          "云滴咖啡机C3产品说明书.docx · 故障排除",
+          "云滴咖啡机C3产品说明书.docx · 快速上手 > 日常制作",
+          "云滴咖啡机C3产品说明书.docx · 产品概述"
+        ]
+      },
+      {
+        "id": 16,
+        "question": "整机和研磨电机分别保修多久？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "云滴咖啡机C3产品说明书.docx · 保修与售后",
+          "云滴咖啡机C3产品说明书.docx · 故障排除",
+          "云滴咖啡机C3产品说明书.docx · 规格参数",
+          "云滴咖啡机C3产品说明书.docx · 清洁与保养",
+          "IT服务常见问题FAQ.txt · Q4：电脑出现硬件故障如何报修？"
+        ]
+      },
+      {
+        "id": 17,
+        "question": "咖啡口感过淡应该怎么调整？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "云滴咖啡机C3产品说明书.docx · 故障排除",
+          "云滴咖啡机C3产品说明书.docx · 快速上手 > 首次使用",
+          "云滴咖啡机C3产品说明书.docx · 快速上手 > 日常制作",
+          "云滴咖啡机C3产品说明书.docx · 清洁与保养",
+          "云滴咖啡机C3产品说明书.docx · 产品概述"
+        ]
+      },
+      {
+        "id": 18,
+        "question": "每周最多可以申请几天远程办公？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "远程办公管理制度.txt · 一、总则",
+          "远程办公管理制度.txt · 二、设备与信息安全",
+          "远程办公管理制度.txt · 五、违规处理",
+          "远程办公管理制度.txt · 四、考勤与补贴",
+          "远程办公管理制度.txt · 三、工作规范"
+        ]
+      },
+      {
+        "id": 19,
+        "question": "远程办公需要如何申请？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "远程办公管理制度.txt · 一、总则",
+          "IT服务常见问题FAQ.txt · Q6：如何申请安装新软件？",
+          "远程办公管理制度.txt · 二、设备与信息安全",
+          "远程办公管理制度.txt",
+          "IT服务常见问题FAQ.txt · Q2：如何申请VPN权限？"
+        ]
+      },
+      {
+        "id": 20,
+        "question": "远程办公访问公司系统有什么安全要求？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "远程办公管理制度.txt · 二、设备与信息安全",
+          "远程办公管理制度.txt · 一、总则",
+          "远程办公管理制度.txt",
+          "远程办公管理制度.txt · 三、工作规范",
+          "星辰科技员工手册.pdf · 第七章 信息安全与保密 > 7.2 保密义务（第3页）"
+        ]
+      },
+      {
+        "id": 21,
+        "question": "远程办公有补贴吗？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "远程办公管理制度.txt · 四、考勤与补贴",
+          "远程办公管理制度.txt · 一、总则",
+          "远程办公管理制度.txt · 五、违规处理",
+          "星辰科技员工手册.pdf · 第五章 薪酬与福利 > 5.3 补充福利（第2页）",
+          "星辰科技员工手册.pdf · 第六章 费用报销 > 6.2 差旅标准（第2页）"
+        ]
+      },
+      {
+        "id": 22,
+        "question": "未经申请擅自远程办公会怎么处理？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "远程办公管理制度.txt · 五、违规处理",
+          "远程办公管理制度.txt · 一、总则",
+          "远程办公管理制度.txt · 二、设备与信息安全",
+          "IT服务常见问题FAQ.txt · Q6：如何申请安装新软件？",
+          "IT服务常见问题FAQ.txt · Q2：如何申请VPN权限？"
+        ]
+      },
+      {
+        "id": 23,
+        "question": "忘记OA系统密码怎么办？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "IT服务常见问题FAQ.txt · Q1：忘记OA系统密码怎么办？",
+          "星辰科技员工手册.pdf · 第七章 信息安全与保密 > 7.1 账号与设备安全（第3页）",
+          "IT服务常见问题FAQ.txt · Q3：办公Wi-Fi密码在哪里查看？",
+          "IT服务常见问题FAQ.txt · Q5：门禁卡丢失如何补办？",
+          "IT服务常见问题FAQ.txt · Q2：如何申请VPN权限？"
+        ]
+      },
+      {
+        "id": 24,
+        "question": "如何申请VPN权限？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "IT服务常见问题FAQ.txt · Q2：如何申请VPN权限？",
+          "IT服务常见问题FAQ.txt · Q6：如何申请安装新软件？",
+          "IT服务常见问题FAQ.txt · Q3：办公Wi-Fi密码在哪里查看？",
+          "远程办公管理制度.txt · 一、总则",
+          "IT服务常见问题FAQ.txt · Q1：忘记OA系统密码怎么办？"
+        ]
+      },
+      {
+        "id": 25,
+        "question": "办公Wi-Fi密码在哪里查看？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "IT服务常见问题FAQ.txt · Q3：办公Wi-Fi密码在哪里查看？",
+          "星辰科技员工手册.pdf · 第七章 信息安全与保密 > 7.1 账号与设备安全（第3页）",
+          "远程办公管理制度.txt · 二、设备与信息安全",
+          "IT服务常见问题FAQ.txt · Q1：忘记OA系统密码怎么办？",
+          "IT服务常见问题FAQ.txt · Q2：如何申请VPN权限？"
+        ]
+      },
+      {
+        "id": 26,
+        "question": "门禁卡丢失如何补办？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "IT服务常见问题FAQ.txt · Q5：门禁卡丢失如何补办？",
+          "IT服务常见问题FAQ.txt · Q1：忘记OA系统密码怎么办？",
+          "IT服务常见问题FAQ.txt · Q3：办公Wi-Fi密码在哪里查看？",
+          "星辰科技员工手册.pdf · 第八章 离职流程（第3页）",
+          "星辰科技员工手册.pdf · 第七章 信息安全与保密 > 7.1 账号与设备安全（第3页）"
+        ]
+      },
+      {
+        "id": 27,
+        "question": "公司提供住房补贴吗？",
+        "answerable": false
+      },
+      {
+        "id": 28,
+        "question": "C3咖啡机支持手机App远程控制吗？",
+        "answerable": false
+      },
+      {
+        "id": 29,
+        "question": "远程办公期间可以选择在咖啡馆办公吗？",
+        "answerable": false
+      },
+      {
+        "id": 30,
+        "question": "IT服务台的QQ群号是多少？",
+        "answerable": false
+      }
+    ]
+  },
+  "hybrid": {
+    "retrieval": {
+      "n": 26,
+      "answer_recall@1": 0.8462,
+      "answer_recall@3": 1.0,
+      "answer_recall@5": 1.0,
+      "doc_recall@5": 1.0,
+      "mrr": 0.9231
+    },
+    "generation": {
+      "n_answerable": 26,
+      "n_unanswerable": 4,
+      "accuracy": 0.9615,
+      "accuracy_soft": 0.9808,
+      "n_partial": 1,
+      "n_wrong": 0,
+      "n_error": 0,
+      "citation_rate": 1.0,
+      "citation_accuracy": 1.0,
+      "avg_latency": 0.79,
+      "refusal_correct": 0.75
+    },
+    "generation_detail": [
+      {
+        "id": 1,
+        "question": "试用期一般是多长时间？",
+        "answerable": true,
+        "answer": "试用期一般为3个月；管理岗位及核心技术岗位经审批可延长至6个月 [1]。",
+        "latency": 0.59,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "第二章 入职与试用期 > 2.2 试用期",
+            "page": 1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答的关键信息与标准答案完全一致，仅末尾多了一个引用标记，不影响内容正确性。",
+        "citation_correct": true
+      },
+      {
+        "id": 2,
+        "question": "新员工办理入职需要携带哪些材料？",
+        "answerable": true,
+        "answer": "新员工办理入职手续时，需携带以下材料：身份证原件及复印件、学历学位证书原件、上一家单位的离职证明、三个月内的体检报告、本人银行卡（用于工资发放）[1]。",
+        "latency": 1.36,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "第二章 入职与试用期 > 2.1 入职材料",
+            "page": 1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答完整涵盖了标准答案中列出的所有关键材料，且补充的用途说明与标准答案不矛盾。",
+        "citation_correct": true
+      },
+      {
+        "id": 3,
+        "question": "公司的工作时间是怎么安排的？",
+        "answerable": true,
+        "answer": "公司实行每周五天工作制，工作时间为 9:00-18:00，其中 12:00-13:30 为午餐及休息时间 [1]。员工可在 8:30-9:30 之间弹性到岗，到岗后开始计算工时 [1]。远程办公期间工作时间与坐班一致，仍为 9:00-18:00 [2]。",
+        "latency": 1.46,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "第三章 考勤制度 > 3.1 工作时间",
+            "page": 1
+          },
+          {
+            "doc_name": "远程办公管理制度.txt",
+            "section_path": "三、工作规范",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答完整涵盖了标准答案中关于工作制、具体时段及弹性到岗的关键信息，且补充内容不与标准答案矛盾。",
+        "citation_correct": true
+      },
+      {
+        "id": 4,
+        "question": "工作日加班怎么调休？",
+        "answerable": true,
+        "answer": "工作日加班按1:1比例调休 [1]。",
+        "latency": 1.17,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "第三章 考勤制度 > 3.2 加班与调休",
+            "page": 1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答准确涵盖了问题核心（工作日加班调休比例），且未包含与标准答案矛盾的信息。",
+        "citation_correct": true
+      },
+      {
+        "id": 5,
+        "question": "员工年假有几天？",
+        "answerable": true,
+        "answer": "员工年假天数根据入职年限确定：入职满1年不满3年的，每年享有5天带薪年假；满3年不满5年的，每年10天；满5年及以上的，每年15天 [1]。年假当年有效，最多可顺延至次年3月底 [1]。",
+        "latency": 1.01,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "第四章 请假制度 > 4.1 年假",
+            "page": 1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答中关于年假天数的关键信息与标准答案完全一致，额外补充的顺延规则与标准答案不矛盾。",
+        "citation_correct": true
+      },
+      {
+        "id": 6,
+        "question": "病假期间工资怎么算？",
+        "answerable": true,
+        "answer": "病假期间工资按本人日工资的60%发放 [1]。",
+        "latency": 0.47,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "第四章 请假制度 > 4.2 病假",
+            "page": 1
+          }
+        ],
+        "verdict": "partial",
+        "judge_reason": "模型回答遗漏了标准答案中关于病假需提供二级及以上医院诊断证明的关键信息。",
+        "citation_correct": true
+      },
+      {
+        "id": 7,
+        "question": "事假是带薪的吗？",
+        "answerable": true,
+        "answer": "事假为无薪假 [1]。",
+        "latency": 0.46,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "第四章 请假制度 > 4.3 事假",
+            "page": 2
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答明确指出事假为无薪假，与标准答案中关于事假性质的关键信息一致。",
+        "citation_correct": true
+      },
+      {
+        "id": 8,
+        "question": "出差的住宿和餐补标准是多少？",
+        "answerable": true,
+        "answer": "出差住宿标准为：一线城市（北京、上海、广州、深圳）每晚400元，其他城市每晚300元 [1]；出差餐补为每天100元 [1]。",
+        "latency": 0.78,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "第六章 费用报销 > 6.2 差旅标准",
+            "page": 2
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答中的住宿和餐补标准与标准答案完全一致，关键信息无遗漏且无矛盾。",
+        "citation_correct": true
+      },
+      {
+        "id": 9,
+        "question": "费用报销的审批流程是怎样的？多久到账？",
+        "answerable": true,
+        "answer": "费用报销流程为：直属上级审批、财务审核、分管总监审批三级 [1]。报销款在审批通过后5个工作日内到账 [1]。",
+        "latency": 0.84,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "第六章 费用报销 > 6.1 报销时限与流程",
+            "page": 2
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答完整涵盖了审批流程（直属上级、财务、分管总监）和到账时间（5个工作日）两个关键信息，与标准答案一致。",
+        "citation_correct": true
+      },
+      {
+        "id": 10,
+        "question": "转正员工辞职需要提前多久提出？",
+        "answerable": true,
+        "answer": "转正员工辞职需提前 30 天提交书面申请 [1]。",
+        "latency": 0.49,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "第八章 离职流程",
+            "page": 3
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答准确指出了转正员工辞职需提前30天提出这一关键信息，与标准答案一致。",
+        "citation_correct": true
+      },
+      {
+        "id": 11,
+        "question": "云滴C3咖啡机的额定功率是多少？",
+        "answerable": true,
+        "answer": "云滴C3咖啡机的额定功率为1350W [2]。",
+        "latency": 0.53,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "云滴咖啡机C3产品说明书.docx",
+            "section_path": "规格参数",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答的额定功率数值与标准答案完全一致。",
+        "citation_correct": true
+      },
+      {
+        "id": 12,
+        "question": "C3咖啡机的水箱容量是多大？",
+        "answerable": true,
+        "answer": "C3咖啡机的水箱容量为1.5L [2]。",
+        "latency": 0.52,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "云滴咖啡机C3产品说明书.docx",
+            "section_path": "规格参数",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答的水箱容量1.5L与标准答案完全一致。",
+        "citation_correct": true
+      },
+      {
+        "id": 13,
+        "question": "咖啡机研磨有几档？哪一档最细？",
+        "answerable": true,
+        "answer": "云滴咖啡机C3的研磨档位共9档，其中1档最细 [2]。",
+        "latency": 0.61,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "云滴咖啡机C3产品说明书.docx",
+            "section_path": "规格参数",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答准确指出了研磨共9档且1档最细，与标准答案关键信息完全一致。",
+        "citation_correct": true
+      },
+      {
+        "id": 14,
+        "question": "C3咖啡机的泵压是多少？",
+        "answerable": true,
+        "answer": "C3咖啡机的泵压为20bar，采用意大利进口高压泵 [1][2]。",
+        "latency": 0.7,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "云滴咖啡机C3产品说明书.docx",
+            "section_path": "产品概述",
+            "page": -1
+          },
+          {
+            "doc_name": "云滴咖啡机C3产品说明书.docx",
+            "section_path": "规格参数",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答明确指出泵压为20bar，与标准答案一致。",
+        "citation_correct": true
+      },
+      {
+        "id": 15,
+        "question": "咖啡机多久需要除垢一次？怎么操作？",
+        "answerable": true,
+        "answer": "建议每 2 个月进行一次除垢 [1]。操作方法是：长按除垢键 3 秒进入除垢模式，使用食品级柠檬酸按说明书比例溶解后执行 [1]。若显示屏出现 E3 提示，也需尽快执行除垢程序 [2]。",
+        "latency": 1.14,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "云滴咖啡机C3产品说明书.docx",
+            "section_path": "清洁与保养",
+            "page": -1
+          },
+          {
+            "doc_name": "云滴咖啡机C3产品说明书.docx",
+            "section_path": "故障排除",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答完整涵盖了除垢频率和操作步骤等关键信息，且补充的E3提示内容与标准答案不矛盾。",
+        "citation_correct": true
+      },
+      {
+        "id": 16,
+        "question": "整机和研磨电机分别保修多久？",
+        "answerable": true,
+        "answer": "整机自购买之日起保修2年，研磨电机保修3年 [1]。",
+        "latency": 0.66,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "云滴咖啡机C3产品说明书.docx",
+            "section_path": "保修与售后",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答中关于整机和研磨电机的保修时长与标准答案完全一致。",
+        "citation_correct": true
+      },
+      {
+        "id": 17,
+        "question": "咖啡口感过淡应该怎么调整？",
+        "answerable": true,
+        "answer": "若咖啡口感过淡，可将研磨档位调小（更细），或增加粉量设置 [1]。",
+        "latency": 0.64,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "云滴咖啡机C3产品说明书.docx",
+            "section_path": "故障排除",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答的核心调整方案（调细研磨或增加粉量）与标准答案完全一致。",
+        "citation_correct": true
+      },
+      {
+        "id": 18,
+        "question": "每周最多可以申请几天远程办公？",
+        "answerable": true,
+        "answer": "员工每周申请远程办公不得超过2天 [1]。",
+        "latency": 0.57,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "远程办公管理制度.txt",
+            "section_path": "一、总则",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答的核心信息与标准答案完全一致，均指出每周远程办公申请不得超过2天。",
+        "citation_correct": true
+      },
+      {
+        "id": 19,
+        "question": "远程办公需要如何申请？",
+        "answerable": true,
+        "answer": "远程办公需提前 1 个工作日在 OA 系统提交申请，经直属上级审批后生效 [1]。",
+        "latency": 0.57,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "远程办公管理制度.txt",
+            "section_path": "一、总则",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答的关键信息（提前1个工作日、OA系统提交、直属上级审批）与标准答案完全一致。",
+        "citation_correct": true
+      },
+      {
+        "id": 20,
+        "question": "远程办公访问公司系统有什么安全要求？",
+        "answerable": true,
+        "answer": "远程办公访问公司系统的安全要求如下：\n\n1.  **必须使用公司配发的笔记本电脑**进行办公 [1]。\n2.  **必须通过公司VPN访问内部系统**，禁止在公共Wi-Fi环境下访问内网核心业务系统 [1]。\n3.  **视频会议需开启虚拟背景**，以防止家庭环境信息泄露 [1]。\n4.  若办公设备遗失或被盗，须在**2小时内上报IT部门与直属上级** [1]。\n5.  办公电脑必须设置锁屏密码，离开工位需锁屏，系统自动锁屏时间为5分钟 [5]。\n6.  密码须包含大小写字母、数字与特殊字符，且每90天更换一次 [5]。",
+        "latency": 1.86,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "远程办公管理制度.txt",
+            "section_path": "二、设备与信息安全",
+            "page": -1
+          },
+          {
+            "doc_name": "星辰科技员工手册.pdf",
+            "section_path": "第七章 信息安全与保密 > 7.1 账号与设备安全",
+            "page": 3
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答完整包含了标准答案中关于VPN和公共Wi-Fi的关键安全要求，且补充内容未与标准答案冲突。",
+        "citation_correct": true
+      },
+      {
+        "id": 21,
+        "question": "远程办公有补贴吗？",
+        "answerable": true,
+        "answer": "有补贴。公司按每月100元标准发放远程办公补贴，用于补偿电费与网络费用，随工资发放 [1]。",
+        "latency": 0.6,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "远程办公管理制度.txt",
+            "section_path": "四、考勤与补贴",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答准确复述了标准答案中关于补贴金额、用途及发放方式的关键信息，且额外补充的引用标记不影响核心内容的一致性。",
+        "citation_correct": true
+      },
+      {
+        "id": 22,
+        "question": "未经申请擅自远程办公会怎么处理？",
+        "answerable": true,
+        "answer": "未经申请擅自远程办公的，当天按事假处理；一个月内违规累计 3 次的，取消当月剩余远程办公资格，并通报部门负责人 [1]。",
+        "latency": 0.72,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "远程办公管理制度.txt",
+            "section_path": "五、违规处理",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答的关键信息与标准答案完全一致，仅末尾多出一个无实质影响的引用标记。",
+        "citation_correct": true
+      },
+      {
+        "id": 23,
+        "question": "忘记OA系统密码怎么办？",
+        "answerable": true,
+        "answer": "忘记OA系统密码，可在OA登录页点击“忘记密码”，通过绑定手机号自助重置；也可携带工牌到3楼IT服务台，由管理员人工重置 [1]。",
+        "latency": 0.68,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "IT服务常见问题FAQ.txt",
+            "section_path": "Q1：忘记OA系统密码怎么办？",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答完整涵盖了标准答案中关于手机号自助重置和人工重置的关键信息，且补充的登录页操作细节与标准答案不矛盾。",
+        "citation_correct": true
+      },
+      {
+        "id": 24,
+        "question": "如何申请VPN权限？",
+        "answerable": true,
+        "answer": "在OA系统提交\"VPN开通申请”，注明使用事由，经部门负责人审批后，IT部门将在1个工作日内开通 [1]。",
+        "latency": 0.62,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "IT服务常见问题FAQ.txt",
+            "section_path": "Q2：如何申请VPN权限？",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答的核心流程（OA提交、注明事由、部门审批、IT开通时限）与标准答案完全一致，末尾的引用标记不影响内容正确性。",
+        "citation_correct": true
+      },
+      {
+        "id": 25,
+        "question": "办公Wi-Fi密码在哪里查看？",
+        "answerable": true,
+        "answer": "办公Wi-Fi密码可在登录OA首页后，于\"IT服务公告”栏目查看最新一期密码 [1]。该密码每季度更换一次 [1]。",
+        "latency": 0.7,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "IT服务常见问题FAQ.txt",
+            "section_path": "Q3：办公Wi-Fi密码在哪里查看？",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答准确涵盖了查看位置（IT服务公告）和更换频率（每季度一次）两个关键信息，与标准答案一致。",
+        "citation_correct": true
+      },
+      {
+        "id": 26,
+        "question": "门禁卡丢失如何补办？",
+        "answerable": true,
+        "answer": "携带工牌到一楼行政前台办理补办，工本费50元，从当月工资中代扣，旧卡即时挂失失效 [1]。",
+        "latency": 0.89,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "IT服务常见问题FAQ.txt",
+            "section_path": "Q5：门禁卡丢失如何补办？",
+            "page": -1
+          }
+        ],
+        "verdict": "correct",
+        "judge_reason": "模型回答涵盖了补办地点、费用及挂失等所有关键信息，且补充的扣款方式与标准答案不矛盾。",
+        "citation_correct": true
+      },
+      {
+        "id": 27,
+        "question": "公司提供住房补贴吗？",
+        "answerable": false,
+        "answer": "根据知识库中的资料，未找到相关内容。",
+        "latency": 0.52,
+        "has_citation": false,
+        "cited": [],
+        "verdict": "correct",
+        "judge_reason": "模型准确指出知识库中未找到关于住房补贴的相关信息，符合评判标准。",
+        "citation_correct": false
+      },
+      {
+        "id": 28,
+        "question": "C3咖啡机支持手机App远程控制吗？",
+        "answerable": false,
+        "answer": "根据知识库中的资料，未找到相关内容。",
+        "latency": 0.45,
+        "has_citation": false,
+        "cited": [],
+        "verdict": "correct",
+        "judge_reason": "模型准确指出知识库中未找到关于C3咖啡机是否支持手机App远程控制的相关信息。",
+        "citation_correct": false
+      },
+      {
+        "id": 29,
+        "question": "远程办公期间可以选择在咖啡馆办公吗？",
+        "answerable": false,
+        "answer": "根据知识库中的资料，远程办公期间**禁止在公共Wi-Fi环境下访问内网核心业务系统**[1]。\n\n由于咖啡馆通常属于公共环境且可能提供公共Wi-Fi，若需访问公司内网核心业务系统，则不能在咖啡馆办公；若仅进行不涉及内网访问的工作（如撰写文档、回复非敏感消息等），制度中未明确禁止，但必须确保不违反“禁止在公共Wi-Fi环境下访问内网核心业务系统”的规定 [1]。",
+        "latency": 1.53,
+        "has_citation": true,
+        "cited": [
+          {
+            "doc_name": "远程办公管理制度.txt",
+            "section_path": "二、设备与信息安全",
+            "page": -1
+          }
+        ],
+        "verdict": "wrong",
+        "judge_reason": "知识库中无相关内容，模型却编造了关于禁止在公共Wi-Fi访问内网的具体规定。",
+        "citation_correct": false
+      },
+      {
+        "id": 30,
+        "question": "IT服务台的QQ群号是多少？",
+        "answerable": false,
+        "answer": "根据知识库中的资料，未找到相关内容。",
+        "latency": 0.47,
+        "has_citation": false,
+        "cited": [],
+        "verdict": "correct",
+        "judge_reason": "模型明确表示知识库中未找到相关内容，符合评判标准。",
+        "citation_correct": false
+      }
+    ],
+    "retrieval_detail": [
+      {
+        "id": 1,
+        "question": "试用期一般是多长时间？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "星辰科技员工手册.pdf · 第二章 入职与试用期 > 2.2 试用期（第1页）",
+          "星辰科技员工手册.pdf · 第二章 入职与试用期 > 2.1 入职材料（第1页）",
+          "星辰科技员工手册.pdf · 第八章 离职流程（第3页）",
+          "星辰科技员工手册.pdf · 第四章 请假制度 > 4.1 年假（第1页）",
+          "云滴咖啡机C3产品说明书.docx · 产品概述"
+        ]
+      },
+      {
+        "id": 2,
+        "question": "新员工办理入职需要携带哪些材料？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "星辰科技员工手册.pdf · 第二章 入职与试用期 > 2.1 入职材料（第1页）",
+          "IT服务常见问题FAQ.txt · Q5：门禁卡丢失如何补办？",
+          "IT服务常见问题FAQ.txt · Q6：如何申请安装新软件？",
+          "星辰科技员工手册.pdf · 第二章 入职与试用期 > 2.2 试用期（第1页）",
+          "星辰科技员工手册.pdf · 第八章 离职流程（第3页）"
+        ]
+      },
+      {
+        "id": 3,
+        "question": "公司的工作时间是怎么安排的？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "星辰科技员工手册.pdf · 第三章 考勤制度 > 3.1 工作时间（第1页）",
+          "远程办公管理制度.txt · 三、工作规范",
+          "星辰科技员工手册.pdf · 第五章 薪酬与福利 > 5.1 发薪日（第2页）",
+          "星辰科技员工手册.pdf · 第二章 入职与试用期 > 2.2 试用期（第1页）",
+          "星辰科技员工手册.pdf · 第八章 离职流程（第3页）"
+        ]
+      },
+      {
+        "id": 4,
+        "question": "工作日加班怎么调休？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "星辰科技员工手册.pdf · 第三章 考勤制度 > 3.2 加班与调休（第1页）",
+          "星辰科技员工手册.pdf · 第五章 薪酬与福利 > 5.1 发薪日（第2页）",
+          "星辰科技员工手册.pdf · 第四章 请假制度 > 4.3 事假（第2页）",
+          "星辰科技员工手册.pdf · 第八章 离职流程（第3页）",
+          "星辰科技员工手册.pdf · 第三章 考勤制度 > 3.1 工作时间（第1页）"
+        ]
+      },
+      {
+        "id": 5,
+        "question": "员工年假有几天？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "星辰科技员工手册.pdf · 第四章 请假制度 > 4.1 年假（第1页）",
+          "星辰科技员工手册.pdf · 第四章 请假制度 > 4.3 事假（第2页）",
+          "星辰科技员工手册.pdf · 第五章 薪酬与福利 > 5.4 年终奖（第2页）",
+          "星辰科技员工手册.pdf · 第四章 请假制度 > 4.4 婚假、产假与丧假（第2页）",
+          "星辰科技员工手册.pdf · 第五章 薪酬与福利 > 5.2 社保与公积金（第2页）"
+        ]
+      },
+      {
+        "id": 6,
+        "question": "病假期间工资怎么算？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "星辰科技员工手册.pdf · 第四章 请假制度 > 4.2 病假（第1页）",
+          "星辰科技员工手册.pdf · 第四章 请假制度 > 4.1 年假（第1页）",
+          "远程办公管理制度.txt · 三、工作规范",
+          "星辰科技员工手册.pdf · 第四章 请假制度 > 4.4 婚假、产假与丧假（第2页）",
+          "远程办公管理制度.txt · 四、考勤与补贴"
+        ]
+      },
+      {
+        "id": 7,
+        "question": "事假是带薪的吗？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "星辰科技员工手册.pdf · 第四章 请假制度 > 4.3 事假（第2页）",
+          "星辰科技员工手册.pdf · 第四章 请假制度 > 4.1 年假（第1页）",
+          "星辰科技员工手册.pdf · 第四章 请假制度 > 4.2 病假（第1页）",
+          "星辰科技员工手册.pdf · 第五章 薪酬与福利 > 5.1 发薪日（第2页）",
+          "远程办公管理制度.txt · 五、违规处理"
+        ]
+      },
+      {
+        "id": 8,
+        "question": "出差的住宿和餐补标准是多少？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "星辰科技员工手册.pdf · 第六章 费用报销 > 6.2 差旅标准（第2页）",
+          "远程办公管理制度.txt · 四、考勤与补贴",
+          "星辰科技员工手册.pdf · 第四章 请假制度 > 4.2 病假（第1页）",
+          "远程办公管理制度.txt · 五、违规处理",
+          "星辰科技员工手册.pdf · 第五章 薪酬与福利 > 5.3 补充福利（第2页）"
+        ]
+      },
+      {
+        "id": 9,
+        "question": "费用报销的审批流程是怎样的？多久到账？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "星辰科技员工手册.pdf · 第六章 费用报销 > 6.1 报销时限与流程（第2页）",
+          "星辰科技员工手册.pdf · 第六章 费用报销 > 6.3 发票要求（第2页）",
+          "IT服务常见问题FAQ.txt · Q6：如何申请安装新软件？",
+          "星辰科技员工手册.pdf · 第六章 费用报销 > 6.2 差旅标准（第2页）",
+          "远程办公管理制度.txt · 一、总则"
+        ]
+      },
+      {
+        "id": 10,
+        "question": "转正员工辞职需要提前多久提出？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "星辰科技员工手册.pdf · 第八章 离职流程（第3页）",
+          "星辰科技员工手册.pdf · 第二章 入职与试用期 > 2.2 试用期（第1页）",
+          "远程办公管理制度.txt · 一、总则",
+          "星辰科技员工手册.pdf · 第四章 请假制度 > 4.3 事假（第2页）",
+          "星辰科技员工手册.pdf · 第三章 考勤制度 > 3.2 加班与调休（第1页）"
+        ]
+      },
+      {
+        "id": 11,
+        "question": "云滴C3咖啡机的额定功率是多少？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": false,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 2,
+        "retrieved": [
+          "云滴咖啡机C3产品说明书.docx · 产品概述",
+          "云滴咖啡机C3产品说明书.docx · 规格参数",
+          "云滴咖啡机C3产品说明书.docx",
+          "云滴咖啡机C3产品说明书.docx · 快速上手 > 日常制作",
+          "云滴咖啡机C3产品说明书.docx · 保修与售后"
+        ]
+      },
+      {
+        "id": 12,
+        "question": "C3咖啡机的水箱容量是多大？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": false,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 2,
+        "retrieved": [
+          "云滴咖啡机C3产品说明书.docx · 快速上手 > 首次使用",
+          "云滴咖啡机C3产品说明书.docx · 规格参数",
+          "云滴咖啡机C3产品说明书.docx · 故障排除",
+          "云滴咖啡机C3产品说明书.docx · 产品概述",
+          "云滴咖啡机C3产品说明书.docx · 清洁与保养"
+        ]
+      },
+      {
+        "id": 13,
+        "question": "咖啡机研磨有几档？哪一档最细？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": false,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 2,
+        "retrieved": [
+          "云滴咖啡机C3产品说明书.docx · 故障排除",
+          "云滴咖啡机C3产品说明书.docx · 规格参数",
+          "云滴咖啡机C3产品说明书.docx · 产品概述",
+          "云滴咖啡机C3产品说明书.docx · 快速上手 > 首次使用",
+          "云滴咖啡机C3产品说明书.docx · 快速上手 > 日常制作"
+        ]
+      },
+      {
+        "id": 14,
+        "question": "C3咖啡机的泵压是多少？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": false,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 2,
+        "retrieved": [
+          "云滴咖啡机C3产品说明书.docx · 产品概述",
+          "云滴咖啡机C3产品说明书.docx · 规格参数",
+          "云滴咖啡机C3产品说明书.docx",
+          "云滴咖啡机C3产品说明书.docx · 快速上手 > 日常制作",
+          "云滴咖啡机C3产品说明书.docx · 快速上手 > 首次使用"
+        ]
+      },
+      {
+        "id": 15,
+        "question": "咖啡机多久需要除垢一次？怎么操作？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "云滴咖啡机C3产品说明书.docx · 清洁与保养",
+          "云滴咖啡机C3产品说明书.docx · 故障排除",
+          "云滴咖啡机C3产品说明书.docx · 快速上手 > 首次使用",
+          "云滴咖啡机C3产品说明书.docx",
+          "云滴咖啡机C3产品说明书.docx · 快速上手 > 日常制作"
+        ]
+      },
+      {
+        "id": 16,
+        "question": "整机和研磨电机分别保修多久？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "云滴咖啡机C3产品说明书.docx · 保修与售后",
+          "云滴咖啡机C3产品说明书.docx · 故障排除",
+          "云滴咖啡机C3产品说明书.docx · 规格参数",
+          "云滴咖啡机C3产品说明书.docx · 产品概述",
+          "云滴咖啡机C3产品说明书.docx · 清洁与保养"
+        ]
+      },
+      {
+        "id": 17,
+        "question": "咖啡口感过淡应该怎么调整？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "云滴咖啡机C3产品说明书.docx · 故障排除",
+          "云滴咖啡机C3产品说明书.docx · 快速上手 > 首次使用",
+          "云滴咖啡机C3产品说明书.docx · 快速上手 > 日常制作",
+          "云滴咖啡机C3产品说明书.docx · 清洁与保养",
+          "云滴咖啡机C3产品说明书.docx · 产品概述"
+        ]
+      },
+      {
+        "id": 18,
+        "question": "每周最多可以申请几天远程办公？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "远程办公管理制度.txt · 一、总则",
+          "远程办公管理制度.txt · 五、违规处理",
+          "远程办公管理制度.txt · 二、设备与信息安全",
+          "远程办公管理制度.txt · 四、考勤与补贴",
+          "远程办公管理制度.txt · 三、工作规范"
+        ]
+      },
+      {
+        "id": 19,
+        "question": "远程办公需要如何申请？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "远程办公管理制度.txt · 一、总则",
+          "远程办公管理制度.txt",
+          "远程办公管理制度.txt · 五、违规处理",
+          "IT服务常见问题FAQ.txt · Q6：如何申请安装新软件？",
+          "远程办公管理制度.txt · 二、设备与信息安全"
+        ]
+      },
+      {
+        "id": 20,
+        "question": "远程办公访问公司系统有什么安全要求？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "远程办公管理制度.txt · 二、设备与信息安全",
+          "远程办公管理制度.txt · 一、总则",
+          "远程办公管理制度.txt",
+          "远程办公管理制度.txt · 三、工作规范",
+          "星辰科技员工手册.pdf · 第七章 信息安全与保密 > 7.1 账号与设备安全（第3页）"
+        ]
+      },
+      {
+        "id": 21,
+        "question": "远程办公有补贴吗？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "远程办公管理制度.txt · 四、考勤与补贴",
+          "远程办公管理制度.txt · 一、总则",
+          "远程办公管理制度.txt · 五、违规处理",
+          "远程办公管理制度.txt",
+          "远程办公管理制度.txt · 三、工作规范"
+        ]
+      },
+      {
+        "id": 22,
+        "question": "未经申请擅自远程办公会怎么处理？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "远程办公管理制度.txt · 五、违规处理",
+          "远程办公管理制度.txt · 一、总则",
+          "远程办公管理制度.txt · 二、设备与信息安全",
+          "远程办公管理制度.txt",
+          "IT服务常见问题FAQ.txt · Q6：如何申请安装新软件？"
+        ]
+      },
+      {
+        "id": 23,
+        "question": "忘记OA系统密码怎么办？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "IT服务常见问题FAQ.txt · Q1：忘记OA系统密码怎么办？",
+          "星辰科技员工手册.pdf · 第七章 信息安全与保密 > 7.1 账号与设备安全（第3页）",
+          "IT服务常见问题FAQ.txt · Q3：办公Wi-Fi密码在哪里查看？",
+          "IT服务常见问题FAQ.txt · Q2：如何申请VPN权限？",
+          "IT服务常见问题FAQ.txt · Q6：如何申请安装新软件？"
+        ]
+      },
+      {
+        "id": 24,
+        "question": "如何申请VPN权限？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "IT服务常见问题FAQ.txt · Q2：如何申请VPN权限？",
+          "IT服务常见问题FAQ.txt · Q6：如何申请安装新软件？",
+          "远程办公管理制度.txt · 一、总则",
+          "IT服务常见问题FAQ.txt · Q5：门禁卡丢失如何补办？",
+          "IT服务常见问题FAQ.txt · Q4：电脑出现硬件故障如何报修？"
+        ]
+      },
+      {
+        "id": 25,
+        "question": "办公Wi-Fi密码在哪里查看？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "IT服务常见问题FAQ.txt · Q3：办公Wi-Fi密码在哪里查看？",
+          "星辰科技员工手册.pdf · 第七章 信息安全与保密 > 7.1 账号与设备安全（第3页）",
+          "远程办公管理制度.txt · 二、设备与信息安全",
+          "IT服务常见问题FAQ.txt · Q1：忘记OA系统密码怎么办？",
+          "远程办公管理制度.txt · 一、总则"
+        ]
+      },
+      {
+        "id": 26,
+        "question": "门禁卡丢失如何补办？",
+        "answerable": true,
+        "doc_hit@1": true,
+        "ans_hit@1": true,
+        "doc_hit@3": true,
+        "ans_hit@3": true,
+        "doc_hit@5": true,
+        "ans_hit@5": true,
+        "first_hit_rank": 1,
+        "retrieved": [
+          "IT服务常见问题FAQ.txt · Q5：门禁卡丢失如何补办？",
+          "星辰科技员工手册.pdf · 第八章 离职流程（第3页）",
+          "IT服务常见问题FAQ.txt · Q2：如何申请VPN权限？",
+          "IT服务常见问题FAQ.txt · Q6：如何申请安装新软件？",
+          "IT服务常见问题FAQ.txt · Q1：忘记OA系统密码怎么办？"
+        ]
+      },
+      {
+        "id": 27,
+        "question": "公司提供住房补贴吗？",
+        "answerable": false
+      },
+      {
+        "id": 28,
+        "question": "C3咖啡机支持手机App远程控制吗？",
+        "answerable": false
+      },
+      {
+        "id": 29,
+        "question": "远程办公期间可以选择在咖啡馆办公吗？",
+        "answerable": false
+      },
+      {
+        "id": 30,
+        "question": "IT服务台的QQ群号是多少？",
+        "answerable": false
+      }
+    ]
+  }
+}

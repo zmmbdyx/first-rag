@@ -7,7 +7,6 @@ from pathlib import Path
 
 import streamlit as st
 from ddgs import DDGS
-from openai import OpenAI
 
 try:
     from dotenv import load_dotenv
@@ -19,19 +18,15 @@ ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
 from rag import vector_store  ***REMOVED*** noqa: E402
+from rag.config import API_KEY, MODEL_OPTIONS  ***REMOVED*** noqa: E402
+from rag.llm import get_client  ***REMOVED*** noqa: E402
 from rag.pipeline import load_retriever  ***REMOVED*** noqa: E402
 from rag.retriever import Retriever  ***REMOVED*** noqa: E402
 from rag.rewrite import rewrite_query  ***REMOVED*** noqa: E402
 from rag.security import InputBlocked, check_input, validate_citations  ***REMOVED*** noqa: E402
 
 ***REMOVED*** ============ 配置 ============
-API_KEY = os.getenv("API_KEY", "")
-BASE_URL = os.getenv(
-    "BASE_URL",
-    "https://dashscope.aliyuncs.com/compatible-mode/v1",
-)
 INDEX_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "chroma_db")
-MODEL_OPTIONS = ["qwen3.5-flash", "deepseek-v4-pro"]
 MODE_LABELS = {
     "hybrid": "混合检索（向量+关键词，RRF 融合）",
     "vector": "纯向量检索",
@@ -112,7 +107,7 @@ st.markdown('<p class="hero-sub">基于 RAG 检索增强生成 · 流式响应 �
             unsafe_allow_html=True)
 
 if not API_KEY:
-    st.error("未配置 API_KEY：请在 rag/.env 或系统环境变量中设置后重启应用。")
+    st.error("未配置 API_KEY：请在 .env 或系统环境变量中设置后重启应用。")
     st.stop()
 
 if "messages" not in st.session_state:
@@ -133,11 +128,9 @@ def get_retriever() -> Retriever:
 
 
 @st.cache_resource
-def load_client():
-    return OpenAI(api_key=API_KEY, base_url=BASE_URL)
-
-
-client = load_client()
+def load_client(model: str):
+    """按模型标识取客户端；支持 模型名@端点别名 的多厂商路由，客户端按端点缓存。"""
+    return get_client(model)
 
 
 ***REMOVED*** ---------- 知识库操作 ----------
@@ -159,12 +152,13 @@ def do_web_search(query: str, n: int):
 ***REMOVED*** ---------- 流式调用大模型 ----------
 def stream_answer(model, history, system_prompt, question, temperature, thinking_on, budget, max_tokens):
     """流式生成回答，边生成边渲染。返回 (回答, 思考过程, usage, 总耗时, 首字耗时)。"""
+    client, bare_model = load_client(model)  ***REMOVED*** 多厂商：按模型标识路由到对应端点
     api_messages = [{"role": "system", "content": system_prompt}]
     api_messages += [{"role": m["role"], "content": m["content"]} for m in history]
     api_messages.append({"role": "user", "content": question})
 
     base = dict(
-        model=model,
+        model=bare_model,
         messages=api_messages,
         temperature=temperature,
         stream=True,
@@ -233,7 +227,9 @@ def stream_answer(model, history, system_prompt, question, temperature, thinking
 ***REMOVED*** ---------- 侧边栏 ----------
 with st.sidebar:
     st.header("⚙️ AI 设置")
-    model = st.selectbox("模型", MODEL_OPTIONS)
+    model = st.selectbox("模型", MODEL_OPTIONS,
+                         format_func=lambda m: (m.replace("@", "（") + "）") if "@" in m else m,
+                         help="多厂商模型在 .env 的 MODEL_OPTIONS 中配置：模型名 或 模型名@端点别名")
     temperature = st.slider("温度（创造性）", 0.0, 1.5, 0.3, 0.1,
                             help="越低回答越严谨，越高越发散")
     thinking_on = st.selectbox("思考模式", ["关闭", "开启"],

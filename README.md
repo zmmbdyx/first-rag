@@ -143,7 +143,28 @@ streamlit run app.py
 ```
 
 **用自己的文档**：`python scripts/build_kb.py D:\你的文档目录`（支持文件或目录，自动按扩展名解析；
-同一文档重复入库自动覆盖旧块）。入库你自己的文档后记得用 `--rebuild` 重建过 BM25 索引会自动处理。
+同一文档重复入库自动覆盖旧块）。
+
+***REMOVED******REMOVED******REMOVED*** 多模型 / 多厂商配置
+
+单端点多模型：`.env` 里一行清单即可（Web 界面下拉切换）：
+
+```ini
+MODEL_OPTIONS=qwen3.5-omni-plus,deepseek-v3.1,qwen-flash
+```
+
+多厂商混用：在 `.env` 中按"别名"追加端点，模型名用 `@` 指向所属端点：
+
+```ini
+ALIYUN__BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+ALIYUN__API_KEY=sk-xxx
+DEEPSEEK__BASE_URL=https://api.deepseek.com
+DEEPSEEK__API_KEY=sk-yyy
+MODEL_OPTIONS=qwen-plus@aliyun,deepseek-chat@deepseek,glm-4-flash@zhipu
+```
+
+客户端按 `(base_url, api_key)` 缓存路由，Web 下拉框、CLI（`--model "deepseek-chat@deepseek"`）、
+评测判分（`JUDGE_MODEL=xxx@alias`）全链路生效；完整示例见 `.env.example`。
 
 ***REMOVED******REMOVED*** 7. 项目结构
 

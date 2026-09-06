@@ -20,6 +20,35 @@ JUDGE_MODEL = os.getenv("JUDGE_MODEL", LLM_MODEL)
 ***REMOVED*** ---------- 嵌入模型（本地运行，无需联网调用） ----------
 EMBED_MODEL = os.getenv("EMBED_MODEL", "shibing624/text2vec-base-chinese")
 
+***REMOVED*** ---------- 多模型 / 多端点 ----------
+***REMOVED*** 默认端点 = 上面的 BASE_URL / API_KEY。
+***REMOVED*** 附加端点在 .env 中按「别名(大写)__BASE_URL / 别名(大写)__API_KEY」命名，例如：
+***REMOVED***   DEEPSEEK__BASE_URL=https://api.deepseek.com
+***REMOVED***   DEEPSEEK__API_KEY=sk-xxx
+***REMOVED*** 跨端点模型用「模型名@别名」表示（如 deepseek-chat@deepseek），
+***REMOVED*** 未带 @ 的模型走默认端点。UI 下拉清单：
+MODEL_OPTIONS = [m.strip() for m in os.getenv(
+    "MODEL_OPTIONS", "deepseek-v4-pro").split(",") if m.strip()]
+
+
+def resolve_model(model: str | None = None) -> tuple[str, str, str]:
+    """把模型标识解析为 (真实模型名, base_url, api_key)。
+
+    支持 "模型名@端点别名"（别名对应 .env 中的 <别名>__BASE_URL / <别名>__API_KEY）；
+    不带 @ 时使用默认端点。解析失败抛 ValueError。
+    """
+    m = (model or LLM_MODEL).strip()
+    if "@" in m:
+        bare, ep = m.rsplit("@", 1)
+        ep_u = ep.strip().upper()
+        base = os.getenv(f"{ep_u}__BASE_URL", "").strip()
+        key = os.getenv(f"{ep_u}__API_KEY", "").strip()
+        if not base or not key:
+            raise ValueError(
+                f"端点别名 “{ep}” 未配置：请在 .env 中添加 {ep_u}__BASE_URL 和 {ep_u}__API_KEY")
+        return bare, base, key
+    return m, BASE_URL, API_KEY
+
 ***REMOVED*** ---------- 路径 ----------
 DATA_DIR = ROOT / "data"
 SAMPLES_DIR = DATA_DIR / "samples"

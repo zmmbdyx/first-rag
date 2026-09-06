@@ -18,10 +18,11 @@ from rag.pipeline import chat, load_retriever  ***REMOVED*** noqa: E402
 from rag.security import InputBlocked  ***REMOVED*** noqa: E402
 
 
-def answer_once(retriever, question: str, mode: str, k: int, history: list[dict]) -> None:
+def answer_once(retriever, question: str, mode: str, k: int, history: list[dict],
+                model: str | None = None) -> None:
     try:
         result = chat(question, history=history, retriever=retriever,
-                      mode=mode, k_final=k, return_hits=True)
+                      mode=mode, k_final=k, model=model, return_hits=True)
     except InputBlocked as e:
         print(f"⛔ 输入被安全策略拦截：{e.reason}")
         return
@@ -52,6 +53,8 @@ def main():
     ap.add_argument("--mode", default=RETRIEVAL_MODE, choices=["vector", "keyword", "hybrid"])
     ap.add_argument("--k", type=int, default=FINAL_TOP_K, help="召回条数")
     ap.add_argument("--collection", default=COLLECTION_NAME)
+    ap.add_argument("--model", default=None,
+                    help="模型标识：模型名 或 模型名@端点别名（默认取 .env 的 LLM_MODEL）")
     args = ap.parse_args()
 
     index_dir = Path(INDEX_DIR)
@@ -61,7 +64,8 @@ def main():
 
     retriever = load_retriever(index_dir, args.collection)
     if args.question:
-        answer_once(retriever, " ".join(args.question), args.mode, args.k, history=[])
+        answer_once(retriever, " ".join(args.question), args.mode, args.k, history=[],
+                    model=args.model)
         return
 
     print("💬 多轮交互模式（q 退出）。支持追问，如“那转正后呢？”会自动结合上文改写。")
@@ -74,7 +78,7 @@ def main():
         if q.lower() in ("q", "quit", "exit"):
             break
         if q:
-            answer_once(retriever, q, args.mode, args.k, history)
+            answer_once(retriever, q, args.mode, args.k, history, model=args.model)
 
 
 if __name__ == "__main__":

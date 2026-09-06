@@ -174,7 +174,7 @@ def eval_generation(questions: list[dict], retriever, cfg: dict, k: int,
     from rag.llm import get_client
     from rag.rewrite import rewrite_query
 
-    get_client()
+    get_client()[0]  ***REMOVED*** 提前初始化并校验配置
     jobs = []
     for q in questions:
         query = q["question"]

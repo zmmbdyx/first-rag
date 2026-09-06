@@ -46,7 +46,8 @@ def split_sentences(text: str) -> list[str]:
 
 
 def table_groups(header: list[str] | None, rows: list[list[str]], budget: int) -> list[str]:
-    """大表格按行分组渲染，每组独立携带表头——保证任一组被召回时都有列语义。"""
+    """大表格按行分组渲染，每组独立携带表头并带【表格】标记——
+    保证任一组被召回时都有列语义，且生成端能识别这是表格片段。"""
     if not rows:
         return []
     groups: list[str] = []
@@ -54,10 +55,10 @@ def table_groups(header: list[str] | None, rows: list[list[str]], budget: int) -
     for r in rows:
         cur.append(r)
         if len(render_table(header, cur)) >= budget:
-            groups.append(render_table(header, cur))
+            groups.append("【表格】" + render_table(header, cur))
             cur = []
     if cur:
-        groups.append(render_table(header, cur))
+        groups.append("【表格】" + render_table(header, cur))
     return groups
 
 

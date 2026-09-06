@@ -192,12 +192,25 @@ def chat(
                 "page": h.page,
                 "location": h.location,
                 "score": round(h.score, 4),
+                "rerank_score": round(h.rerank_score, 4) if h.rerank_score is not None else None,
+                "has_table": h.has_table,
                 "sources": h.sources,
                 "snippet": h.text[:200],
             }
             for h in hits
         ],
     })
+
+    ***REMOVED*** ---- 指标落库（延迟 / Token / 错误率；含阈值告警） ----
+    from .llm import _last_usage
+    from .metrics import estimate_tokens, record
+
+    usage = _last_usage
+    p_tokens = usage.prompt_tokens if usage else estimate_tokens(build_context(hits) + rw["query"])
+    c_tokens = usage.completion_tokens if usage else estimate_tokens(result["answer"])
+    result["tokens"] = {"prompt": p_tokens, "completion": c_tokens}
+    record(model, mode, retrieval_latency * 1000, result["latency"] * 1000,
+           p_tokens, c_tokens, error=False)
     if audit_enabled:
         audit({
             "type": "chat",

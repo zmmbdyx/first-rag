@@ -15,11 +15,13 @@ from .config import (
     FINAL_TOP_K,
     KEYWORD_TOP_K,
     RETRIEVAL_MODE,
+    RERANK_ENABLED,
     RRF_K,
     RRF_P,
     VECTOR_TOP_K,
 )
 from .embeddings import embed_query
+from .reranker import rerank, rerank_available
 
 
 @dataclass
@@ -32,6 +34,8 @@ class Hit:
     score: float = 0.0
     vec_rank: int | None = None
     kw_rank: int | None = None
+    rerank_score: float | None = None
+    has_table: bool = False
     sources: list[str] = field(default_factory=list)  ***REMOVED*** 命中路径：vector/keyword
 
     @property
@@ -95,45 +99,54 @@ class Retriever:
 
     def retrieve(self, question: str, mode: str = RETRIEVAL_MODE, k_final: int = FINAL_TOP_K,
                  k_each: int | None = None, rrf_k: int | None = None,
-                 rrf_p: float | None = None, expansion: str | None = None) -> list[Hit]:
+                 rrf_p: float | None = None, expansion: str | None = None,
+                 rerank_on: bool | None = None) -> list[Hit]:
         """统一检索入口。
 
         - mode: vector / keyword / hybrid；
         - rrf_k / rrf_p: 融合超参（score = Σ 1/(k+rank)^p），None 时用全局配置；
-        - expansion: 查询扩展词串（LLM 生成），拼接到查询后用于两路召回。
+        - expansion: 查询扩展词串（LLM 生成），拼接到查询后用于两路召回；
+        - rerank_on: 是否用 CrossEncoder 精排（None 时按 RERANK_ENABLED 配置）。
         """
         rrf_k = RRF_K if rrf_k is None else rrf_k
         rrf_p = RRF_P if rrf_p is None else rrf_p
         k_each = k_each or max(VECTOR_TOP_K, KEYWORD_TOP_K)
+        use_rerank = rerank_available() if rerank_on is None else rerank_on
+        ***REMOVED*** 重排需要比 k_final 更多的候选
+        k_search = max(k_each, k_final) if use_rerank else k_final
         query = f"{question} {expansion}".strip() if expansion else question
+
         if mode == "vector":
-            return self.vector_search(query, k_final)
-        if mode == "keyword":
-            return self.keyword_search(query, k_final)
-
-        vec_hits = self.vector_search(query, k_each)
-        kw_hits = self.keyword_search(query, k_each)
-        if not kw_hits:      ***REMOVED*** 查询词完全不在语料中（如纯英文问题）→ 回退向量
-            return vec_hits[:k_final]
-        if not vec_hits:
-            return kw_hits[:k_final]
-
-        fused: dict[str, Hit] = {}
-        for rank, h in enumerate(vec_hits, start=1):
-            h.vec_rank, h.sources = rank, ["vector"]
-            fused[h.chunk_id] = h
-        for rank, h in enumerate(kw_hits, start=1):
-            if h.chunk_id in fused:
-                fused[h.chunk_id].kw_rank = rank
-                fused[h.chunk_id].sources.append("keyword")
+            hits = self.vector_search(query, k_search)
+        elif mode == "keyword":
+            hits = self.keyword_search(query, k_search)
+        else:
+            vec_hits = self.vector_search(query, k_each)
+            kw_hits = self.keyword_search(query, k_each)
+            if not kw_hits:      ***REMOVED*** 查询词完全不在语料中（如纯英文问题）→ 回退向量
+                hits = vec_hits
+            elif not vec_hits:
+                hits = kw_hits
             else:
-                h.kw_rank, h.sources = rank, ["keyword"]
-                fused[h.chunk_id] = h
-        for h in fused.values():
-            h.score = sum(1.0 / (rrf_k + r) ** rrf_p
-                          for r in (h.vec_rank, h.kw_rank) if r is not None)
-        ranked = sorted(fused.values(), key=lambda h: h.score, reverse=True)
-        return ranked[:k_final]
+                fused: dict[str, Hit] = {}
+                for rank, h in enumerate(vec_hits, start=1):
+                    h.vec_rank, h.sources = rank, ["vector"]
+                    fused[h.chunk_id] = h
+                for rank, h in enumerate(kw_hits, start=1):
+                    if h.chunk_id in fused:
+                        fused[h.chunk_id].kw_rank = rank
+                        fused[h.chunk_id].sources.append("keyword")
+                    else:
+                        h.kw_rank, h.sources = rank, ["keyword"]
+                        fused[h.chunk_id] = h
+                for h in fused.values():
+                    h.score = sum(1.0 / (rrf_k + r) ** rrf_p
+                                  for r in (h.vec_rank, h.kw_rank) if r is not None)
+                hits = sorted(fused.values(), key=lambda h: h.score, reverse=True)
+
+        if use_rerank and hits:
+            hits = rerank(question, hits)
+        return hits[:k_final]
 
     ***REMOVED*** ---------- 索引维护 ----------
 

@@ -3883,7 +3883,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "试用期一般是多长时间？"
+        "query_used": "试用期一般是多长时间？",
+        "qtype": "single"
       },
       {
         "id": 2,
@@ -3912,7 +3913,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "新员工办理入职需要携带哪些材料？"
+        "query_used": "新员工办理入职需要携带哪些材料？",
+        "qtype": "single"
       },
       {
         "id": 3,
@@ -3947,7 +3949,8 @@
         "faithfulness": 0.6667,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "公司的工作时间是怎么安排的？"
+        "query_used": "公司的工作时间是怎么安排的？",
+        "qtype": "single"
       },
       {
         "id": 4,
@@ -3976,7 +3979,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "工作日加班怎么调休？"
+        "query_used": "工作日加班怎么调休？",
+        "qtype": "single"
       },
       {
         "id": 5,
@@ -4005,7 +4009,8 @@
         "faithfulness": 0.6667,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "员工年假有几天？"
+        "query_used": "员工年假有几天？",
+        "qtype": "single"
       },
       {
         "id": 6,
@@ -4034,7 +4039,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "病假期间工资怎么算？"
+        "query_used": "病假期间工资怎么算？",
+        "qtype": "single"
       },
       {
         "id": 7,
@@ -4063,7 +4069,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "事假是带薪的吗？"
+        "query_used": "事假是带薪的吗？",
+        "qtype": "single"
       },
       {
         "id": 8,
@@ -4092,7 +4099,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "出差的住宿和餐补标准是多少？"
+        "query_used": "出差的住宿和餐补标准是多少？",
+        "qtype": "single"
       },
       {
         "id": 9,
@@ -4121,7 +4129,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "费用报销的审批流程是怎样的？多久到账？"
+        "query_used": "费用报销的审批流程是怎样的？多久到账？",
+        "qtype": "single"
       },
       {
         "id": 10,
@@ -4150,7 +4159,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "转正员工辞职需要提前多久提出？"
+        "query_used": "转正员工辞职需要提前多久提出？",
+        "qtype": "single"
       },
       {
         "id": 11,
@@ -4179,7 +4189,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "每周最多可以申请几天远程办公？"
+        "query_used": "每周最多可以申请几天远程办公？",
+        "qtype": "single"
       },
       {
         "id": 12,
@@ -4208,7 +4219,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "远程办公需要如何申请？"
+        "query_used": "远程办公需要如何申请？",
+        "qtype": "single"
       },
       {
         "id": 13,
@@ -4237,7 +4249,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "远程办公访问公司系统有什么安全要求？"
+        "query_used": "远程办公访问公司系统有什么安全要求？",
+        "qtype": "single"
       },
       {
         "id": 14,
@@ -4266,7 +4279,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "远程办公有补贴吗？"
+        "query_used": "远程办公有补贴吗？",
+        "qtype": "single"
       },
       {
         "id": 15,
@@ -4295,7 +4309,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "未经申请擅自远程办公会怎么处理？"
+        "query_used": "未经申请擅自远程办公会怎么处理？",
+        "qtype": "single"
       },
       {
         "id": 16,
@@ -4324,7 +4339,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "忘记OA系统密码怎么办？"
+        "query_used": "忘记OA系统密码怎么办？",
+        "qtype": "single"
       },
       {
         "id": 17,
@@ -4353,7 +4369,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "如何申请VPN权限？"
+        "query_used": "如何申请VPN权限？",
+        "qtype": "single"
       },
       {
         "id": 18,
@@ -4382,7 +4399,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "办公Wi-Fi密码在哪里查看？"
+        "query_used": "办公Wi-Fi密码在哪里查看？",
+        "qtype": "single"
       },
       {
         "id": 19,
@@ -4411,7 +4429,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "门禁卡丢失如何补办？"
+        "query_used": "门禁卡丢失如何补办？",
+        "qtype": "single"
       },
       {
         "id": 20,
@@ -4440,7 +4459,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "系统账号可以多人共用吗？"
+        "query_used": "系统账号可以多人共用吗？",
+        "qtype": "single"
       },
       {
         "id": 21,
@@ -4469,7 +4489,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "密码最少要多少位？"
+        "query_used": "密码最少要多少位？",
+        "qtype": "single"
       },
       {
         "id": 22,
@@ -4504,7 +4525,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "密码多久需要更换一次？"
+        "query_used": "密码多久需要更换一次？",
+        "qtype": "single"
       },
       {
         "id": 23,
@@ -4533,7 +4555,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "登录失败几次会被锁定？"
+        "query_used": "登录失败几次会被锁定？",
+        "qtype": "single"
       },
       {
         "id": 24,
@@ -4562,7 +4585,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "公司数据分为哪几个等级？"
+        "query_used": "公司数据分为哪几个等级？",
+        "qtype": "single"
       },
       {
         "id": 25,
@@ -4591,7 +4615,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "下载机密级数据需要什么审批？"
+        "query_used": "下载机密级数据需要什么审批？",
+        "qtype": "single"
       },
       {
         "id": 26,
@@ -4620,7 +4645,8 @@
         "faithfulness": 0.5,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "秘密级数据可以存在个人电脑里吗？"
+        "query_used": "秘密级数据可以存在个人电脑里吗？",
+        "qtype": "single"
       },
       {
         "id": 27,
@@ -4649,7 +4675,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "导出多少条数据会触发审批？"
+        "query_used": "导出多少条数据会触发审批？",
+        "qtype": "single"
       },
       {
         "id": 28,
@@ -4678,7 +4705,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "对外发送大附件有什么要求？"
+        "query_used": "对外发送大附件有什么要求？",
+        "qtype": "single"
       },
       {
         "id": 29,
@@ -4707,7 +4735,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "客户数据可以用个人邮箱发送吗？"
+        "query_used": "客户数据可以用个人邮箱发送吗？",
+        "qtype": "single"
       },
       {
         "id": 30,
@@ -4736,7 +4765,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "发现数据泄露后多久内必须上报？"
+        "query_used": "发现数据泄露后多久内必须上报？",
+        "qtype": "single"
       },
       {
         "id": 31,
@@ -4765,7 +4795,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "安全应急热线是多少？"
+        "query_used": "安全应急热线是多少？",
+        "qtype": "single"
       },
       {
         "id": 32,
@@ -4794,7 +4825,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "内推奖金有多少？"
+        "query_used": "内推奖金有多少？",
+        "qtype": "single"
       },
       {
         "id": 33,
@@ -4823,7 +4855,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "什么岗位可以委托猎头招聘？"
+        "query_used": "什么岗位可以委托猎头招聘？",
+        "qtype": "single"
       },
       {
         "id": 34,
@@ -4852,7 +4885,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "技术岗面试有几轮？"
+        "query_used": "技术岗面试有几轮？",
+        "qtype": "single"
       },
       {
         "id": 35,
@@ -4881,7 +4915,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "面试结果多久通知？"
+        "query_used": "面试结果多久通知？",
+        "qtype": "single"
       },
       {
         "id": 36,
@@ -4910,7 +4945,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "Offer审批需要经过哪些环节？"
+        "query_used": "Offer审批需要经过哪些环节？",
+        "qtype": "single"
       },
       {
         "id": 37,
@@ -4939,7 +4975,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "应届生什么时候办理入职？"
+        "query_used": "应届生什么时候办理入职？",
+        "qtype": "single"
       },
       {
         "id": 38,
@@ -4968,7 +5005,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "公务车通过什么方式预约？"
+        "query_used": "公务车通过什么方式预约？",
+        "qtype": "single"
       },
       {
         "id": 39,
@@ -4997,7 +5035,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "公务车油费怎么结算？"
+        "query_used": "公务车油费怎么结算？",
+        "qtype": "single"
       },
       {
         "id": 40,
@@ -5026,7 +5065,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "车辆多久保养一次？"
+        "query_used": "车辆多久保养一次？",
+        "qtype": "single"
       },
       {
         "id": 41,
@@ -5055,7 +5095,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "交通违章罚款由谁承担？"
+        "query_used": "交通违章罚款由谁承担？",
+        "qtype": "single"
       },
       {
         "id": 42,
@@ -5084,7 +5125,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "私车公用有补贴吗？"
+        "query_used": "私车公用有补贴吗？",
+        "qtype": "single"
       },
       {
         "id": 43,
@@ -5113,7 +5155,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "发生交通事故应该怎么办？"
+        "query_used": "发生交通事故应该怎么办？",
+        "qtype": "single"
       },
       {
         "id": 44,
@@ -5142,7 +5185,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "云滴C3咖啡机的额定功率是多少？"
+        "query_used": "云滴C3咖啡机的额定功率是多少？",
+        "qtype": "single"
       },
       {
         "id": 45,
@@ -5171,7 +5215,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "C3咖啡机的水箱容量是多大？"
+        "query_used": "C3咖啡机的水箱容量是多大？",
+        "qtype": "single"
       },
       {
         "id": 46,
@@ -5200,7 +5245,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "咖啡机研磨有几档？哪一档最细？"
+        "query_used": "咖啡机研磨有几档？哪一档最细？",
+        "qtype": "single"
       },
       {
         "id": 47,
@@ -5229,7 +5275,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "C3咖啡机的泵压是多少？"
+        "query_used": "C3咖啡机的泵压是多少？",
+        "qtype": "single"
       },
       {
         "id": 48,
@@ -5258,7 +5305,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "咖啡机多久需要除垢一次？怎么操作？"
+        "query_used": "咖啡机多久需要除垢一次？怎么操作？",
+        "qtype": "single"
       },
       {
         "id": 49,
@@ -5287,7 +5335,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "咖啡口感过淡应该怎么调整？"
+        "query_used": "咖啡口感过淡应该怎么调整？",
+        "qtype": "single"
       },
       {
         "id": 50,
@@ -5322,7 +5371,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "整机电机保修多久？"
+        "query_used": "整机电机保修多久？",
+        "qtype": "single"
       },
       {
         "id": 51,
@@ -5351,7 +5401,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "云滴X7破壁机的额定功率是多少？"
+        "query_used": "云滴X7破壁机的额定功率是多少？",
+        "qtype": "single"
       },
       {
         "id": 52,
@@ -5380,7 +5431,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "X7破壁机的容量是多大？"
+        "query_used": "X7破壁机的容量是多大？",
+        "qtype": "single"
       },
       {
         "id": 53,
@@ -5409,7 +5461,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "X7破壁机的转速是多少？"
+        "query_used": "X7破壁机的转速是多少？",
+        "qtype": "single"
       },
       {
         "id": 54,
@@ -5444,7 +5497,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "X7破壁机有多少种菜单？"
+        "query_used": "X7破壁机有多少种菜单？",
+        "qtype": "single"
       },
       {
         "id": 55,
@@ -5473,7 +5527,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "干豆豆浆程序要多久？"
+        "query_used": "干豆豆浆程序要多久？",
+        "qtype": "single"
       },
       {
         "id": 56,
@@ -5502,7 +5557,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "破壁机显示E1是什么问题？"
+        "query_used": "破壁机显示E1是什么问题？",
+        "qtype": "single"
       },
       {
         "id": 57,
@@ -5531,7 +5587,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "X7自动清洗程序要运行多久？"
+        "query_used": "X7自动清洗程序要运行多久？",
+        "qtype": "single"
       },
       {
         "id": 58,
@@ -5566,7 +5623,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": false,
-        "query_used": "X7的保修期是多久？"
+        "query_used": "X7的保修期是多久？",
+        "qtype": "single"
       },
       {
         "id": 59,
@@ -5595,7 +5653,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "保修期内维修运费由谁承担？"
+        "query_used": "保修期内维修运费由谁承担？",
+        "qtype": "single"
       },
       {
         "id": 60,
@@ -5630,7 +5689,8 @@
         "faithfulness": 0.2222,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "哪些情况不予保修？"
+        "query_used": "哪些情况不予保修？",
+        "qtype": "single"
       },
       {
         "id": 61,
@@ -5659,7 +5719,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "没有购买凭证还能保修吗？"
+        "query_used": "没有购买凭证还能保修吗？",
+        "qtype": "single"
       },
       {
         "id": 62,
@@ -5688,7 +5749,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "签收后几天内可以退货？"
+        "query_used": "签收后几天内可以退货？",
+        "qtype": "single"
       },
       {
         "id": 63,
@@ -5717,7 +5779,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "换货运费怎么分担？"
+        "query_used": "换货运费怎么分担？",
+        "qtype": "single"
       },
       {
         "id": 64,
@@ -5752,7 +5815,8 @@
         "faithfulness": 0.2,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "报修后多久会响应？"
+        "query_used": "报修后多久会响应？",
+        "qtype": "single"
       },
       {
         "id": 65,
@@ -5781,7 +5845,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "异地维修多久能完成？"
+        "query_used": "异地维修多久能完成？",
+        "qtype": "single"
       },
       {
         "id": 66,
@@ -5810,7 +5875,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "三款产品中哪一款上市最早？"
+        "query_used": "三款产品中哪一款上市最早？",
+        "qtype": "single"
       },
       {
         "id": 67,
@@ -5839,7 +5905,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "哪款产品的额定功率最大？"
+        "query_used": "哪款产品的额定功率最大？",
+        "qtype": "single"
       },
       {
         "id": 68,
@@ -5868,7 +5935,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "云滴C3咖啡机的官方售价是多少？"
+        "query_used": "云滴C3咖啡机的官方售价是多少？",
+        "qtype": "single"
       },
       {
         "id": 69,
@@ -5897,7 +5965,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "X7破壁机的官方售价是多少？"
+        "query_used": "X7破壁机的官方售价是多少？",
+        "qtype": "single"
       },
       {
         "id": 70,
@@ -5926,7 +5995,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "哪两款产品的整机保修是1年？"
+        "query_used": "哪两款产品的整机保修是1年？",
+        "qtype": "single"
       },
       {
         "id": 71,
@@ -5961,7 +6031,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "净重最小的产品是哪款？"
+        "query_used": "净重最小的产品是哪款？",
+        "qtype": "single"
       },
       {
         "id": 72,
@@ -5990,7 +6061,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "噪音最低的是哪款产品？"
+        "query_used": "噪音最低的是哪款产品？",
+        "qtype": "single"
       },
       {
         "id": 73,
@@ -6025,7 +6097,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "主数据库部署在哪台服务器上？"
+        "query_used": "主数据库部署在哪台服务器上？",
+        "qtype": "single"
       },
       {
         "id": 74,
@@ -6054,7 +6127,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "db-01在哪个机房？"
+        "query_used": "db-01在哪个机房？",
+        "qtype": "single"
       },
       {
         "id": 75,
@@ -6083,7 +6157,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "离线备份服务器的硬盘是什么配置？"
+        "query_used": "离线备份服务器的硬盘是什么配置？",
+        "qtype": "single"
       },
       {
         "id": 76,
@@ -6112,7 +6187,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "gpu-01的内存有多大？"
+        "query_used": "gpu-01的内存有多大？",
+        "qtype": "single"
       },
       {
         "id": 77,
@@ -6141,7 +6217,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "Redis缓存部署在哪台主机？"
+        "query_used": "Redis缓存部署在哪台主机？",
+        "qtype": "single"
       },
       {
         "id": 78,
@@ -6170,7 +6247,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "Web前端有几台服务器？"
+        "query_used": "Web前端有几台服务器？",
+        "qtype": "single"
       },
       {
         "id": 79,
@@ -6199,7 +6277,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "数据库备库的主机名是什么？"
+        "query_used": "数据库备库的主机名是什么？",
+        "qtype": "single"
       },
       {
         "id": 80,
@@ -6228,7 +6307,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "开发周期是多长时间？"
+        "query_used": "开发周期是多长时间？",
+        "qtype": "single"
       },
       {
         "id": 81,
@@ -6257,7 +6337,8 @@
         "faithfulness": 1.0,
         "relevance": 0.95,
         "citation_correct": true,
-        "query_used": "合同总金额是多少？"
+        "query_used": "合同总金额是多少？",
+        "qtype": "single"
       },
       {
         "id": 82,
@@ -6286,7 +6367,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "合同款分几期支付？比例是多少？"
+        "query_used": "合同款分几期支付？比例是多少？",
+        "qtype": "single"
       },
       {
         "id": 83,
@@ -6315,7 +6397,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "甲方验收有时限要求吗？"
+        "query_used": "甲方验收有时限要求吗？",
+        "qtype": "single"
       },
       {
         "id": 84,
@@ -6344,7 +6427,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "功能通过率达到多少才算验收通过？"
+        "query_used": "功能通过率达到多少才算验收通过？",
+        "qtype": "single"
       },
       {
         "id": 85,
@@ -6373,7 +6457,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "开发成果的知识产权归谁？"
+        "query_used": "开发成果的知识产权归谁？",
+        "qtype": "single"
       },
       {
         "id": 86,
@@ -6408,7 +6493,8 @@
         "faithfulness": 0.5,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "保密期是多长时间？"
+        "query_used": "保密期是多长时间？",
+        "qtype": "single"
       },
       {
         "id": 87,
@@ -6437,7 +6523,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "乙方逾期交付的违约金怎么算？"
+        "query_used": "乙方逾期交付的违约金怎么算？",
+        "qtype": "single"
       },
       {
         "id": 88,
@@ -6466,7 +6553,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "里程碑M5的交付物是什么？"
+        "query_used": "里程碑M5的交付物是什么？",
+        "qtype": "single"
       },
       {
         "id": 89,
@@ -6495,7 +6583,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "里程碑M16的计划完成时间是哪天？"
+        "query_used": "里程碑M16的计划完成时间是哪天？",
+        "qtype": "single"
       },
       {
         "id": 90,
@@ -6524,7 +6613,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "出租的房屋在什么位置？"
+        "query_used": "出租的房屋在什么位置？",
+        "qtype": "single"
       },
       {
         "id": 91,
@@ -6553,7 +6643,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "房屋建筑面积是多少？"
+        "query_used": "房屋建筑面积是多少？",
+        "qtype": "single"
       },
       {
         "id": 92,
@@ -6582,7 +6673,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "租期是多长时间？"
+        "query_used": "租期是多长时间？",
+        "qtype": "single"
       },
       {
         "id": 93,
@@ -6611,7 +6703,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "月租金是多少？"
+        "query_used": "月租金是多少？",
+        "qtype": "single"
       },
       {
         "id": 94,
@@ -6640,7 +6733,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "押金是多少？"
+        "query_used": "押金是多少？",
+        "qtype": "single"
       },
       {
         "id": 95,
@@ -6669,7 +6763,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "物业管理费由谁承担？"
+        "query_used": "物业管理费由谁承担？",
+        "qtype": "single"
       },
       {
         "id": 96,
@@ -6704,7 +6799,8 @@
         "faithfulness": 0.5,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "甲方维修要多久内完成？"
+        "query_used": "甲方维修要多久内完成？",
+        "qtype": "single"
       },
       {
         "id": 97,
@@ -6733,7 +6829,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "甲方提前收房要提前多久通知？"
+        "query_used": "甲方提前收房要提前多久通知？",
+        "qtype": "single"
       },
       {
         "id": 98,
@@ -6762,7 +6859,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "API的基础地址是什么？"
+        "query_used": "API的基础地址是什么？",
+        "qtype": "single"
       },
       {
         "id": 99,
@@ -6791,7 +6889,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "API用什么方式鉴权？"
+        "query_used": "API用什么方式鉴权？",
+        "qtype": "single"
       },
       {
         "id": 100,
@@ -6820,7 +6919,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "数据查询单次最多返回多少条记录？"
+        "query_used": "数据查询单次最多返回多少条记录？",
+        "qtype": "single"
       },
       {
         "id": 101,
@@ -6849,7 +6949,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "page_size的默认值是多少？"
+        "query_used": "page_size的默认值是多少？",
+        "qtype": "single"
       },
       {
         "id": 102,
@@ -6878,7 +6979,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "查询类接口的限流是多少？"
+        "query_used": "查询类接口的限流是多少？",
+        "qtype": "single"
       },
       {
         "id": 103,
@@ -6907,7 +7009,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "触发限流时返回什么状态码？"
+        "query_used": "触发限流时返回什么状态码？",
+        "qtype": "single"
       },
       {
         "id": 104,
@@ -6936,7 +7039,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "免费版每月调用配额是多少？"
+        "query_used": "免费版每月调用配额是多少？",
+        "qtype": "single"
       },
       {
         "id": 105,
@@ -6965,7 +7069,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "错误码40001表示什么？"
+        "query_used": "错误码40001表示什么？",
+        "qtype": "single"
       },
       {
         "id": 106,
@@ -6994,7 +7099,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "Webhook重试的间隔是怎样的？"
+        "query_used": "Webhook重试的间隔是怎样的？",
+        "qtype": "single"
       },
       {
         "id": 107,
@@ -7023,7 +7129,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "生产环境建议配置多少节点？"
+        "query_used": "生产环境建议配置多少节点？",
+        "qtype": "single"
       },
       {
         "id": 108,
@@ -7052,7 +7159,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "支持哪些操作系统？"
+        "query_used": "支持哪些操作系统？",
+        "qtype": "single"
       },
       {
         "id": 109,
@@ -7081,7 +7189,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "用什么命令部署平台？"
+        "query_used": "用什么命令部署平台？",
+        "qtype": "single"
       },
       {
         "id": 110,
@@ -7110,7 +7219,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "数据库什么时候做备份？"
+        "query_used": "数据库什么时候做备份？",
+        "qtype": "single"
       },
       {
         "id": 111,
@@ -7139,7 +7249,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "备份文件保留多久？"
+        "query_used": "备份文件保留多久？",
+        "qtype": "single"
       },
       {
         "id": 112,
@@ -7168,7 +7279,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "CPU使用率多高会触发告警？"
+        "query_used": "CPU使用率多高会触发告警？",
+        "qtype": "single"
       },
       {
         "id": 113,
@@ -7197,7 +7309,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "Prometheus的抓取间隔是多少？"
+        "query_used": "Prometheus的抓取间隔是多少？",
+        "qtype": "single"
       },
       {
         "id": 114,
@@ -7226,7 +7339,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "灰度发布是怎么安排的？"
+        "query_used": "灰度发布是怎么安排的？",
+        "qtype": "single"
       },
       {
         "id": 115,
@@ -7255,7 +7369,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "普通合并请求需要几名批准人？"
+        "query_used": "普通合并请求需要几名批准人？",
+        "qtype": "single"
       },
       {
         "id": 116,
@@ -7284,7 +7399,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "核心模块的变更需要几名批准人？"
+        "query_used": "核心模块的变更需要几名批准人？",
+        "qtype": "single"
       },
       {
         "id": 117,
@@ -7313,7 +7429,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "代码变更超过多少行必须拆分请求？"
+        "query_used": "代码变更超过多少行必须拆分请求？",
+        "qtype": "single"
       },
       {
         "id": 118,
@@ -7342,7 +7459,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "首轮评审的时限是多久？"
+        "query_used": "首轮评审的时限是多久？",
+        "qtype": "single"
       },
       {
         "id": 119,
@@ -7371,7 +7489,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "单元测试覆盖率的要求是多少？"
+        "query_used": "单元测试覆盖率的要求是多少？",
+        "qtype": "single"
       },
       {
         "id": 120,
@@ -7400,7 +7519,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "进入车间需要穿戴什么防护用品？"
+        "query_used": "进入车间需要穿戴什么防护用品？",
+        "qtype": "single"
       },
       {
         "id": 121,
@@ -7429,7 +7549,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "冲压机是什么操作模式？"
+        "query_used": "冲压机是什么操作模式？",
+        "qtype": "single"
       },
       {
         "id": 122,
@@ -7458,7 +7579,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "急停按钮多久测试一次？"
+        "query_used": "急停按钮多久测试一次？",
+        "qtype": "single"
       },
       {
         "id": 123,
@@ -7487,7 +7609,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "电气检修必须执行什么程序？"
+        "query_used": "电气检修必须执行什么程序？",
+        "qtype": "single"
       },
       {
         "id": 124,
@@ -7516,7 +7639,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "厂内急救电话是多少？"
+        "query_used": "厂内急救电话是多少？",
+        "qtype": "single"
       },
       {
         "id": 125,
@@ -7545,7 +7669,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "消防疏散演练多久组织一次？"
+        "query_used": "消防疏散演练多久组织一次？",
+        "qtype": "single"
       },
       {
         "id": 126,
@@ -7574,7 +7699,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "配电柜前多少范围内禁止堆放物品？"
+        "query_used": "配电柜前多少范围内禁止堆放物品？",
+        "qtype": "single"
       },
       {
         "id": 127,
@@ -7603,7 +7729,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "出厂检验执行什么标准？"
+        "query_used": "出厂检验执行什么标准？",
+        "qtype": "single"
       },
       {
         "id": 128,
@@ -7632,7 +7759,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "一般检验水平是几级？"
+        "query_used": "一般检验水平是几级？",
+        "qtype": "single"
       },
       {
         "id": 129,
@@ -7661,7 +7789,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "批量在50至90件时抽取多少样本？"
+        "query_used": "批量在50至90件时抽取多少样本？",
+        "qtype": "single"
       },
       {
         "id": 130,
@@ -7690,7 +7819,8 @@
         "faithfulness": 1.0,
         "relevance": 0.95,
         "citation_correct": true,
-        "query_used": "A类不合格的AQL是多少？"
+        "query_used": "A类不合格的AQL是多少？",
+        "qtype": "single"
       },
       {
         "id": 131,
@@ -7719,7 +7849,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "发现几件A类不合格就整批判不合格？"
+        "query_used": "发现几件A类不合格就整批判不合格？",
+        "qtype": "single"
       },
       {
         "id": 132,
@@ -7748,7 +7879,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "整批不合格可以复检吗？"
+        "query_used": "整批不合格可以复检吗？",
+        "qtype": "single"
       },
       {
         "id": 133,
@@ -7777,7 +7909,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "新供应商怎样才能进入合格供应商名录？"
+        "query_used": "新供应商怎样才能进入合格供应商名录？",
+        "qtype": "single"
       },
       {
         "id": 134,
@@ -7806,7 +7939,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "合格供应商名录多久评审一次？"
+        "query_used": "合格供应商名录多久评审一次？",
+        "qtype": "single"
       },
       {
         "id": 135,
@@ -7835,7 +7969,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "5万元以下的采购由谁审批？"
+        "query_used": "5万元以下的采购由谁审批？",
+        "qtype": "single"
       },
       {
         "id": 136,
@@ -7864,7 +7999,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "50万元以上的采购由谁审批？"
+        "query_used": "50万元以上的采购由谁审批？",
+        "qtype": "single"
       },
       {
         "id": 137,
@@ -7893,7 +8029,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "采购金额多少以上需要3家报价？"
+        "query_used": "采购金额多少以上需要3家报价？",
+        "qtype": "single"
       },
       {
         "id": 138,
@@ -7928,7 +8065,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "报销单多久能审批完成？"
+        "query_used": "报销单多久能审批完成？",
+        "qtype": "single"
       },
       {
         "id": 139,
@@ -7957,7 +8095,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "电子发票可以用于报销吗？"
+        "query_used": "电子发票可以用于报销吗？",
+        "qtype": "single"
       },
       {
         "id": 140,
@@ -7986,7 +8125,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "发票抬头写错了怎么办？"
+        "query_used": "发票抬头写错了怎么办？",
+        "qtype": "single"
       },
       {
         "id": 141,
@@ -8015,7 +8155,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "出差期间的个人消费能报销吗？"
+        "query_used": "出差期间的个人消费能报销吗？",
+        "qtype": "single"
       },
       {
         "id": 142,
@@ -8044,7 +8185,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "报销款打到哪张卡？"
+        "query_used": "报销款打到哪张卡？",
+        "qtype": "single"
       },
       {
         "id": 143,
@@ -8073,7 +8215,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "跨年度的发票最迟什么时候提交？"
+        "query_used": "跨年度的发票最迟什么时候提交？",
+        "qtype": "single"
       },
       {
         "id": 144,
@@ -8102,7 +8245,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "下单后一般多久出库？"
+        "query_used": "下单后一般多久出库？",
+        "qtype": "single"
       },
       {
         "id": 145,
@@ -8131,7 +8275,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "签收时发现外观破损怎么办？"
+        "query_used": "签收时发现外观破损怎么办？",
+        "qtype": "single"
       },
       {
         "id": 146,
@@ -8160,7 +8305,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "发现缺件后多久内登记？"
+        "query_used": "发现缺件后多久内登记？",
+        "qtype": "single"
       },
       {
         "id": 147,
@@ -8189,7 +8335,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "C3安装要预留多少散热空间？"
+        "query_used": "C3安装要预留多少散热空间？",
+        "qtype": "single"
       },
       {
         "id": 148,
@@ -8224,7 +8371,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "C3首次通电前要做什么？"
+        "query_used": "C3首次通电前要做什么？",
+        "qtype": "single"
       },
       {
         "id": 149,
@@ -8253,7 +8401,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "C3可以用插线板供电吗？"
+        "query_used": "C3可以用插线板供电吗？",
+        "qtype": "single"
       },
       {
         "id": 150,
@@ -8282,7 +8431,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "X7要离热源多远？"
+        "query_used": "X7要离热源多远？",
+        "qtype": "single"
       },
       {
         "id": 151,
@@ -8311,7 +8461,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "核心接口的并发性能要求是什么？"
+        "query_used": "核心接口的并发性能要求是什么？",
+        "qtype": "single"
       },
       {
         "id": 152,
@@ -8340,7 +8491,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "压力测试的错误率要求是多少？"
+        "query_used": "压力测试的错误率要求是多少？",
+        "qtype": "single"
       },
       {
         "id": 153,
@@ -8369,7 +8521,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "安全验收对高危漏洞有什么要求？"
+        "query_used": "安全验收对高危漏洞有什么要求？",
+        "qtype": "single"
       },
       {
         "id": 154,
@@ -8398,7 +8551,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "等保测评得分要求是多少？"
+        "query_used": "等保测评得分要求是多少？",
+        "qtype": "single"
       },
       {
         "id": 155,
@@ -8427,7 +8581,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "项目交付物包括哪些文档？"
+        "query_used": "项目交付物包括哪些文档？",
+        "qtype": "single"
       },
       {
         "id": 156,
@@ -8456,7 +8611,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "验收演示要使用什么环境？"
+        "query_used": "验收演示要使用什么环境？",
+        "qtype": "single"
       },
       {
         "id": 157,
@@ -8485,7 +8641,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "那转正后离职要提前多久呢？"
+        "query_used": "那转正后离职要提前多久呢？",
+        "qtype": "multi_turn"
       },
       {
         "id": 158,
@@ -8514,7 +8671,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "没休完能留到明年吗？"
+        "query_used": "没休完能留到明年吗？",
+        "qtype": "multi_turn"
       },
       {
         "id": 159,
@@ -8543,7 +8701,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "那事假呢？"
+        "query_used": "那事假呢？",
+        "qtype": "multi_turn"
       },
       {
         "id": 160,
@@ -8572,7 +8731,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "那它的水箱能装多少水？"
+        "query_used": "那它的水箱能装多少水？",
+        "qtype": "multi_turn"
       },
       {
         "id": 161,
@@ -8601,7 +8761,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": false,
-        "query_used": "研磨档位怎么调细？"
+        "query_used": "研磨档位怎么调细？",
+        "qtype": "multi_turn"
       },
       {
         "id": 162,
@@ -8642,7 +8803,8 @@
         "faithfulness": 0.3333,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "那申请流程是怎样的？"
+        "query_used": "那申请流程是怎样的？",
+        "qtype": "multi_turn"
       },
       {
         "id": 163,
@@ -8683,7 +8845,8 @@
         "faithfulness": 0.6667,
         "relevance": 0.87,
         "citation_correct": false,
-        "query_used": "审批要多久？"
+        "query_used": "审批要多久？",
+        "qtype": "multi_turn"
       },
       {
         "id": 164,
@@ -8712,7 +8875,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "押金呢？"
+        "query_used": "押金呢？",
+        "qtype": "multi_turn"
       },
       {
         "id": 165,
@@ -8741,7 +8905,8 @@
         "faithfulness": 0.5,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "第一期付多少？"
+        "query_used": "第一期付多少？",
+        "qtype": "multi_turn"
       },
       {
         "id": 166,
@@ -8776,7 +8941,8 @@
         "faithfulness": 0.25,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "那它比C3咖啡机功率大吗？"
+        "query_used": "那它比C3咖啡机功率大吗？",
+        "qtype": "multi_turn"
       },
       {
         "id": 167,
@@ -8811,7 +8977,8 @@
         "faithfulness": 0.6667,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "多久换一次？"
+        "query_used": "多久换一次？",
+        "qtype": "multi_turn"
       },
       {
         "id": 168,
@@ -8840,7 +9007,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "超限了会怎样？"
+        "query_used": "超限了会怎样？",
+        "qtype": "multi_turn"
       },
       {
         "id": 169,
@@ -8875,7 +9043,8 @@
         "faithfulness": 0.1111,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "它放在哪个机房？"
+        "query_used": "它放在哪个机房？",
+        "qtype": "multi_turn"
       },
       {
         "id": 170,
@@ -8904,7 +9073,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "备份保留多久？"
+        "query_used": "备份保留多久？",
+        "qtype": "multi_turn"
       },
       {
         "id": 171,
@@ -8933,7 +9103,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "那B类呢？"
+        "query_used": "那B类呢？",
+        "qtype": "multi_turn"
       },
       {
         "id": 172,
@@ -8968,7 +9139,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "抬头写错了呢？"
+        "query_used": "抬头写错了呢？",
+        "qtype": "multi_turn"
       },
       {
         "id": 173,
@@ -9003,7 +9175,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "云滴C3咖啡机保修多久？保修期内维修运费由谁承担？"
+        "query_used": "云滴C3咖啡机保修多久？保修期内维修运费由谁承担？",
+        "qtype": "multi_hop"
       },
       {
         "id": 174,
@@ -9038,7 +9211,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "出差餐补一天多少钱？发票抬头写错了还能报吗？"
+        "query_used": "出差餐补一天多少钱？发票抬头写错了还能报吗？",
+        "qtype": "multi_hop"
       },
       {
         "id": 175,
@@ -9073,7 +9247,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "远程办公有补贴吗？办公Wi-Fi密码在哪里查看？"
+        "query_used": "远程办公有补贴吗？办公Wi-Fi密码在哪里查看？",
+        "qtype": "multi_hop"
       },
       {
         "id": 176,
@@ -9108,7 +9283,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "X7破壁机的功率是多少？它要离热源多远？"
+        "query_used": "X7破壁机的功率是多少？它要离热源多远？",
+        "qtype": "multi_hop"
       },
       {
         "id": 177,
@@ -9143,7 +9319,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "主数据库部署在哪台服务器上？数据库备份保留多久？"
+        "query_used": "主数据库部署在哪台服务器上？数据库备份保留多久？",
+        "qtype": "multi_hop"
       },
       {
         "id": 178,
@@ -9178,7 +9355,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "C3咖啡机的泵压是多少？电源插座有什么要求？"
+        "query_used": "C3咖啡机的泵压是多少？电源插座有什么要求？",
+        "qtype": "multi_hop"
       },
       {
         "id": 179,
@@ -9213,7 +9391,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "质检发现1件A类不合格整批判定吗？可以复检吗？"
+        "query_used": "质检发现1件A类不合格整批判定吗？可以复检吗？",
+        "qtype": "multi_hop"
       },
       {
         "id": 180,
@@ -9248,7 +9427,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "这套房子的月租金多少？物业管理费由谁交？"
+        "query_used": "这套房子的月租金多少？物业管理费由谁交？",
+        "qtype": "multi_hop"
       },
       {
         "id": 181,
@@ -9283,7 +9463,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "开发合同里程碑M5交付什么？逾期交付违约金怎么算？"
+        "query_used": "开发合同里程碑M5交付什么？逾期交付违约金怎么算？",
+        "qtype": "multi_hop"
       },
       {
         "id": 182,
@@ -9318,7 +9499,8 @@
         "faithfulness": 0.5,
         "relevance": 0.87,
         "citation_correct": false,
-        "query_used": "X7破壁机整机保修多久？保修期内维修运费谁出？"
+        "query_used": "X7破壁机整机保修多久？保修期内维修运费谁出？",
+        "qtype": "multi_hop"
       },
       {
         "id": 183,
@@ -9353,7 +9535,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "C3咖啡机多久除垢一次？X7的自动清洗程序要多久？"
+        "query_used": "C3咖啡机多久除垢一次？X7的自动清洗程序要多久？",
+        "qtype": "multi_hop"
       },
       {
         "id": 184,
@@ -9388,7 +9571,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "API单次查询最多返回多少条？触发限流会返回什么？"
+        "query_used": "API单次查询最多返回多少条？触发限流会返回什么？",
+        "qtype": "multi_hop"
       },
       {
         "id": 185,
@@ -9423,7 +9607,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "密码最少要多少位？导出多少条数据会触发审批？"
+        "query_used": "密码最少要多少位？导出多少条数据会触发审批？",
+        "qtype": "multi_hop"
       },
       {
         "id": 186,
@@ -9458,7 +9643,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "采购5万元以下谁审批？供应商名录多久评审一次？"
+        "query_used": "采购5万元以下谁审批？供应商名录多久评审一次？",
+        "qtype": "multi_hop"
       },
       {
         "id": 187,
@@ -9487,7 +9673,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "核心接口的并发响应要求是多少？8小时压测的错误率要求？"
+        "query_used": "核心接口的并发响应要求是多少？8小时压测的错误率要求？",
+        "qtype": "multi_hop"
       },
       {
         "id": 188,
@@ -9516,7 +9703,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "在公司干满三年，一年能有几天年假？"
+        "query_used": "在公司干满三年，一年能有几天年假？",
+        "qtype": "paraphrase"
       },
       {
         "id": 189,
@@ -9545,7 +9733,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "破壁机的底盘水垢怎么清理？"
+        "query_used": "破壁机的底盘水垢怎么清理？",
+        "qtype": "paraphrase"
       },
       {
         "id": 190,
@@ -9574,7 +9763,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "VPN申请下来要多久能开通？"
+        "query_used": "VPN申请下来要多久能开通？",
+        "qtype": "paraphrase"
       },
       {
         "id": 191,
@@ -9603,7 +9793,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "租房住的话水电燃气费谁承担？"
+        "query_used": "租房住的话水电燃气费谁承担？",
+        "qtype": "paraphrase"
       },
       {
         "id": 192,
@@ -9638,7 +9829,8 @@
         "faithfulness": 0.25,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "这个软件项目要开发多久才能交付？"
+        "query_used": "这个软件项目要开发多久才能交付？",
+        "qtype": "paraphrase"
       },
       {
         "id": 193,
@@ -9667,7 +9859,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "数据库每天几点做备份？"
+        "query_used": "数据库每天几点做备份？",
+        "qtype": "paraphrase"
       },
       {
         "id": 194,
@@ -9696,7 +9889,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "破壁机显示E1是什么毛病？"
+        "query_used": "破壁机显示E1是什么毛病？",
+        "qtype": "paraphrase"
       },
       {
         "id": 195,
@@ -9725,7 +9919,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "冲压机是不是一个人就能操作？"
+        "query_used": "冲压机是不是一个人就能操作？",
+        "qtype": "paraphrase"
       },
       {
         "id": 196,
@@ -9766,7 +9961,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "C3咖啡机的整机保修期是5年吧？"
+        "query_used": "C3咖啡机的整机保修期是5年吧？",
+        "qtype": "adversarial"
       },
       {
         "id": 197,
@@ -9795,7 +9991,8 @@
         "faithfulness": 0.4,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "员工年假一律是10天，对吗？"
+        "query_used": "员工年假一律是10天，对吗？",
+        "qtype": "adversarial"
       },
       {
         "id": 198,
@@ -9830,7 +10027,8 @@
         "faithfulness": 0.4,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "远程办公不用申请，想远程随时可以吧？"
+        "query_used": "远程办公不用申请，想远程随时可以吧？",
+        "qtype": "adversarial"
       },
       {
         "id": 199,
@@ -9859,7 +10057,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "破壁机X7用的是5叶刀头吧？"
+        "query_used": "破壁机X7用的是5叶刀头吧？",
+        "qtype": "adversarial"
       },
       {
         "id": 200,
@@ -9888,7 +10087,8 @@
         "faithfulness": 0.6667,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "房子的租金是按年支付的，对吧？"
+        "query_used": "房子的租金是按年支付的，对吧？",
+        "qtype": "adversarial"
       },
       {
         "id": 201,
@@ -9917,7 +10117,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "这个开发合同的总金额是150万吧？"
+        "query_used": "这个开发合同的总金额是150万吧？",
+        "qtype": "adversarial"
       },
       {
         "id": 202,
@@ -9946,7 +10147,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "查询接口每秒可以调用500次吧？"
+        "query_used": "查询接口每秒可以调用500次吧？",
+        "qtype": "adversarial"
       },
       {
         "id": 203,
@@ -9975,7 +10177,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "数据库备份是每周做一次的吧？"
+        "query_used": "数据库备份是每周做一次的吧？",
+        "qtype": "adversarial"
       },
       {
         "id": 204,
@@ -10004,7 +10207,8 @@
         "faithfulness": 0.6667,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "代码合并只要产品经理点头就行吧？"
+        "query_used": "代码合并只要产品经理点头就行吧？",
+        "qtype": "adversarial"
       },
       {
         "id": 205,
@@ -10033,7 +10237,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "门禁卡补办是免费的吧？"
+        "query_used": "门禁卡补办是免费的吧？",
+        "qtype": "adversarial"
       },
       {
         "id": 206,
@@ -10062,7 +10267,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "C3咖啡机的泵压是9bar吧？"
+        "query_used": "C3咖啡机的泵压是9bar吧？",
+        "qtype": "adversarial"
       },
       {
         "id": 207,
@@ -10091,7 +10297,8 @@
         "faithfulness": 1.0,
         "relevance": 0.87,
         "citation_correct": true,
-        "query_used": "质检的A类不合格AQL定的是4.0吧？"
+        "query_used": "质检的A类不合格AQL定的是4.0吧？",
+        "qtype": "adversarial"
       },
       {
         "id": 208,
@@ -10112,7 +10319,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "公司提供住房补贴吗？"
+        "query_used": "公司提供住房补贴吗？",
+        "qtype": "refusal"
       },
       {
         "id": 209,
@@ -10141,7 +10349,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "员工手册里提到住房公积金的缴存比例吗？"
+        "query_used": "员工手册里提到住房公积金的缴存比例吗？",
+        "qtype": "refusal"
       },
       {
         "id": 210,
@@ -10162,7 +10371,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "员工手册里有关于班车路线的规定吗？"
+        "query_used": "员工手册里有关于班车路线的规定吗？",
+        "qtype": "refusal"
       },
       {
         "id": 211,
@@ -10203,7 +10413,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "远程办公期间的加班工资怎么算？"
+        "query_used": "远程办公期间的加班工资怎么算？",
+        "qtype": "refusal"
       },
       {
         "id": 212,
@@ -10224,7 +10435,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "IT服务台周末上班吗？"
+        "query_used": "IT服务台周末上班吗？",
+        "qtype": "refusal"
       },
       {
         "id": 213,
@@ -10271,7 +10483,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "信息安全管理制度中规定了违规罚款金额吗？"
+        "query_used": "信息安全管理制度中规定了违规罚款金额吗？",
+        "qtype": "refusal"
       },
       {
         "id": 214,
@@ -10300,7 +10513,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "员工可以自带电脑办公吗？"
+        "query_used": "员工可以自带电脑办公吗？",
+        "qtype": "refusal"
       },
       {
         "id": 215,
@@ -10321,7 +10535,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "招聘流程说明中提到要考英语笔试吗？"
+        "query_used": "招聘流程说明中提到要考英语笔试吗？",
+        "qtype": "refusal"
       },
       {
         "id": 216,
@@ -10342,7 +10557,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "内推奖金需要缴税吗？"
+        "query_used": "内推奖金需要缴税吗？",
+        "qtype": "refusal"
       },
       {
         "id": 217,
@@ -10363,7 +10579,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "车辆管理办法规定年检费用由谁承担吗？"
+        "query_used": "车辆管理办法规定年检费用由谁承担吗？",
+        "qtype": "refusal"
       },
       {
         "id": 218,
@@ -10392,7 +10609,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "公务车可以借给家属私人使用吗？"
+        "query_used": "公务车可以借给家属私人使用吗？",
+        "qtype": "refusal"
       },
       {
         "id": 219,
@@ -10413,7 +10631,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "C3咖啡机支持手机App远程控制吗？"
+        "query_used": "C3咖啡机支持手机App远程控制吗？",
+        "qtype": "refusal"
       },
       {
         "id": 220,
@@ -10434,7 +10653,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "X7破壁机支持预约功能吗？"
+        "query_used": "X7破壁机支持预约功能吗？",
+        "qtype": "refusal"
       },
       {
         "id": 221,
@@ -10487,7 +10707,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "保修政策里提到付费延保服务吗？"
+        "query_used": "保修政策里提到付费延保服务吗？",
+        "qtype": "refusal"
       },
       {
         "id": 222,
@@ -10508,7 +10729,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "保修政策里写了维修中心的营业时间吗？"
+        "query_used": "保修政策里写了维修中心的营业时间吗？",
+        "qtype": "refusal"
       },
       {
         "id": 223,
@@ -10529,7 +10751,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "产品参数对比表里写了各产品的产地吗？"
+        "query_used": "产品参数对比表里写了各产品的产地吗？",
+        "qtype": "refusal"
       },
       {
         "id": 224,
@@ -10550,7 +10773,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "配置清单里有服务器的采购价格吗？"
+        "query_used": "配置清单里有服务器的采购价格吗？",
+        "qtype": "refusal"
       },
       {
         "id": 225,
@@ -10571,7 +10795,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "开发合同约定了驻场开发吗？"
+        "query_used": "开发合同约定了驻场开发吗？",
+        "qtype": "refusal"
       },
       {
         "id": 226,
@@ -10592,7 +10817,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "合同纠纷由哪个法院管辖？"
+        "query_used": "合同纠纷由哪个法院管辖？",
+        "qtype": "refusal"
       },
       {
         "id": 227,
@@ -10613,7 +10839,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "租赁合同允许养宠物吗？"
+        "query_used": "租赁合同允许养宠物吗？",
+        "qtype": "refusal"
       },
       {
         "id": 228,
@@ -10634,7 +10861,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "合同里约定水费的单价是多少吗？"
+        "query_used": "合同里约定水费的单价是多少吗？",
+        "qtype": "refusal"
       },
       {
         "id": 229,
@@ -10655,7 +10883,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "API文档提供Go语言的SDK吗？"
+        "query_used": "API文档提供Go语言的SDK吗？",
+        "qtype": "refusal"
       },
       {
         "id": 230,
@@ -10676,7 +10905,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "数据平台支持GraphQL查询吗？"
+        "query_used": "数据平台支持GraphQL查询吗？",
+        "qtype": "refusal"
       },
       {
         "id": 231,
@@ -10697,7 +10927,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "运维手册提到灾备机房的位置吗？"
+        "query_used": "运维手册提到灾备机房的位置吗？",
+        "qtype": "refusal"
       },
       {
         "id": 232,
@@ -10718,7 +10949,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "手册中对Kubernetes版本有要求吗？"
+        "query_used": "手册中对Kubernetes版本有要求吗？",
+        "qtype": "refusal"
       },
       {
         "id": 233,
@@ -10739,7 +10971,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "评审规范要求用什么代码格式化工具吗？"
+        "query_used": "评审规范要求用什么代码格式化工具吗？",
+        "qtype": "refusal"
       },
       {
         "id": 234,
@@ -10760,7 +10993,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "安全操作规程允许上班时间戴耳机吗？"
+        "query_used": "安全操作规程允许上班时间戴耳机吗？",
+        "qtype": "refusal"
       },
       {
         "id": 235,
@@ -10781,7 +11015,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "规程里提到夏季高温假的安排吗？"
+        "query_used": "规程里提到夏季高温假的安排吗？",
+        "qtype": "refusal"
       },
       {
         "id": 236,
@@ -10802,7 +11037,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "质检抽样标准里写了检测费用由谁承担吗？"
+        "query_used": "质检抽样标准里写了检测费用由谁承担吗？",
+        "qtype": "refusal"
       },
       {
         "id": 237,
@@ -10823,7 +11059,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "采购办法规定发票多久内寄出吗？"
+        "query_used": "采购办法规定发票多久内寄出吗？",
+        "qtype": "refusal"
       },
       {
         "id": 238,
@@ -10844,7 +11081,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "报销FAQ提到发票丢失怎么处理吗？"
+        "query_used": "报销FAQ提到发票丢失怎么处理吗？",
+        "qtype": "refusal"
       },
       {
         "id": 239,
@@ -10865,7 +11103,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "运输安装说明里提到上门安装费吗？"
+        "query_used": "运输安装说明里提到上门安装费吗？",
+        "qtype": "refusal"
       },
       {
         "id": 240,
@@ -10894,7 +11133,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "验收标准约定了尾款支付比例吗？"
+        "query_used": "验收标准约定了尾款支付比例吗？",
+        "qtype": "refusal"
       },
       {
         "id": 241,
@@ -10929,7 +11169,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "车辆管理办法里有关于司机出差补助的规定吗？"
+        "query_used": "车辆管理办法里有关于司机出差补助的规定吗？",
+        "qtype": "refusal"
       },
       {
         "id": 242,
@@ -10950,7 +11191,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "公司有规定员工体检的医院是哪家吗？"
+        "query_used": "公司有规定员工体检的医院是哪家吗？",
+        "qtype": "refusal"
       },
       {
         "id": 243,
@@ -10971,7 +11213,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "X7破壁机的电源线长度是多少米？"
+        "query_used": "X7破壁机的电源线长度是多少米？",
+        "qtype": "refusal"
       },
       {
         "id": 244,
@@ -10992,7 +11235,8 @@
         "faithfulness": null,
         "relevance": null,
         "citation_correct": null,
-        "query_used": "公司为员工购买的商业保险是哪家保险公司的？"
+        "query_used": "公司为员工购买的商业保险是哪家保险公司的？",
+        "qtype": "refusal"
       }
     ],
     "_arrays": {
@@ -12540,24 +12784,35 @@
     "per_qtype": {
       "adversarial": {
         "n": 12,
-        "recall@5": 1.0
+        "recall@5": 1.0,
+        "accuracy": 1.0,
+        "n_gen": 12
       },
       "multi_hop": {
         "n": 15,
-        "recall@5": 1.0
+        "recall@5": 1.0,
+        "accuracy": 1.0,
+        "n_gen": 15
       },
       "multi_turn": {
         "n": 16,
-        "recall@5": 0.9375
+        "recall@5": 0.9375,
+        "accuracy": 0.875,
+        "n_gen": 16
       },
       "paraphrase": {
         "n": 8,
-        "recall@5": 1.0
+        "recall@5": 1.0,
+        "accuracy": 0.875,
+        "n_gen": 8
       },
       "single": {
         "n": 156,
-        "recall@5": 1.0
+        "recall@5": 1.0,
+        "accuracy": 0.9808,
+        "n_gen": 156
       }
     }
-  }
+  },
+  "_significance": {}
 }

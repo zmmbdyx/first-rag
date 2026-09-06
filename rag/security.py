@@ -15,18 +15,23 @@ MAX_QUESTION_CHARS = 500
 ***REMOVED*** 零宽字符与控制字符（保留换行）
 _CONTROL_RE = re.compile(r"[\u200b-\u200f\u202a-\u202e\u2060\ufeff\t\x00-\x08\x0b\x0c\x0e-\x1f]")
 
-***REMOVED*** 提示注入特征（大小写不敏感）；命中即拦截
+***REMOVED*** 提示注入特征（大小写不敏感）；命中即拦截。覆盖指令覆盖/提示词套取/角色劫持/越狱四大类。
 _INJECTION_PATTERNS = [
     re.compile(p, re.I) for p in [
-        r"忽略(之前|以上|上述|上面|前面)(的)?(所有|全部)?(指令|提示|规则|要求)",
-        r"ignore (all |any )?(previous|prior|above) (instructions|prompts|rules)",
+        r"忽略(之前|以上|上述|上面|前面|先前)(的)?(所有|全部)?(指令|提示|规则|要求|设定)",
+        r"ignore (all |any )?(previous|prior|above|earlier) (instructions|prompts|rules)",
+        r"disregard (your|all|the) (instructions|guidelines)",
         r"(系统|system)\s*(提示词|prompt)",
-        r"(泄露|输出|打印|告诉我).{0,6}(提示词|system prompt|初始指令)",
+        r"(泄露|输出|打印|告诉我|复述).{0,6}(提示词|system prompt|初始指令|系统设定)",
         r"你(现在)?是(一个)?(新的|另一个|不同的).{0,8}(助手|AI|模型|角色)",
         r"进入(开发者|调试|维护|god|dev)模式",
         r"(忘记|无视|无视掉)(之前|以上|上述)(的)?(所有)?(指令|设定|规则)",
         r"break (out of|the) (sandbox|rules)",
-        r"jailbreak",
+        r"jailbreak|DAN模式|越狱",
+        r"现在开始(不用|无需)(遵守|理会)(任何)?(规则|限制)",
+        r"请?扮演(一个)?(不受|没有)(道德|法律|规则)(限制|约束)的",
+        r"repeat (everything|your (system )?prompt)",
+        r"输出你(的)?(初始|系统)消息",
     ]
 ]
 

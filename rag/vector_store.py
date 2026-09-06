@@ -59,6 +59,7 @@ def _to_hits(res) -> list[dict]:
                 "doc_name": (meta or {}).get("doc_name", ""),
                 "section_path": (meta or {}).get("section_path", ""),
                 "page": (meta or {}).get("page", -1),
+                "has_table": "【表格】" in (doc or ""),
                 "distance": dist,
             }
         )

@@ -73,3 +73,8 @@ RRF_P = float(os.getenv("RRF_P", "1.0"))                ***REMOVED*** 加权 RRF
 BM25_VARIANT = os.getenv("BM25_VARIANT", "precise_dict")  ***REMOVED*** precise | precise_dict | search | search_dict
 CUSTOM_DICT = DATA_DIR / "user_dict.txt"                ***REMOVED*** jieba 自定义词典（型号/缩写/术语）
 EXPAND_QUERY = os.getenv("EXPAND_QUERY", "0") == "1"    ***REMOVED*** 是否用 LLM 做查询扩展
+
+***REMOVED*** ---------- 重排序（Reranker） ----------
+RERANK_ENABLED = os.getenv("RERANK_ENABLED", "auto")    ***REMOVED*** auto | on | off
+RERANK_MODEL = os.getenv("RERANK_MODEL", "BAAI/bge-reranker-base")
+RERANK_CANDIDATES = int(os.getenv("RERANK_CANDIDATES", "20"))  ***REMOVED*** 送入重排的候选数

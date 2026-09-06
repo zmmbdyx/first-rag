@@ -62,6 +62,28 @@ def _is_gold_chunk(hit, gold_doc: str, spans: list[str]) -> bool:
     return all(sp in text for sp in spans)
 
 
+def _multi_gold_covered(hits: list, gold_items: list[dict]) -> tuple[bool, int | None]:
+    """多跳题：每个金标项（文档+片段）都需在 hits 中被命中（可在不同块）。
+    返回 (是否全部覆盖, 完整覆盖时的最大首中排名)。"""
+    max_rank = 0
+    for g in gold_items:
+        spans = [s for s in (_norm(x) for x in g["spans"]) if s]
+        ranks = [i + 1 for i, h in enumerate(hits)
+                 if h.doc_name == g["doc"] and all(sp in _norm(h.text) for sp in spans)]
+        if not ranks:
+            return False, None
+        max_rank = max(max_rank, ranks[0])
+    return True, max_rank
+
+
+def _qtype(q: dict) -> str:
+    if q.get("qtype"):
+        return q["qtype"]
+    if not q["answerable"]:
+        return "refusal"
+    return "multi_turn" if q.get("multi_turn") else "single"
+
+
 def load_questions(path: Path, limit: int | None = None) -> list[dict]:
     questions = [json.loads(l) for l in path.read_text(encoding="utf-8").splitlines() if l.strip()]
     return questions[:limit] if limit else questions
@@ -87,7 +109,8 @@ def eval_retrieval(questions: list[dict], retriever, cfg: dict, k: int, use_llm_
     rows = []
     for q in questions:
         row = {"id": q["id"], "question": q["question"], "answerable": q["answerable"],
-               "doc_type": q.get("doc_type", ""), "multi_turn": q.get("multi_turn", False)}
+               "doc_type": q.get("doc_type", ""), "multi_turn": q.get("multi_turn", False),
+               "qtype": _qtype(q)}
         if not q["answerable"]:
             rows.append(row)
             continue
@@ -98,14 +121,23 @@ def eval_retrieval(questions: list[dict], retriever, cfg: dict, k: int, use_llm_
                                use_llm=use_llm_rewrite)
             query, method = rw["query"], rw["method"]
         row["query_used"], row["rewrite_method"] = query, method
-        hits = retriever.retrieve(query, mode=cfg["mode"], k_final=k, k_each=10)
+        hits = retriever.retrieve(query, mode=cfg["mode"], k_final=k, k_each=10,
+                                  rerank_on=cfg.get("rerank"))
         gold_doc, spans = q["gold_doc"], _gold_spans(q["gold_answer"])
-        for kk in (1, 3, 5):
-            top = hits[:kk]
-            row[f"doc_hit@{kk}"] = any(h.doc_name == gold_doc for h in top)
-            row[f"ans_hit@{kk}"] = any(_is_gold_chunk(h, gold_doc, spans) for h in top)
-        ranks = [i + 1 for i, h in enumerate(hits[:k]) if _is_gold_chunk(h, gold_doc, spans)]
-        row["first_hit_rank"] = ranks[0] if ranks else None
+        if q.get("qtype") == "multi_hop" and q.get("gold"):
+            covered, max_rank = _multi_gold_covered(hits[:5], q["gold"])
+            for kk in (1, 3, 5):
+                c, _ = _multi_gold_covered(hits[:kk], q["gold"])
+                row[f"ans_hit@{kk}"] = c
+                row[f"doc_hit@{kk}"] = all(any(h.doc_name == g["doc"] for h in hits[:kk]) for g in q["gold"])
+            row["first_hit_rank"] = max_rank if covered else None
+        else:
+            for kk in (1, 3, 5):
+                top = hits[:kk]
+                row[f"doc_hit@{kk}"] = any(h.doc_name == gold_doc for h in top)
+                row[f"ans_hit@{kk}"] = any(_is_gold_chunk(h, gold_doc, spans) for h in top)
+            ranks = [i + 1 for i, h in enumerate(hits[:k]) if _is_gold_chunk(h, gold_doc, spans)]
+            row["first_hit_rank"] = ranks[0] if ranks else None
         rows.append(row)
     return rows
 
@@ -129,7 +161,8 @@ def _judge_one(q: dict, hits: list, k: int, query: str | None = None) -> dict:
     from rag.llm import answer_question, judge_answer, judge_faithfulness, judge_relevance
 
     out = {"id": q["id"], "question": q["question"], "answerable": q["answerable"],
-           "doc_type": q.get("doc_type", ""), "multi_turn": q.get("multi_turn", False)}
+           "doc_type": q.get("doc_type", ""), "multi_turn": q.get("multi_turn", False),
+           "qtype": _qtype(q)}
     used = hits[:k]
     ***REMOVED*** 多轮题用改写后的独立问题生成（上下文也是按改写问题检索的）
     try:
@@ -262,6 +295,24 @@ def per_type_table(ret_rows: list[dict], gen_rows: list[dict] | None) -> dict:
     return out
 
 
+def per_qtype_table(ret_rows: list[dict], gen_rows: list[dict] | None) -> dict:
+    """按题型（单轮/多跳/改写/对抗/拒答/多轮）分项。"""
+    qtypes = sorted({r.get("qtype", "single") for r in ret_rows if r.get("answerable")})
+    out = {}
+    for t in qtypes:
+        rs = [r for r in ret_rows if r.get("qtype") == t and r.get("answerable")]
+        if not rs:
+            continue
+        entry = {"n": len(rs), "recall@5": round(sum(r["ans_hit@5"] for r in rs) / len(rs), 4)}
+        if gen_rows:
+            gs = [r for r in gen_rows if r.get("qtype") == t and r["answerable"]]
+            if gs:
+                entry["accuracy"] = round(sum(r["verdict"] == "correct" for r in gs) / len(gs), 4)
+                entry["n_gen"] = len(gs)
+        out[t] = entry
+    return out
+
+
 ***REMOVED*** ---------- 报告 ----------
 
 
@@ -320,6 +371,22 @@ def write_report(results: dict, args) -> Path:
             cells.append(f"{r5} / {acc}")
         lines.append(f"| {t} | {n} | " + " | ".join(cells) + " |")
 
+    qtypes = sorted({t for name in order for t in results[name].get("per_qtype", {})})
+    if qtypes:
+        lines += ["", "***REMOVED******REMOVED*** 三之二、按题型分项（Recall@5 / 准确率）", "",
+                  "| 题型 | 题数 | " + " | ".join(f"{CONFIGS[n]['label']}" for n in order) + " |",
+                  "|---|---|" + "---|" * len(order)]
+        for t in qtypes:
+            cells = []
+            n = next((results[name]["per_qtype"].get(t, {}).get("n", "-") for name in order
+                      if t in results[name].get("per_qtype", {})), "-")
+            for name in order:
+                e = results[name].get("per_qtype", {}).get(t, {})
+                r5 = f"{e['recall@5']:.0%}" if e else "-"
+                acc = f"{e['accuracy']:.0%}" if "accuracy" in e else "-"
+                cells.append(f"{r5} / {acc}")
+            lines.append(f"| {t} | {n} | " + " | ".join(cells) + " |")
+
     lines += ["", "***REMOVED******REMOVED*** 四、多轮查询改写消融（仅多轮指代题，改写前 vs 改写后）", "",
               "| 配置 | 题数 | Recall@5 | 准确率 |", "|---|---|---|---|"]
     for name in order:
@@ -364,6 +431,7 @@ def main():
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--k", type=int, default=FINAL_TOP_K)
     ap.add_argument("--bootstrap", type=int, default=1000)
+    ap.add_argument("--out", default="eval_results_v2.json", help="结果文件名（写入 eval/results/）")
     ap.add_argument("--no-llm-rewrite", action="store_true", help="多轮改写离线降级为规则改写")
     args = ap.parse_args()
 
@@ -424,6 +492,7 @@ def main():
 
         results[name]["_arrays"] = collect_arrays(ret_rows, results[name].get("generation_detail"))
         results[name]["per_type"] = per_type_table(ret_rows, results[name].get("generation_detail"))
+        results[name]["per_qtype"] = per_qtype_table(ret_rows, results[name].get("generation_detail"))
 
         ***REMOVED*** 每个配置完成即落盘，中断时保留已完成部分
         RESULTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -470,7 +539,7 @@ def main():
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     ***REMOVED*** 与既有结果合并：分次调用评测不同配置时，已完成的配置保留
-    out_path = RESULTS_DIR / "eval_results_v2.json"
+    out_path = RESULTS_DIR / args.out
     if out_path.exists():
         try:
             prev = json.loads(out_path.read_text(encoding="utf-8"))

@@ -1,0 +1,58 @@
+{
+  "n_questions": 191,
+  "k": 5,
+  "rerank_off": {
+    "n": 191,
+    "answer_recall@1": 0.7853,
+    "answer_recall@3": 0.9581,
+    "answer_recall@5": 0.9895,
+    "doc_recall@5": 0.9948,
+    "mrr": 0.8703,
+    "avg_retrieval_ms": 181.8,
+    "per_qtype": {
+      "adversarial": {
+        "n": 12,
+        "recall@5": 1.0
+      },
+      "multi_hop": {
+        "n": 15,
+        "recall@5": 1.0
+      },
+      "paraphrase": {
+        "n": 8,
+        "recall@5": 0.875
+      },
+      "single": {
+        "n": 156,
+        "recall@5": 0.9936
+      }
+    }
+  },
+  "rerank_on": {
+    "n": 191,
+    "answer_recall@1": 0.8743,
+    "answer_recall@3": 1.0,
+    "answer_recall@5": 1.0,
+    "doc_recall@5": 1.0,
+    "mrr": 0.9328,
+    "avg_retrieval_ms": 1674.0,
+    "per_qtype": {
+      "adversarial": {
+        "n": 12,
+        "recall@5": 1.0
+      },
+      "multi_hop": {
+        "n": 15,
+        "recall@5": 1.0
+      },
+      "paraphrase": {
+        "n": 8,
+        "recall@5": 1.0
+      },
+      "single": {
+        "n": 156,
+        "recall@5": 1.0
+      }
+    }
+  }
+}

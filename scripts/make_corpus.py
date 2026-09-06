@@ -738,6 +738,88 @@ REFUSALS = [
     ("运输安装说明里提到上门安装费吗？", "云滴电器运输与安装说明.txt"),
     ("验收标准约定了尾款支付比例吗？", "软件项目验收标准.pdf"),
     ("车辆管理办法里有关于司机出差补助的规定吗？", "星辰科技车辆管理办法.txt"),
+    ("公司有规定员工体检的医院是哪家吗？", "星辰科技员工手册.pdf"),
+    ("X7破壁机的电源线长度是多少米？", "云滴破壁机X7产品说明书.docx"),
+    ("公司为员工购买的商业保险是哪家保险公司的？", "星辰科技员工手册.pdf"),
+]
+
+***REMOVED*** 扩展题型（v3）：
+***REMOVED*** 多跳（gold 为多文档/多章节金标，检索要求全部覆盖）：
+***REMOVED***   (question, [{"doc":..., "section":..., "spans":[...]}, ...])
+MULTI_HOP = [
+    ("云滴C3咖啡机保修多久？保修期内维修运费由谁承担？", [
+        {"doc": "云滴咖啡机C3产品说明书.docx", "section": "保修与售后", "spans": ["整机自购买之日起保修2年"]},
+        {"doc": "云滴电器保修服务政策.md", "section": "保修范围", "spans": ["承担往返运费"]}]),
+    ("出差餐补一天多少钱？发票抬头写错了还能报吗？", [
+        {"doc": "星辰科技员工手册.pdf", "section": "差旅标准", "spans": ["出差餐补为每天100元"]},
+        {"doc": "星辰科技报销FAQ.txt", "section": "Q3", "spans": ["抬头错误的发票无法入账"]}]),
+    ("远程办公有补贴吗？办公Wi-Fi密码在哪里查看？", [
+        {"doc": "远程办公管理制度.txt", "section": "考勤与补贴", "spans": ["每月100元标准发放远程办公补贴"]},
+        {"doc": "IT服务常见问题FAQ.txt", "section": "Q3", "spans": ["IT服务公告"]}]),
+    ("X7破壁机的功率是多少？它要离热源多远？", [
+        {"doc": "云滴破壁机X7产品说明书.docx", "section": "规格参数", "spans": ["1200W"]},
+        {"doc": "云滴电器运输与安装说明.txt", "section": "破壁机X7安装", "spans": ["30厘米以上"]}]),
+    ("主数据库部署在哪台服务器上？数据库备份保留多久？", [
+        {"doc": "服务器集群配置清单.docx", "section": "", "spans": ["主数据库"]},
+        {"doc": "青梧平台部署运维手册.md", "section": "备份策略", "spans": ["保留30天"]}]),
+    ("C3咖啡机的泵压是多少？电源插座有什么要求？", [
+        {"doc": "云滴咖啡机C3产品说明书.docx", "section": "规格参数", "spans": ["20bar"]},
+        {"doc": "云滴电器运输与安装说明.txt", "section": "咖啡机C3安装", "spans": ["带接地的10A以上插座"]}]),
+    ("质检发现1件A类不合格整批判定吗？可以复检吗？", [
+        {"doc": "恒岳质检抽样标准.txt", "section": "合格判定", "spans": ["样本中发现1件A类不合格即整批判为不合格"]},
+        {"doc": "恒岳质检抽样标准.txt", "section": "复检规则", "spans": ["加倍抽样复检一次"]}]),
+    ("这套房子的月租金多少？物业管理费由谁交？", [
+        {"doc": "房屋租赁合同.pdf", "section": "租期与租金", "spans": ["月租金为人民币6800元"]},
+        {"doc": "房屋租赁合同.pdf", "section": "相关费用", "spans": ["物业管理费由甲方承担"]}]),
+    ("开发合同里程碑M5交付什么？逾期交付违约金怎么算？", [
+        {"doc": "青梧软件开发合同.pdf", "section": "开发里程碑", "spans": ["分析引擎Beta"]},
+        {"doc": "青梧软件开发合同.pdf", "section": "违约责任", "spans": ["0.05%"]}]),
+    ("X7破壁机整机保修多久？保修期内维修运费谁出？", [
+        {"doc": "云滴破壁机X7产品说明书.docx", "section": "保修与售后", "spans": ["保修1年"]},
+        {"doc": "云滴电器保修服务政策.md", "section": "保修范围", "spans": ["承担往返运费"]}]),
+    ("C3咖啡机多久除垢一次？X7的自动清洗程序要多久？", [
+        {"doc": "云滴咖啡机C3产品说明书.docx", "section": "清洁与保养", "spans": ["每2个月进行一次除垢"]},
+        {"doc": "云滴破壁机X7产品说明书.docx", "section": "清洁与保养", "spans": ["程序时长3分钟"]}]),
+    ("API单次查询最多返回多少条？触发限流会返回什么？", [
+        {"doc": "青梧数据平台API技术文档.md", "section": "数据查询接口", "spans": ["单次最多返回100条记录"]},
+        {"doc": "青梧数据平台API技术文档.md", "section": "限流与配额", "spans": ["HTTP 429"]}]),
+    ("密码最少要多少位？导出多少条数据会触发审批？", [
+        {"doc": "星辰科技信息安全管理制度.md", "section": "账号与密码", "spans": ["密码长度不少于12位"]},
+        {"doc": "星辰科技信息安全管理制度.md", "section": "数据分级", "spans": ["数据导出超过1000条时"]}]),
+    ("采购5万元以下谁审批？供应商名录多久评审一次？", [
+        {"doc": "恒岳采购管理办法.md", "section": "采购审批", "spans": ["单笔采购金额5万元以下由部门负责人审批"]},
+        {"doc": "恒岳采购管理办法.md", "section": "供应商管理", "spans": ["每半年评审一次"]}]),
+    ("核心接口的并发响应要求是多少？8小时压测的错误率要求？", [
+        {"doc": "软件项目验收标准.pdf", "section": "性能验收", "spans": ["平均响应时间不超过500毫秒"]},
+        {"doc": "软件项目验收标准.pdf", "section": "性能验收", "spans": ["错误率不超过0.1%"]}]),
+]
+
+***REMOVED*** 同义改写（与既有事实同义但表述不同）
+PARAPHRASE = [
+    ("在公司干满三年，一年能有几天年假？", "满3年不满5年的，每年10天", "星辰科技员工手册.pdf", "年假"),
+    ("破壁机的底盘水垢怎么清理？", "每月用白醋除垢一次", "云滴破壁机X7产品说明书.docx", "清洁与保养"),
+    ("VPN申请下来要多久能开通？", "IT部门将在1个工作日内开通", "IT服务常见问题FAQ.txt", "Q2"),
+    ("租房住的话水电燃气费谁承担？", "水费、电费、燃气费和网络费由乙方承担", "房屋租赁合同.pdf", "相关费用"),
+    ("这个软件项目要开发多久才能交付？", "开发周期为合同生效后180个自然日", "青梧软件开发合同.pdf", "项目名称与内容"),
+    ("数据库每天几点做备份？", "数据库每日凌晨2点全量备份", "青梧平台部署运维手册.md", "备份策略"),
+    ("破壁机显示E1是什么毛病？", "显示E1表示杯体未放好，请重新放置并对准卡槽", "云滴破壁机X7产品说明书.docx", "故障排除"),
+    ("冲压机是不是一个人就能操作？", "冲压机操作必须双人确认模式，单人禁止操作", "恒岳车间安全操作规程.txt", "冲压设备"),
+]
+
+***REMOVED*** 对抗-错误前提（模型应纠正而非顺从；金标=正确事实）
+ADVERSARIAL = [
+    ("C3咖啡机的整机保修期是5年吧？", "整机自购买之日起保修2年", "云滴咖啡机C3产品说明书.docx", "保修与售后"),
+    ("员工年假一律是10天，对吗？", "满1年不满3年的，每年享有5天带薪年假", "星辰科技员工手册.pdf", "年假"),
+    ("远程办公不用申请，想远程随时可以吧？", "远程办公需提前1个工作日在OA系统提交申请", "远程办公管理制度.txt", "总则"),
+    ("破壁机X7用的是5叶刀头吧？", "8叶精钢", "云滴破壁机X7产品说明书.docx", "规格参数"),
+    ("房子的租金是按年支付的，对吧？", "每季度首月5日前支付当季租金", "房屋租赁合同.pdf", "租期与租金"),
+    ("这个开发合同的总金额是150万吧？", "合同总金额为人民币86万元（含税）", "青梧软件开发合同.pdf", "合同金额与支付"),
+    ("查询接口每秒可以调用500次吧？", "查询类接口限流为每秒50次", "青梧数据平台API技术文档.md", "限流与配额"),
+    ("数据库备份是每周做一次的吧？", "数据库每日凌晨2点全量备份", "青梧平台部署运维手册.md", "备份策略"),
+    ("代码合并只要产品经理点头就行吧？", "所有合并请求必须至少获得1名资深工程师的批准", "青梧代码评审规范.md", "评审要求"),
+    ("门禁卡补办是免费的吧？", "工本费50元", "IT服务常见问题FAQ.txt", "Q5"),
+    ("C3咖啡机的泵压是9bar吧？", "20bar", "云滴咖啡机C3产品说明书.docx", "规格参数"),
+    ("质检的A类不合格AQL定的是4.0吧？", "A类不合格接收质量限AQL为0.65", "恒岳质检抽样标准.txt", "合格判定"),
 ]
 
 ***REMOVED*** ==================== 渲染 ====================
@@ -871,7 +953,7 @@ def main():
 
     questions, qid = [], 0
 
-    def add(q, answer, doc, section, answerable, history=None):
+    def add(q, answer, doc, section, answerable, history=None, qtype=None, gold=None):
         nonlocal qid
         qid += 1
         questions.append({
@@ -880,6 +962,8 @@ def main():
             "answerable": answerable,
             "doc_type": next(d["type"] for d in DOCS if d["file"] == doc),
             "multi_turn": bool(history), "history": history or [],
+            "qtype": qtype or ("multi_turn" if history else ("single" if answerable else "refusal")),
+            **({"gold": gold} if gold else {}),
         })
 
     for doc_name, facts in FACTS.items():
@@ -887,6 +971,14 @@ def main():
             add(q, "；".join(spans), doc_name, section, True)
     for q, history, spans, doc, section in MULTI_TURN:
         add(q, "；".join(spans), doc, section, True, history=history)
+    for q, gold_items in MULTI_HOP:
+        doc0 = gold_items[0]["doc"]
+        answer = "；".join(s for g in gold_items for s in g["spans"])
+        add(q, answer, doc0, "", True, qtype="multi_hop", gold=gold_items)
+    for q, span, doc, section in PARAPHRASE:
+        add(q, span, doc, section, True, qtype="paraphrase")
+    for q, span, doc, section in ADVERSARIAL:
+        add(q, span, doc, section, True, qtype="adversarial")
     for q, doc in REFUSALS:
         add(q, "（知识库中未提及，应拒答）", doc, "", False)
 
@@ -895,10 +987,18 @@ def main():
     for item in questions:
         if not item["answerable"]:
             continue
-        for sp in filter(None, (_norm(s) for s in item["gold_answer"].split("；"))):
-            if sp not in _norm(texts[item["gold_doc"]]):
-                print(f"❌ 金标片段不在文档中: [{item['id']}] {item['question']} :: {sp[:50]}")
-                n_bad += 1
+        if item.get("qtype") == "multi_hop":
+            ***REMOVED*** 多跳题：每个金标片段按其所属文档分别校验
+            for g in item["gold"]:
+                for sp in filter(None, (_norm(s) for s in g["spans"])):
+                    if sp not in _norm(texts[g["doc"]]):
+                        print(f"❌ 金标片段不在文档中: [{item['id']}] {item['question']} :: {sp[:50]}")
+                        n_bad += 1
+        else:
+            for sp in filter(None, (_norm(s) for s in item["gold_answer"].split("；"))):
+                if sp not in _norm(texts[item["gold_doc"]]):
+                    print(f"❌ 金标片段不在文档中: [{item['id']}] {item['question']} :: {sp[:50]}")
+                    n_bad += 1
     if n_bad:
         sys.exit(f"共 {n_bad} 处金标校验失败，请修正")
 
@@ -906,9 +1006,13 @@ def main():
         "\n".join(json.dumps(q, ensure_ascii=False) for q in questions), encoding="utf-8")
     n_a = sum(1 for q in questions if q["answerable"])
     n_r = len(questions) - n_a
-    n_mt = sum(1 for q in questions if q["multi_turn"])
+    n_mt = sum(1 for q in questions if q.get("multi_turn"))
+    by_type: dict[str, int] = {}
+    for q in questions:
+        by_type[q.get("qtype", "?")] = by_type.get(q.get("qtype", "?"), 0) + 1
     print(f"\n✅ 评测集 {QUESTIONS_OUT}")
-    print(f"   共 {len(questions)} 题 = 可回答 {n_a}（含多轮 {n_mt}）+ 拒答 {n_r}（占比 {n_r / len(questions):.1%}）")
+    print(f"   共 {len(questions)} 题 = 可回答 {n_a}（多轮 {n_mt}）+ 拒答 {n_r}（占比 {n_r / len(questions):.1%}）")
+    print(f"   题型分布: {json.dumps(by_type, ensure_ascii=False)}")
 
 
 if __name__ == "__main__":

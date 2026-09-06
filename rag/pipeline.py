@@ -202,10 +202,10 @@ def chat(
     })
 
     ***REMOVED*** ---- 指标落库（延迟 / Token / 错误率；含阈值告警） ----
-    from .llm import _last_usage
+    from .llm import get_last_usage
     from .metrics import estimate_tokens, record
 
-    usage = _last_usage
+    usage = get_last_usage()
     p_tokens = usage.prompt_tokens if usage else estimate_tokens(build_context(hits) + rw["query"])
     c_tokens = usage.completion_tokens if usage else estimate_tokens(result["answer"])
     result["tokens"] = {"prompt": p_tokens, "completion": c_tokens}

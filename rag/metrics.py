@@ -6,6 +6,7 @@
 """
 
 import json
+import logging
 import sqlite3
 import statistics
 import time
@@ -51,8 +52,10 @@ def record(model: str, mode: str, retrieval_ms: float, gen_ms: float,
         finally:
             con.close()
         _check_alerts()
-    except OSError:
-        pass
+    except sqlite3.Error as e:  ***REMOVED*** 并发写锁等 SQLite 异常——指标失败绝不影响主流程
+        logging.warning("metrics 落库失败: %s", e)
+    except OSError as e:  ***REMOVED*** 磁盘/权限问题
+        logging.warning("metrics 落库失败: %s", e)
 
 
 def _check_alerts() -> None:

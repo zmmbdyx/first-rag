@@ -20,6 +20,7 @@ sys.path.insert(0, str(ROOT))
 from rag import vector_store  ***REMOVED*** noqa: E402
 from rag.config import API_KEY, MODEL_OPTIONS  ***REMOVED*** noqa: E402
 from rag.llm import get_client  ***REMOVED*** noqa: E402
+from rag.parsers import SUPPORTED_EXTS  ***REMOVED*** noqa: E402
 from rag.pipeline import load_retriever  ***REMOVED*** noqa: E402
 from rag.retriever import Retriever  ***REMOVED*** noqa: E402
 from rag.rewrite import rewrite_query  ***REMOVED*** noqa: E402
@@ -270,20 +271,27 @@ with st.sidebar:
         up_dir.mkdir(parents=True, exist_ok=True)
         saved = []
         for f in uploaded:
-            p = up_dir / f.name
+            safe_name = Path(f.name).name  ***REMOVED*** 去掉任何目录成分，防止路径穿越
+            if safe_name in ("", ".", "..") or Path(safe_name).suffix.lower() not in SUPPORTED_EXTS:
+                st.warning(f"跳过不合规文件：{f.name}")
+                continue
+            p = up_dir / safe_name
             p.write_bytes(f.getvalue())
             saved.append(str(p))
-        collection = st.session_state.get("kb_collection", COLLECTION_NAME)
-        try:
-            with st.spinner("解析 → 切分 → 向量化 → 写入索引 ..."):
-                stats = ingest(saved, collection_name=collection, quiet=True)
-                get_retriever().rebuild_bm25()  ***REMOVED*** 刷新常驻检索器的 BM25 索引
-            st.cache_data.clear()  ***REMOVED*** 检索缓存失效，新文档立即可查
-            n = sum(stats["docs"].values())
-            st.success(f"✅ 入库完成：{len(stats['docs'])} 篇 / 新增 {n} 块"
-                       f"（库内共 {stats['collection_count']} 块），现在可以直接提问了")
-        except Exception as e:  ***REMOVED*** noqa: BLE001
-            st.error(f"入库失败：{e}")
+        if saved:
+            collection = st.session_state.get("kb_collection", COLLECTION_NAME)
+            try:
+                with st.spinner("解析 → 切分 → 向量化 → 写入索引 ..."):
+                    stats = ingest(saved, collection_name=collection, quiet=True)
+                    get_retriever().rebuild_bm25()  ***REMOVED*** 刷新常驻检索器的 BM25 索引
+                st.cache_data.clear()  ***REMOVED*** 检索缓存失效，新文档立即可查
+                n = sum(stats["docs"].values())
+                st.success(f"✅ 入库完成：{len(stats['docs'])} 篇 / 新增 {n} 块"
+                           f"（库内共 {stats['collection_count']} 块），现在可以直接提问了")
+            except Exception as e:  ***REMOVED*** noqa: BLE001
+                st.error(f"入库失败：{e}")
+        else:
+            st.warning("没有可入库的合规文件")
 
 
 ***REMOVED*** ---------- 知识库加载（首次打开有加载提示，完成后提示自动消失，不留残影） ----------

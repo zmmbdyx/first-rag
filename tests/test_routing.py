@@ -40,6 +40,9 @@ def test_missing_alias_raises(monkeypatch):
         resolve_model("m@nope")
 
 
-def test_alias_takes_last_at():
+def test_alias_takes_last_at(monkeypatch):
     ***REMOVED*** 模型名理论上不含 @；rsplit 保证只按最后一个 @ 切
-    bare, _, _ = resolve_model.__wrapped__("a@b") if hasattr(resolve_model, "__wrapped__") else (None, None, None)
+    monkeypatch.setenv("B__BASE_URL", "https://b.example/v1")
+    monkeypatch.setenv("B__API_KEY", "sk-b")
+    bare, base, key = resolve_model("a@b")
+    assert bare == "a" and base == "https://b.example/v1" and key == "sk-b"

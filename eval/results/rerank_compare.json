@@ -8,7 +8,7 @@
     "answer_recall@5": 0.9895,
     "doc_recall@5": 0.9948,
     "mrr": 0.8703,
-    "avg_retrieval_ms": 181.8,
+    "avg_retrieval_ms": 198.9,
     "per_qtype": {
       "adversarial": {
         "n": 12,
@@ -35,7 +35,7 @@
     "answer_recall@5": 1.0,
     "doc_recall@5": 1.0,
     "mrr": 0.9328,
-    "avg_retrieval_ms": 1674.0,
+    "avg_retrieval_ms": 1432.6,
     "per_qtype": {
       "adversarial": {
         "n": 12,

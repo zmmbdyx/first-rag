@@ -77,22 +77,27 @@ class Retriever:
     def keyword_search(self, question: str, k: int = KEYWORD_TOP_K) -> list[Hit]:
         if self.bm25 is None:
             return []
+        pairs = self.bm25.search(question, k)
+        if not pairs:
+            return []
+        ***REMOVED*** 一次批量取回元数据，避免逐命中回查的 N+1
+        got = self.collection.get(ids=[cid for cid, _ in pairs],
+                                  include=["documents", "metadatas"])
+        by_id = {cid: (doc or "", meta or {}) for cid, doc, meta in
+                 zip(got["ids"], got["documents"], got["metadatas"])}
         hits = []
-        for cid, score in self.bm25.search(question, k):
-            got = self.collection.get(ids=[cid], include=["documents", "metadatas"])
-            if not got["ids"]:
+        for cid, score in pairs:  ***REMOVED*** 保持 BM25 排名顺序
+            if cid not in by_id:
                 continue
-            meta = got["metadatas"][0] or {}
-            hits.append(
-                Hit(
-                    chunk_id=cid,
-                    text=got["documents"][0] or "",
-                    doc_name=meta.get("doc_name", ""),
-                    section_path=meta.get("section_path", ""),
-                    page=meta.get("page", -1),
-                    score=score,
-                )
-            )
+            text, meta = by_id[cid]
+            hits.append(Hit(
+                chunk_id=cid, text=text,
+                doc_name=meta.get("doc_name", ""),
+                section_path=meta.get("section_path", ""),
+                page=meta.get("page", -1),
+                score=score,
+                has_table="【表格】" in text,
+            ))
         return hits
 
     ***REMOVED*** ---------- 混合检索 ----------

@@ -1,7 +1,9 @@
 """大模型调用：带引用标注的答案生成 + 评测用 LLM 判分。"""
 
 import json
+import os
 import re
+import threading
 import time
 
 from openai import OpenAI
@@ -12,7 +14,12 @@ from .retriever import Hit
 from .security import needs_citation, validate_citations
 
 _clients: dict[tuple[str, str], "OpenAI"] = {}
-_last_usage = None  ***REMOVED*** 最近一次调用的 token 用量（评测/成本核算用）
+_usage_local = threading.local()  ***REMOVED*** 每线程最近一次调用的 token 用量（并发安全）
+
+
+def get_last_usage():
+    """当前线程最近一次 LLM 调用的 token 用量（None=端点未回传）。"""
+    return getattr(_usage_local, "value", None)
 
 
 def get_client(model: str | None = None) -> tuple["OpenAI", str]:
@@ -23,7 +30,11 @@ def get_client(model: str | None = None) -> tuple["OpenAI", str]:
     bare, base_url, api_key = resolve_model(model)
     ck = (base_url, api_key)
     if ck not in _clients:
-        _clients[ck] = OpenAI(api_key=api_key, base_url=base_url)
+        _clients[ck] = OpenAI(
+            api_key=api_key, base_url=base_url,
+            timeout=float(os.getenv("LLM_TIMEOUT", "60")),  ***REMOVED*** 防端点挂起阻塞整条链路
+            max_retries=1,
+        )
     return _clients[ck], bare
 
 SYSTEM_ANSWER = """你是企业知识库问答助手，必须严格遵守以下规则：
@@ -55,8 +66,7 @@ def chat(messages: list[dict], model: str = LLM_MODEL, temperature: float = 0.2,
             if extra:
                 kw["extra_body"] = extra
             resp = client.chat.completions.create(**kw)
-            global _last_usage
-            _last_usage = getattr(resp, "usage", None)
+            _usage_local.value = getattr(resp, "usage", None)
             return (resp.choices[0].message.content or "").strip()
         except Exception as e:  ***REMOVED*** noqa: BLE001
             last_err = e

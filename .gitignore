@@ -6,6 +6,7 @@
 ***REMOVED*** ===== 向量库 / 索引 / 评测缓存 =====
 chroma_db/
 data/index/
+data/uploads/
 eval/.eval_db/
 logs/
 *.pkl

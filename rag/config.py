@@ -9,11 +9,9 @@ ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(ROOT / ".env")
 
 ***REMOVED*** ---------- 大模型服务（OpenAI 兼容接口） ----------
+***REMOVED*** 端点与密钥只在 .env / 环境变量中配置，代码与仓库中不保留任何真实端点。
 API_KEY = os.getenv("API_KEY", "")
-BASE_URL = os.getenv(
-    "BASE_URL",
-    "https://dashscope.aliyuncs.com/compatible-mode/v1",
-)
+BASE_URL = os.getenv("BASE_URL", "")
 LLM_MODEL = os.getenv("LLM_MODEL", "qwen3.5-flash")
 JUDGE_MODEL = os.getenv("JUDGE_MODEL", LLM_MODEL)
 
@@ -47,6 +45,8 @@ def resolve_model(model: str | None = None) -> tuple[str, str, str]:
             raise ValueError(
                 f"端点别名 “{ep}” 未配置：请在 .env 中添加 {ep_u}__BASE_URL 和 {ep_u}__API_KEY")
         return bare, base, key
+    if not BASE_URL or not API_KEY:
+        raise ValueError("未配置大模型服务：请在 .env 中设置 BASE_URL 和 API_KEY")
     return m, BASE_URL, API_KEY
 
 ***REMOVED*** ---------- 路径 ----------

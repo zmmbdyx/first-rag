@@ -120,6 +120,7 @@ def get_retriever() -> Retriever:
     """加载检索器：优先使用智能切分入库的 rag_chunks 集合，否则回退旧 langchain 集合。"""
     client = vector_store.get_client(INDEX_DIR)
     name = "rag_chunks" if vector_store.get_collection(client, "rag_chunks", create=False) is not None else "langchain"
+    st.session_state["kb_collection"] = name  ***REMOVED*** 上传入库时写入同一集合
     retriever = load_retriever(INDEX_DIR, name)
     if retriever.bm25 is None:  ***REMOVED*** 首次运行：现场构建一次 BM25 关键词索引并缓存
         with st.spinner("首次运行：正在构建 BM25 关键词索引（一次性）..."):
@@ -255,6 +256,34 @@ with st.sidebar:
     if st.button("🗑️ 清空对话"):
         st.session_state.messages = []
         st.rerun()
+
+    ***REMOVED*** ---------- 文档上传入库：解析 → 智能切分 → 向量化 → 写入 Chroma + BM25 ----------
+    st.divider()
+    st.subheader("📤 文档入库")
+    uploaded = st.file_uploader("PDF / Word / TXT / MD（可多选）",
+                                type=["pdf", "docx", "txt", "md"], accept_multiple_files=True)
+    if st.button("入库到知识库", type="primary", disabled=not uploaded) and uploaded:
+        from rag.config import COLLECTION_NAME
+        from rag.pipeline import ingest
+
+        up_dir = Path(ROOT) / "data" / "uploads"
+        up_dir.mkdir(parents=True, exist_ok=True)
+        saved = []
+        for f in uploaded:
+            p = up_dir / f.name
+            p.write_bytes(f.getvalue())
+            saved.append(str(p))
+        collection = st.session_state.get("kb_collection", COLLECTION_NAME)
+        try:
+            with st.spinner("解析 → 切分 → 向量化 → 写入索引 ..."):
+                stats = ingest(saved, collection_name=collection, quiet=True)
+                get_retriever().rebuild_bm25()  ***REMOVED*** 刷新常驻检索器的 BM25 索引
+            st.cache_data.clear()  ***REMOVED*** 检索缓存失效，新文档立即可查
+            n = sum(stats["docs"].values())
+            st.success(f"✅ 入库完成：{len(stats['docs'])} 篇 / 新增 {n} 块"
+                       f"（库内共 {stats['collection_count']} 块），现在可以直接提问了")
+        except Exception as e:  ***REMOVED*** noqa: BLE001
+            st.error(f"入库失败：{e}")
 
 
 ***REMOVED*** ---------- 知识库加载（首次打开有加载提示，完成后提示自动消失，不留残影） ----------

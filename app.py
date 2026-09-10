@@ -18,7 +18,8 @@ ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
 from rag import vector_store  ***REMOVED*** noqa: E402
-from rag.config import API_KEY, MODEL_OPTIONS  ***REMOVED*** noqa: E402
+from rag.config import API_KEY, COLLECTION_NAME, MODEL_OPTIONS  ***REMOVED*** noqa: E402
+from rag.config import INDEX_DIR as CFG_INDEX_DIR  ***REMOVED*** noqa: E402
 from rag.llm import get_client  ***REMOVED*** noqa: E402
 from rag.parsers import SUPPORTED_EXTS  ***REMOVED*** noqa: E402
 from rag.pipeline import load_retriever  ***REMOVED*** noqa: E402
@@ -27,7 +28,10 @@ from rag.rewrite import rewrite_query  ***REMOVED*** noqa: E402
 from rag.security import InputBlocked, check_input, validate_citations  ***REMOVED*** noqa: E402
 
 ***REMOVED*** ============ 配置 ============
-INDEX_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "chroma_db")
+***REMOVED*** 修复：原先把索引目录硬编码为 <项目根>/chroma_db，忽略了 rag.config 里
+***REMOVED*** INDEX_DIR 环境变量的覆盖能力——一旦用 INDEX_DIR 指定了别的库，
+***REMOVED*** Web 界面会与 build_kb.py / ask.py 指向不同的库，表现为"刚入库的文档看不到"。
+INDEX_DIR = str(CFG_INDEX_DIR)
 MODE_LABELS = {
     "hybrid": "混合检索（向量+关键词，RRF 融合）",
     "vector": "纯向量检索",
@@ -120,7 +124,11 @@ if "messages" not in st.session_state:
 def get_retriever() -> Retriever:
     """加载检索器：优先使用智能切分入库的 rag_chunks 集合，否则回退旧 langchain 集合。"""
     client = vector_store.get_client(INDEX_DIR)
-    name = "rag_chunks" if vector_store.get_collection(client, "rag_chunks", create=False) is not None else "langchain"
+    ***REMOVED*** 修复：集合名原先硬编码为 "rag_chunks"，忽略了 rag.config 的 COLLECTION_NAME 配置；
+    ***REMOVED*** 现优先使用配置的集合名，旧库仍回退 "langchain" 以兼容历史数据。
+    name = (COLLECTION_NAME
+            if vector_store.get_collection(client, COLLECTION_NAME, create=False) is not None
+            else "langchain")
     st.session_state["kb_collection"] = name  ***REMOVED*** 上传入库时写入同一集合
     retriever = load_retriever(INDEX_DIR, name)
     if retriever.bm25 is None:  ***REMOVED*** 首次运行：现场构建一次 BM25 关键词索引并缓存
@@ -176,6 +184,10 @@ def stream_answer(model, history, system_prompt, question, temperature, thinking
         candidates = [{"enable_thinking": False}, None]
 
     stream, last_err = None, None
+    ***REMOVED*** 修复：原先 t0 是在 create() 返回之后才取的，而 OpenAI 流式接口在 create() 阶段
+    ***REMOVED*** 就完成了建连与排队——导致界面上的「首字耗时」只统计到首块解析时间，长期显示 0.0s，
+    ***REMOVED*** 「总耗时」也漏掉了真实的请求往返。这里把计时起点提前到发起请求之前。
+    t0 = time.time()
     for extra in candidates:  ***REMOVED*** 个别参数不被端点支持时逐级降级重试
         kw = dict(base)
         if extra:
@@ -188,7 +200,6 @@ def stream_answer(model, history, system_prompt, question, temperature, thinking
     if stream is None:
         raise last_err
 
-    t0 = time.time()
     ttft = None
     reasoning_parts, answer_parts = [], []
     usage = None
@@ -223,6 +234,11 @@ def stream_answer(model, history, system_prompt, question, temperature, thinking
 
     if status_box is not None:
         status_box.update(label="🧠 思考完成", state="complete", expanded=False)
+    ***REMOVED*** 修复：流式打字机用的 answer_ph 占位块原先不清除，调用方随后又 st.markdown(answer)
+    ***REMOVED*** 渲染一遍，导致同一条回答在界面上重复显示两次（截图可见）。这里用完即清，
+    ***REMOVED*** 最终答案统一由调用方渲染一次。
+    if answer_ph is not None:
+        answer_ph.empty()
     return "".join(answer_parts), "".join(reasoning_parts), usage, time.time() - t0, ttft
 
 
@@ -264,7 +280,8 @@ with st.sidebar:
     uploaded = st.file_uploader("PDF / Word / TXT / MD（可多选）",
                                 type=["pdf", "docx", "txt", "md"], accept_multiple_files=True)
     if st.button("入库到知识库", type="primary", disabled=not uploaded) and uploaded:
-        from rag.config import COLLECTION_NAME
+        ***REMOVED*** 修复：原先在这里又 `from rag.config import COLLECTION_NAME` 局部导入一次，
+        ***REMOVED*** 与文件顶部已导入的同名符号重复（遮蔽 + 易漏改），直接复用顶部导入。
         from rag.pipeline import ingest
 
         up_dir = Path(ROOT) / "data" / "uploads"
@@ -402,13 +419,29 @@ if prompt:
         history = history[-2 * history_rounds:]
 
         answer, reasoning = None, ""
+        gen_error = None
         try:
             answer, reasoning, usage, elapsed, ttft = stream_answer(
                 model, history, system_prompt, rw["query"],
                 temperature, thinking_on, budget, max_tokens,
             )
-        except Exception as e:
+        except Exception as e:  ***REMOVED*** noqa: BLE001
+            gen_error = e
+            answer, usage, elapsed, ttft = None, None, time.time() - t0, None
             st.error(f"调用模型失败：{e}")
+
+        ***REMOVED*** 修复：Web 界面此前完全不写运行指标（只有 CLI / pipeline.chat 会写），
+        ***REMOVED*** 导致 scripts/metrics_report.py 看到的全是命令行数据、错误率恒为 0。
+        ***REMOVED*** 这里补齐同样的落库（含失败样本），让 P95/错误率告警覆盖图形界面链路。
+        try:
+            from rag.metrics import estimate_tokens, record as record_metric
+
+            p_tok = usage.prompt_tokens if usage else estimate_tokens(final_context + rw["query"])
+            c_tok = usage.completion_tokens if usage else estimate_tokens(answer or "")
+            record_metric(model, retrieval_mode, t_retrieval * 1000, elapsed * 1000,
+                          p_tok, c_tok, error=gen_error is not None)
+        except Exception:  ***REMOVED*** noqa: BLE001 — 指标失败绝不影响问答主流程
+            pass
 
         if answer is not None:
             ***REMOVED*** ---- 引用校验：伪造编号提示（编号必须真实对应检索结果）----
@@ -434,7 +467,7 @@ if prompt:
                             star = " ⭐" if idx in cited else ""
                             st.markdown(f"**📄 {source['title']}{star}**（{source['source']} · 经{via}命中）")
                         else:
-                            st.markdown(f"**🌐 [{source['title']}]({source.get('href', '')}）**")
+                            st.markdown(f"**🌐 [{source['title']}]({source.get('href', '')})**")
                         st.markdown(f"> {source['content'][:200]}...")
                         st.divider()
 

@@ -102,7 +102,7 @@ def make_pdf():
     doc = SimpleDocTemplate(str(OUT / "星辰科技员工手册.pdf"), pagesize=A4,
                             topMargin=20 * mm, bottomMargin=20 * mm)
     doc.build(story)
-    print(f"  ✅ 星辰科技员工手册.pdf")
+    print("  ✅ 星辰科技员工手册.pdf")
 
 
 ***REMOVED*** ==================== 2. 产品说明书 Word ====================

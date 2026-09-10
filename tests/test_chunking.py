@@ -4,8 +4,6 @@ import math
 import sys
 from pathlib import Path
 
-import pytest
-
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
@@ -79,3 +77,15 @@ def test_chunk_ids_stable():
     ids1 = [c.chunk_id for c in smart_chunk(_fake_doc())]
     ids2 = [c.chunk_id for c in smart_chunk(_fake_doc())]
     assert ids1 == ids2  ***REMOVED*** 幂等入库依赖稳定 ID
+
+
+def test_smart_chunk_zero_overlap_no_duplication():
+    """回归测试：overlap_sentences=0 曾因切片 `[-0:]` 等价于 `[0:]`
+    而把整块前文当作重叠内容重复塞进新块，导致 chunk 数锐减/内容成倍重复。"""
+    no_overlap = smart_chunk(_fake_doc(), chunk_size=200, overlap_sentences=0)
+    with_overlap = smart_chunk(_fake_doc(), chunk_size=200, overlap_sentences=1)
+    ***REMOVED*** 关掉重叠后总块数不应少于开启重叠时，且正文总长度不应异常膨胀
+    assert len(no_overlap) >= len(with_overlap)
+    total = sum(len(c.text) for c in no_overlap)
+    max_expected = 640 * 2  ***REMOVED*** 原始正文约 640 字，留出章节标题与连接的余量
+    assert total < max_expected, f"关闭重叠后正文被重复填充：{total} 字"

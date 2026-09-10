@@ -125,7 +125,10 @@ def eval_retrieval(questions: list[dict], retriever, cfg: dict, k: int, use_llm_
                                   rerank_on=cfg.get("rerank"))
         gold_doc, spans = q["gold_doc"], _gold_spans(q["gold_answer"])
         if q.get("qtype") == "multi_hop" and q.get("gold"):
-            covered, max_rank = _multi_gold_covered(hits[:5], q["gold"])
+            ***REMOVED*** 修复：原先这里硬编码 hits[:5]，与函数参数 k（--k 可调）脱节——
+            ***REMOVED*** 一旦用 --k 调小/调大召回窗口，多跳题的 first_hit_rank 仍按 5 计算，
+            ***REMOVED*** 导致 MRR 与 Recall@k 口径不一致。统一改用 k。
+            covered, max_rank = _multi_gold_covered(hits[:k], q["gold"])
             for kk in (1, 3, 5):
                 c, _ = _multi_gold_covered(hits[:kk], q["gold"])
                 row[f"ans_hit@{kk}"] = c
@@ -214,7 +217,11 @@ def eval_generation(questions: list[dict], retriever, cfg: dict, k: int,
         if cfg["rewrite"] and q.get("history"):
             query = rewrite_query(query, [{"role": "user", "content": h} for h in q["history"]],
                                   use_llm=use_llm_rewrite)["query"]
-        hits = retriever.retrieve(query, mode=cfg["mode"], k_final=min(k, 10), k_each=10)
+        ***REMOVED*** 修复：与 eval_retrieval 保持一致地传入 rerank_on——
+        ***REMOVED*** 否则同一配置下"检索指标"与"生成指标"基于不同的候选集（一个重排了、一个没重排），
+        ***REMOVED*** 报告里的检索/生成两栏数据无法互相解释。
+        hits = retriever.retrieve(query, mode=cfg["mode"], k_final=min(k, 10), k_each=10,
+                                  rerank_on=cfg.get("rerank"))
         jobs.append((q, hits, query))
 
     print(f"    生成+四维判分 {len(jobs)} 题（{workers} 并发）...")
@@ -496,7 +503,9 @@ def main():
 
         ***REMOVED*** 每个配置完成即落盘，中断时保留已完成部分
         RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-        (RESULTS_DIR / "eval_results_v2.json").write_text(
+        ***REMOVED*** 修复：这里原先硬编码写回 eval_results_v2.json，忽略了 --out 参数——
+        ***REMOVED*** 用 `--out eval_results_v4_harden.json` 分次评测时，中间结果会覆盖/写错文件。
+        (RESULTS_DIR / args.out).write_text(
             json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8")
 
     ***REMOVED*** ---- 显著性检验（配对，按题目对齐） ----
@@ -520,7 +529,7 @@ def main():
                 b = [1.0 / x if x else 0.0 for x in b]
             s = paired_bootstrap_diff(b, a, n_boot=args.bootstrap)
             s["metric"] = metric
-            sig[f"hybrid vs baseline"] = s
+            sig["hybrid vs baseline"] = s
     if "smart_vector" in results and "hybrid" in results:
         ids = [r["id"] for r in results["smart_vector"]["retrieval_detail"] if r.get("answerable")]
         a = by_id(results["smart_vector"]["retrieval_detail"], "ans_hit@5", ids)

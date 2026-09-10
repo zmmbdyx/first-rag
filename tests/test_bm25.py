@@ -6,7 +6,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from rag.bm25 import BM25Index, tokenize
+***REMOVED*** 修复：原先从 rag.bm25 导入的 BM25Index 在本文件中并未使用，属未使用导入，已移除。
+from rag.bm25 import tokenize
 
 
 def test_tokenize_filters_punct():
@@ -49,3 +50,18 @@ def test_rrf_fusion_prefers_double_hits():
     ***REMOVED*** b 在两路都靠前，应排第一；a 两路均被命中也应靠前
     assert ranked[0] == "b"
     assert set(ranked[:2]) == {"a", "b"}
+
+
+def test_retriever_dedup_drops_near_duplicate_chunks():
+    """回归测试：检索结果原先没有近似去重，正文高度重复的块会同时占据 top-k。"""
+    from rag.retriever import Hit, _dedup
+
+    dup_text = "试用期为三个月，转正后享受正式员工福利。"
+    hits = [
+        Hit(chunk_id="a", text=dup_text, doc_name="d1", section_path="", page=-1, score=0.9),
+        Hit(chunk_id="b", text=dup_text, doc_name="d1", section_path="", page=-1, score=0.8),
+        Hit(chunk_id="c", text="年假：满1年5天，满3年10天。", doc_name="d2", section_path="", page=-1,
+            score=0.7),
+    ]
+    kept = _dedup(hits)
+    assert [h.chunk_id for h in kept] == ["a", "c"]  ***REMOVED*** 保留排序更靠前的重复块

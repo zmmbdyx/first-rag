@@ -3,12 +3,12 @@
   "k": 5,
   "rerank_off": {
     "n": 191,
-    "answer_recall@1": 0.7853,
-    "answer_recall@3": 0.9581,
-    "answer_recall@5": 0.9895,
-    "doc_recall@5": 0.9948,
-    "mrr": 0.8703,
-    "avg_retrieval_ms": 198.9,
+    "answer_recall@1": 0.7801,
+    "answer_recall@3": 0.9634,
+    "answer_recall@5": 0.9791,
+    "doc_recall@5": 0.9843,
+    "mrr": 0.8652,
+    "avg_retrieval_ms": 29.3,
     "per_qtype": {
       "adversarial": {
         "n": 12,
@@ -24,18 +24,18 @@
       },
       "single": {
         "n": 156,
-        "recall@5": 0.9936
+        "recall@5": 0.9808
       }
     }
   },
   "rerank_on": {
     "n": 191,
-    "answer_recall@1": 0.8743,
+    "answer_recall@1": 0.8848,
     "answer_recall@3": 1.0,
     "answer_recall@5": 1.0,
     "doc_recall@5": 1.0,
-    "mrr": 0.9328,
-    "avg_retrieval_ms": 1432.6,
+    "mrr": 0.9398,
+    "avg_retrieval_ms": 3569.5,
     "per_qtype": {
       "adversarial": {
         "n": 12,

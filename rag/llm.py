@@ -16,6 +16,9 @@ from .security import needs_citation, validate_citations
 _clients: dict[tuple[str, str], "OpenAI"] = {}
 _usage_local = threading.local()  ***REMOVED*** 每线程最近一次调用的 token 用量（并发安全）
 
+***REMOVED*** 忠实度判分时送入的上下文块数上限（原先是字面量 5，提为常量便于统一调整）
+FAITHFULNESS_CONTEXT_CHUNKS = 5
+
 
 def get_last_usage():
     """当前线程最近一次 LLM 调用的 token 用量（None=端点未回传）。"""
@@ -89,10 +92,19 @@ def build_context(hits: list[Hit]) -> str:
 
 
 def answer_question(question: str, hits: list[Hit], model: str = LLM_MODEL,
-                    max_tokens: int | None = 1024, validate: bool = True) -> dict:
-    """生成答案；解析并校验引用编号，伪造编号/缺失引用时自动重新生成一次。"""
+                    max_tokens: int | None = 1024, validate: bool = True,
+                    empty_kb: bool = False) -> dict:
+    """生成答案；解析并校验引用编号，伪造编号/缺失引用时自动重新生成一次。
+
+    empty_kb: 知识库确为空（True）还是"库非空但没检索到相关内容"（False）——
+    两种情况给的提示语不同，避免把"检索无命中"误导成"需要重新入库"。
+    """
     if not hits:
-        return {"answer": "知识库为空，请先调用入库脚本导入文档。", "sources": [], "citations": [],
+        ***REMOVED*** 修复：原先无命中时一律返回"知识库为空，请先调用入库脚本导入文档"，
+        ***REMOVED*** 检索不到内容（问题与语料不匹配）的用户会被误导去反复入库。
+        msg = ("知识库为空，请先调用入库脚本导入文档。" if empty_kb
+               else "根据知识库中的资料，未找到与该问题相关的内容。请尝试换个说法或补充关键词。")
+        return {"answer": msg, "sources": [], "citations": [],
                 "latency": 0.0, "has_citation": False, "forged_citations": [],
                 "citation_retry": 0, "citation_warning": ""}
 
@@ -219,7 +231,8 @@ def judge_faithfulness(answer: str, hits: list[Hit], model: str | None = None) -
     sentences = [s.strip() for s in split_sentences(re.sub(r"\[\d{1,3}\]", "", answer)) if s.strip()]
     if not sentences:
         return None
-    prompt = _FAITH_PROMPT.format(context=build_context(hits[:5]), answer="\n".join(sentences))
+    prompt = _FAITH_PROMPT.format(context=build_context(hits[:FAITHFULNESS_CONTEXT_CHUNKS]),
+                                  answer="\n".join(sentences))
     try:
         text = chat([{"role": "user", "content": prompt}], model=model or LLM_MODEL,
                     temperature=0.0, max_tokens=300)

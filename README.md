@@ -169,7 +169,37 @@ MODEL_OPTIONS=qwen-plus@aliyun,deepseek-chat@deepseek,glm-4-flash@zhipu
 客户端按 `(base_url, api_key)` 缓存路由，Web 下拉框、CLI（`--model "deepseek-chat@deepseek"`）、
 评测判分（`JUDGE_MODEL=xxx@alias`）全链路生效；完整示例见 `.env.example`。
 
-***REMOVED******REMOVED*** 7. 项目结构
+***REMOVED******REMOVED*** 7. 系统运行截图
+
+> 截图由 `scripts/capture_screenshots.py` 用 Playwright 自动操作真实页面生成（非手绘/非设计稿）：
+> `streamlit run app.py` → 打开页面 → 输入「试用期多长时间？」→ 截图 → 展开引用来源。
+> 复现：`python scripts/capture_screenshots.py`（需先 `pip install playwright && playwright install chromium`）。
+
+***REMOVED******REMOVED******REMOVED*** 7.1 主界面
+
+左侧为 AI 设置（模型 / 温度 / 思考模式 / 检索条数 / 检索模式 / 对话记忆轮数 / 联网搜索 / 文档入库），
+右侧为对话区，空状态给出可点击的示例问题。
+
+![RAG 系统主界面](./screenshots/rag_main.png)
+
+***REMOVED******REMOVED******REMOVED*** 7.2 运行过程（检索 + 流式生成）
+
+提问后先做安全检查与查询改写，再执行混合检索，最后流式生成答案——界面上可实时看到各阶段状态。
+
+![RAG 系统运行过程](./screenshots/rag_answering.png)
+
+***REMOVED******REMOVED******REMOVED*** 7.3 运行结果（答案 + 答案溯源）
+
+答案中的 `[1]` 等编号与检索块一一对应，底部给出检索/首字/总耗时与 token 消耗。
+
+![RAG 系统运行结果](./screenshots/rag_result.png)
+
+展开「查看引用来源」后，可看到每个命中块的 **文档名 · 章节路径 · 页码**、命中的检索路径
+（vector / keyword，即混合检索里是哪一路召回的）以及命中的原文片段。
+
+![RAG 系统答案溯源](./screenshots/rag_sources.png)
+
+***REMOVED******REMOVED*** 8. 项目结构
 
 ```
 rag/
@@ -196,6 +226,7 @@ rag/
 │   ├── tune_retrieval.py   ***REMOVED*** RRF 网格搜索 / BM25 变体对比 / 查询扩展实验
 │   ├── benchmark_scale.py  ***REMOVED*** 1000 篇入库/增量/延迟/内存基准
 │   ├── benchmark_embedding.py  ***REMOVED*** PyTorch vs ONNX fp32/int8 编码加速对比
+│   ├── capture_screenshots.py  ***REMOVED*** Playwright 自动操作界面并截图（README 截图来源）
 │   └── migrate_to_milvus.py    ***REMOVED*** Chroma → Milvus 迁移脚本（10 万块级方案）
 ├── eval/
 │   ├── questions.jsonl     ***REMOVED*** v1 评测集（30 题）
@@ -205,24 +236,25 @@ rag/
 │   ├── samples/            ***REMOVED*** v1 示例文档
 │   ├── corpus/             ***REMOVED*** 升级版语料（22 篇：制度/合同/说明书/表格/FAQ/技术文档）
 │   └── user_dict.txt       ***REMOVED*** jieba 自定义词典（型号/缩写/术语）
-└── tests/                  ***REMOVED*** 32 个单元测试（解析/切分/表格/BM25/改写/安全/统计）
+├── screenshots/            ***REMOVED*** 系统运行截图（由 scripts/capture_screenshots.py 自动生成）
+└── tests/                  ***REMOVED*** 38 个单元测试（解析/切分/表格/BM25/改写/安全/统计/去重）
 ```
 
-***REMOVED******REMOVED*** 8. 关键实现细节
+***REMOVED******REMOVED*** 9. 关键实现细节
 
 - **智能切分**（`rag/chunking.py`）：标题块驱动章节树，切分不跨章节；章节内按段落贪心装填到 `CHUNK_SIZE`（默认 420 字），超长段落按正则句子边界（`。！？!?；;` 及英文句号）下切；相邻块保留 1 句重叠。向量入库时给每块拼接 `【文档名 · 章节路径】` 上下文头，让"考勤制度里的工作时间"这类查询在向量空间里更可分。
 - **RRF 融合**（`rag/retriever.py`）：`score(d) = Σ 1/(60 + rank路(d))`，只用排名不比对原始分，避免余弦距离与 BM25 分数量纲不可比的问题；某一路空结果（如纯英文查询在 BM25 无命中）自动回退另一路。
 - **答案溯源**（`rag/llm.py` + `app.py`）：提示词要求关键结论后标注 `[编号]`；后端正则解析引用编号，映射回块的 `文档名/章节路径/页码` 元数据；Web 界面给被引用的来源加 ⭐ 标记，CLI 显示每块的命中路径（vector/keyword）。
 - **评测的可靠性**：金标答案一律取文档**原文片段**（按"；"拆成多段，要求同一召回块全部包含），避免"标准答案改写导致误判"；拒答题也走真实检索，让模型面对"看似相关实则无关"的片段做判断。
 
-***REMOVED******REMOVED*** 9. API Key 安全
+***REMOVED******REMOVED*** 10. API Key 安全
 
 - Key 只存放在 `.env`（已被 `.gitignore` 排除，**不在** git 历史中），代码一律通过 `os.getenv` 读取；
 - 仓库提供 `.env.example` 模板，不含任何真实密钥；
 - `eval/results/`、`chroma_db/`、`*.pkl` 等运行产物同样不入库；
 - ⚠️ 若曾把 Key 写进过代码或聊天记录，请立即到服务商控制台**吊销并换新 Key**——提交进 git 历史的密钥即使删除文件也能被翻出。
 
-***REMOVED******REMOVED*** 10. Roadmap
+***REMOVED******REMOVED*** 11. Roadmap
 
 - [x] 表格结构化解析（表头携带切分、跨页合并）与表格专项评测题
 - [x] 多轮对话与查询改写（规则 + LLM）

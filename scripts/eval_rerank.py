@@ -17,7 +17,7 @@ from rag.config import FINAL_TOP_K  ***REMOVED*** noqa: E402
 from rag.retriever import Retriever  ***REMOVED*** noqa: E402
 
 sys.path.insert(0, str(ROOT / "scripts"))
-from run_eval import _qtype, eval_retrieval, aggregate_retrieval, load_questions  ***REMOVED*** noqa: E402
+from run_eval import eval_retrieval, aggregate_retrieval, load_questions  ***REMOVED*** noqa: E402
 
 EVAL_DIR = ROOT / "eval"
 RESULTS_DIR = EVAL_DIR / "results"

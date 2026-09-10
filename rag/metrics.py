@@ -5,8 +5,8 @@
 接 Prometheus/企业微信 webhook 只需替换 alert() 的落地方式）。
 """
 
-import json
 import logging
+import math
 import sqlite3
 import statistics
 import time
@@ -90,13 +90,23 @@ def aggregate(last_n: int = 500) -> dict:
     ret = [r[0] for r in rows]
     gen = [r[1] for r in rows]
     gen_sorted = sorted(gen)
-    p = lambda q: gen_sorted[min(len(gen_sorted) - 1, int(len(gen_sorted) * q))]  ***REMOVED*** noqa: E731
+
+    def _pct(q: float) -> float:
+        """最近秩法（nearest-rank）：返回第 ceil(q*n) 个观测值。
+
+        修复：原实现 `gen_sorted[int(len*q)]` 取的是"比 q 分位多一位"的元素，
+        n=20 时 P95 直接落到最大值（int(19)=19），小样本下 P95/P99 被系统性高估，
+        会让 ALERT_LATENCY_P95_MS 阈值告警偏晚甚至失效。
+        """
+        rank = max(1, math.ceil(q * len(gen_sorted)))
+        return gen_sorted[min(rank - 1, len(gen_sorted) - 1)]
+
     return {
         "n": len(rows),
         "p50_retrieval_ms": round(statistics.median(ret), 1),
-        "p50_gen_ms": round(p(0.5), 1),
-        "p95_gen_ms": round(p(0.95), 1),
-        "p99_gen_ms": round(p(0.99), 1),
+        "p50_gen_ms": round(_pct(0.5), 1),
+        "p95_gen_ms": round(_pct(0.95), 1),
+        "p99_gen_ms": round(_pct(0.99), 1),
         "error_rate": round(sum(r[4] for r in rows) / len(rows), 4),
         "prompt_tokens_total": sum(r[2] for r in rows),
         "completion_tokens_total": sum(r[3] for r in rows),

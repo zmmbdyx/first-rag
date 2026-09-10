@@ -68,8 +68,6 @@ def main():
     ap.add_argument("--skip-expansion", action="store_true", help="跳过 LLM 查询扩展实验")
     args = ap.parse_args()
 
-    from rag.llm import get_client  ***REMOVED*** noqa: F401
-
     questions = [q for q in load_questions(Path(args.questions)) if q["answerable"] and not q.get("multi_turn")]
     print(f"调优实验：{len(questions)} 道单轮可回答题")
 

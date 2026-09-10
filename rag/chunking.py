@@ -19,6 +19,11 @@ from .parsers import ParsedDoc, render_table
 
 _RE_SENT = re.compile(r"[^。！？!?；;\n]+(?:[。！？!?；;]+|\n+|$)")
 
+***REMOVED*** 修复：原先这两个阈值以魔法数字形式散落在代码里（chunk_size * 0.4、chunk_size + 120），
+***REMOVED*** 无法统一调整、含义也不直观，现提为具名常量。
+OVERLAP_MAX_RATIO = 0.4   ***REMOVED*** 携带的句子级重叠最多占块大小的比例（防止重叠喧宾夺主）
+MERGE_SLACK_CHARS = 120   ***REMOVED*** 过短块并入前一块时允许的额外长度余量
+
 
 @dataclass
 class Chunk:
@@ -123,9 +128,12 @@ def smart_chunk(
             if cur and cur_len + len(text) + 1 > chunk_size:
                 flush()
                 ***REMOVED*** 重叠：取上一块结尾句子，避免答案在切分点被截断
+                ***REMOVED*** 修复：overlap_sentences=0 时切片 `[-0:]` 等价于 `[0:]`，会把**整块**前文
+                ***REMOVED*** 当作重叠内容重复塞进新块（虽然下面的长度护栏通常能兜住，但属于明确的逻辑错误）。
                 prev = chunks[-1].text if chunks else ""
-                tail = "\n".join(split_sentences(prev)[-overlap_sentences:]) if prev else ""
-                if tail and len(tail) <= chunk_size * 0.4:
+                tail = ("\n".join(split_sentences(prev)[-overlap_sentences:])
+                        if prev and overlap_sentences > 0 else "")
+                if tail and len(tail) <= chunk_size * OVERLAP_MAX_RATIO:
                     cur, cur_len = [(tail, page)], len(tail)
             cur.append((text, page))
             cur_len += len(text) + 1
@@ -135,7 +143,7 @@ def smart_chunk(
     merged: list[Chunk] = []
     for c in chunks:
         if merged and len(c.text) < min_chars and c.section_path == merged[-1].section_path \
-                and len(merged[-1].text) + len(c.text) <= chunk_size + 120:
+                and len(merged[-1].text) + len(c.text) <= chunk_size + MERGE_SLACK_CHARS:
             merged[-1].text = merged[-1].text + "\n" + c.text
         else:
             merged.append(c)

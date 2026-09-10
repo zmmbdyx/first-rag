@@ -176,7 +176,26 @@ def chat(
     hits = retriever.retrieve(rw["query"], mode=mode, k_final=k_final, expansion=expansion)
     retrieval_latency = time.time() - t0
 
-    result = answer_question(rw["query"], hits, model=model)
+    ***REMOVED*** 修复：区分「知识库为空」与「检索无命中」——原先两种情况的答案文案完全一样
+    ***REMOVED*** （都是"知识库为空，请先调用入库脚本导入文档"），检索不到内容时会误导用户去重复入库。
+    kb_is_empty = False
+    if not hits:
+        try:
+            kb_is_empty = retriever.collection.count() == 0
+        except Exception:  ***REMOVED*** noqa: BLE001 — 统计失败不影响主流程，按"无命中"处理
+            kb_is_empty = False
+
+    t_gen0 = time.time()
+    try:
+        result = answer_question(rw["query"], hits, model=model, empty_kb=kb_is_empty)
+    except Exception:
+        ***REMOVED*** 修复：生成失败此前会直接抛出，metrics 一条都不落库，导致 logs/metrics.db 的
+        ***REMOVED*** error_rate 恒为 0、ALERT_ERROR_RATE 阈值告警永远不可能触发（监控形同虚设）。
+        ***REMOVED*** 这里补记一条 error=True 的指标后原样抛出，保证调用方语义不变。
+        from .metrics import record as _record
+        _record(model, mode, retrieval_latency * 1000, (time.time() - t_gen0) * 1000,
+                0, 0, error=True)
+        raise
     result.update({
         "question": message,
         "query_used": rw["query"],

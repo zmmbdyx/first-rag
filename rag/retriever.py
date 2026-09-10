@@ -5,6 +5,7 @@
 只用排名不用原始分数，避免向量余弦距离与 BM25 分数两种量纲不可比的问题。
 """
 
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -14,14 +15,37 @@ from .config import (
     COLLECTION_NAME,
     FINAL_TOP_K,
     KEYWORD_TOP_K,
+    RERANK_CANDIDATES,
     RETRIEVAL_MODE,
-    RERANK_ENABLED,
     RRF_K,
     RRF_P,
     VECTOR_TOP_K,
 )
 from .embeddings import embed_query
 from .reranker import rerank, rerank_available
+
+***REMOVED*** 近似去重的字符 3-gram 重合率阈值：短文本被长文本"包含"到该比例即视为同一内容
+DEDUP_CONTAINMENT = 0.85
+
+
+def _dedup(hits: list["Hit"], threshold: float = DEDUP_CONTAINMENT) -> list["Hit"]:
+    """修复：检索结果原先没有任何去重，只有 RRF 融合阶段按 chunk_id 去重。
+    但 chunk_id 不同、正文高度重复的块（重复入库、同段落在两篇文档里重复、
+    表格分组后内容重叠）仍会同时占据 top-k，既浪费宝贵的上下文预算，
+    又挤掉其他文档的有效证据。这里按「字符 3-gram 包含率」做保守去重，
+    保留排名更靠前（分数更高）的那一块。
+    """
+    kept: list["Hit"] = []
+    kept_grams: list[set[str]] = []
+    for h in hits:
+        norm = re.sub(r"[\s\W_]+", "", h.text or "")
+        grams = {norm[i:i + 3] for i in range(max(1, len(norm) - 2))} if norm else set()
+        if grams and any(pg and len(grams & pg) / min(len(grams), len(pg)) >= threshold
+                         for pg in kept_grams):
+            continue
+        kept.append(h)
+        kept_grams.append(grams)
+    return kept
 
 
 @dataclass
@@ -118,7 +142,9 @@ class Retriever:
         k_each = k_each or max(VECTOR_TOP_K, KEYWORD_TOP_K)
         use_rerank = rerank_available() if rerank_on is None else rerank_on
         ***REMOVED*** 重排需要比 k_final 更多的候选
-        k_search = max(k_each, k_final) if use_rerank else k_final
+        ***REMOVED*** 修复：原先只取 max(k_each, k_final)，使 RERANK_CANDIDATES（默认 20）从未生效——
+        ***REMOVED*** 重排最多只能看到 10 个候选，配置项形同虚设。这里把重排候选数纳入召回规模。
+        k_search = max(k_each, k_final, RERANK_CANDIDATES) if use_rerank else k_final
         query = f"{question} {expansion}".strip() if expansion else question
 
         if mode == "vector":
@@ -149,7 +175,11 @@ class Retriever:
                                   for r in (h.vec_rank, h.kw_rank) if r is not None)
                 hits = sorted(fused.values(), key=lambda h: h.score, reverse=True)
 
-        if use_rerank and hits:
+        ***REMOVED*** 修复：先做近似去重再去重排/截断，避免重复块挤占最终 top-k 名额
+        hits = _dedup(hits)
+        if not hits:
+            return []
+        if use_rerank:
             hits = rerank(question, hits)
         return hits[:k_final]
 

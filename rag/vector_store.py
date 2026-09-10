@@ -67,9 +67,14 @@ def _to_hits(res) -> list[dict]:
 
 
 def query(collection, qvec, k: int = 10) -> list[dict]:
-    k = max(1, min(k, collection.count()))
-    if k == 0:
+    ***REMOVED*** 修复：原实现 `k = max(1, min(k, collection.count()))` 在空集合时会把 0 抬回 1，
+    ***REMOVED*** 紧随其后的 `if k == 0: return []` 是永远走不到的死代码——空库查询仍会以
+    ***REMOVED*** n_results=1 打到 Chroma（轻则返回空、重则抛 "Number of requested results > count"）。
+    ***REMOVED*** 改为先判空直接返回，再对 k 做合法的区间钳制。
+    n = collection.count()
+    if n <= 0:
         return []
+    k = max(1, min(k, n))
     res = collection.query(query_embeddings=[qvec.tolist()], n_results=k,
                            include=["documents", "metadatas", "distances"])
     return _to_hits(res)

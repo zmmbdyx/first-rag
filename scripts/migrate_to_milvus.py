@@ -2,7 +2,7 @@
 
 用法（需先 pip install pymilvus，并部署 Milvus 2.4+/Milvus Lite）：
   python scripts/migrate_to_milvus.py --uri http://localhost:19530 --collection rag_chunks
-  python scripts/migrate_to_milvus.py --uri milvus_lite.db   ***REMOVED*** Milvus Lite 本地文件模式
+  python scripts/migrate_to_milvus.py --uri milvus_lite.db # Milvus Lite 本地文件模式
 
 迁移内容：全部 chunk 的 id / 文本 / 元数据 / 向量；Milvus 侧建 Collection：
   id(VARCHAR 主键) · embedding(FLOAT_VECTOR, 余弦) · doc_name/section_path(VARCHAR) · page(INT64)
@@ -16,8 +16,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from rag.config import COLLECTION_NAME, INDEX_DIR  ***REMOVED*** noqa: E402
-from rag import vector_store  ***REMOVED*** noqa: E402
+from rag.config import COLLECTION_NAME, INDEX_DIR # noqa: E402
+from rag import vector_store # noqa: E402
 
 BATCH = 500
 
@@ -56,7 +56,7 @@ def main():
     ]
     schema = CollectionSchema(fields, description="RAG chunks migrated from Chroma")
     milvus_col = Collection(args.milvus_collection, schema)
-    dim = 768  ***REMOVED*** text2vec-base-chinese
+    dim = 768 # text2vec-base-chinese
 
     got = col.get(include=["documents", "metadatas", "embeddings"])
     n = len(got["ids"])

@@ -41,7 +41,7 @@ def paired_bootstrap_diff(values_a, values_b, n_boot: int = 1000, alpha: float =
 
 
 def fmt_ci(mean: float, lo: float, hi: float, pct: bool = True) -> str:
-    if mean != mean:  ***REMOVED*** NaN
+    if mean != mean: # NaN
         return "-"
     f = (lambda x: f"{x:.1%}") if pct else (lambda x: f"{x:.3f}")
     return f"{f(mean)} [{f(lo)}, {f(hi)}]"

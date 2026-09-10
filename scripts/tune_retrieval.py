@@ -20,13 +20,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from rag.bm25 import build_from_chunks  ***REMOVED*** noqa: E402
-from rag.config import RRF_K, RRF_P  ***REMOVED*** noqa: E402
-from rag.stats import paired_bootstrap_diff  ***REMOVED*** noqa: E402
-from rag.vector_store import hydrate_all  ***REMOVED*** noqa: E402
+from rag.bm25 import build_from_chunks # noqa: E402
+from rag.config import RRF_K, RRF_P # noqa: E402
+from rag.stats import paired_bootstrap_diff # noqa: E402
+from rag.vector_store import hydrate_all # noqa: E402
 
 sys.path.insert(0, str(ROOT / "scripts"))
-from run_eval import _gold_spans, _is_gold_chunk, build_index, load_questions  ***REMOVED*** noqa: E402
+from run_eval import _gold_spans, _is_gold_chunk, build_index, load_questions # noqa: E402
 
 EVAL_DIR = ROOT / "eval"
 RESULTS_DIR = EVAL_DIR / "results"
@@ -73,14 +73,14 @@ def main():
 
     retriever = build_index("tune", "smart", CORPUS_DIR)
 
-    ***REMOVED*** ---- 1. 缓存两路候选 ----
+    # ---- 1. 缓存两路候选 ----
     print("缓存向量/关键词两路 top-20 ...")
     vec_cache, kw_cache = [], []
     for q in questions:
         vec_cache.append(retriever.vector_search(q["question"], 20))
         kw_cache.append(retriever.keyword_search(q["question"], 20))
 
-    ***REMOVED*** ---- 2. RRF 网格搜索 ----
+    # ---- 2. RRF 网格搜索 ----
     print(f"RRF 网格搜索 k×p = {len(RRF_GRID_K)}×{len(RRF_GRID_P)} ...")
     grid = []
     for k in RRF_GRID_K:
@@ -95,7 +95,7 @@ def main():
         mark = " ⬅ 最优" if g is best else ("（当前默认）" if g["k"] == RRF_K and g["p"] == RRF_P else "")
         print(f"  k={g['k']:>3} p={g['p']}: R@3={g['recall@3']:.1%} R@5={g['recall@5']:.1%} MRR={g['mrr']:.3f}{mark}")
 
-    ***REMOVED*** ---- 3. BM25 变体 ----
+    # ---- 3. BM25 变体 ----
     print("BM25 分词变体对比 ...")
     chunks = hydrate_all(retriever.collection)
     variant_rows = []
@@ -118,7 +118,7 @@ def main():
         return [fuse_metrics(v, w, _gold_spans(q["gold_answer"]), q["gold_doc"], best["k"], best["p"])
                 for q, v, w in zip(questions, vec_cache, kw2)]
 
-    ***REMOVED*** ---- 4. 查询扩展 ----
+    # ---- 4. 查询扩展 ----
     expansion_rows = []
     if not args.skip_expansion:
         from rag.llm import expand_query_llm
@@ -139,7 +139,7 @@ def main():
         for r in expansion_rows:
             print(f"  扩展={r['setting']:<4} R@3={r['recall@3']:.1%} R@5={r['recall@5']:.1%} MRR={r['mrr']:.3f}")
 
-    ***REMOVED*** ---- 5. 显著性检验（配对 bootstrap）----
+    # ---- 5. 显著性检验（配对 bootstrap）----
     sig = {}
 
     def paired(name, a_ranks, b_ranks, metric_idx):
@@ -174,24 +174,24 @@ def main():
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     (RESULTS_DIR / "tuning.json").write_text(json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    md = ["***REMOVED*** 检索调优实验", "",
+    md = [" # 检索调优实验", "",
           f"实验集：{len(questions)} 道单轮可回答题（206 题评测集）；检索深度每路 20，最终取 5。", "",
-          "***REMOVED******REMOVED*** RRF 网格搜索（score = Σ 1/(k+rank)^p）", "",
+          " # # RRF 网格搜索（score = Σ 1/(k+rank)^p）", "",
           "| k | p | Recall@3 | Recall@5 | MRR |", "|---|---|---|---|---|"]
     for g in grid:
         md.append(f"| {g['k']} | {g['p']} | {g['recall@3']:.1%} | {g['recall@5']:.1%} | {g['mrr']:.3f} |")
     md += ["", f"**最优参数：k={best['k']}, p={best['p']}**", "",
-           "***REMOVED******REMOVED*** BM25 分词变体（配自定义词典前后 / 搜索模式）", "",
+           " # # BM25 分词变体（配自定义词典前后 / 搜索模式）", "",
            "| 变体 | Recall@3 | Recall@5 | MRR |", "|---|---|---|---|"]
     for r in variant_rows:
         md.append(f"| {r['variant']} | {r['recall@3']:.1%} | {r['recall@5']:.1%} | {r['mrr']:.3f} |")
     md += ["", f"**最优变体：{best_variant}**"]
     if expansion_rows:
-        md += ["", "***REMOVED******REMOVED*** LLM 查询扩展", "", "| 设置 | Recall@3 | Recall@5 | MRR |", "|---|---|---|---|"]
+        md += ["", " # # LLM 查询扩展", "", "| 设置 | Recall@3 | Recall@5 | MRR |", "|---|---|---|---|"]
         for r in expansion_rows:
             extra = f"（均摊 {r.get('avg_expansion_time', 0):.2f}s/题）" if "avg_expansion_time" in r else ""
             md.append(f"| {r['setting']} {extra}| {r['recall@3']:.1%} | {r['recall@5']:.1%} | {r['mrr']:.3f} |")
-    md += ["", "***REMOVED******REMOVED*** 显著性检验（配对bootstrap，R@5）", "", "| 对比 | 差值 | 95%CI | p | n |", "|---|---|---|---|---|"]
+    md += ["", " # # 显著性检验（配对bootstrap，R@5）", "", "| 对比 | 差值 | 95%CI | p | n |", "|---|---|---|---|---|"]
     for name, s in sig.items():
         md.append(f"| {name} | {s['diff']:+.1%} | [{s['lo']:+.1%}, {s['hi']:+.1%}] | {s['p']:.4f} | {s['n']} |")
     (RESULTS_DIR / "tuning.md").write_text("\n".join(md), encoding="utf-8")

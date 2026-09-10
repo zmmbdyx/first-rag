@@ -6,8 +6,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from rag.chunking import smart_chunk, table_groups  ***REMOVED*** noqa: E402
-from rag.parsers import Block, ParsedDoc, _merge_blocks, parse_file, render_table  ***REMOVED*** noqa: E402
+from rag.chunking import smart_chunk, table_groups # noqa: E402
+from rag.parsers import Block, ParsedDoc, _merge_blocks, parse_file, render_table # noqa: E402
 
 
 def test_render_table_kv_mode():
@@ -25,7 +25,7 @@ def test_table_groups_carry_header():
     groups = table_groups(["型号", "价格"], [[f"产品{i}", f"{i}元"] for i in range(12)], budget=60)
     assert len(groups) >= 2
     for g in groups:
-        assert "型号 | 价格" in g.splitlines()[0]  ***REMOVED*** 每组都带表头
+        assert "型号 | 价格" in g.splitlines()[0] # 每组都带表头
 
 
 def test_merge_cross_page_table():
@@ -36,12 +36,12 @@ def test_merge_cross_page_table():
     merged = _merge_blocks([t1, t2, t3])
     assert len(merged) == 2
     assert merged[0].rows == [["M1", "文档"], ["M9", "报告"]]
-    assert merged[0].page == 1  ***REMOVED*** 合并到首页的表
+    assert merged[0].page == 1 # 合并到首页的表
 
 
 def test_merge_keeps_separate_tables_without_continuation():
     t1 = Block("a", "table", 1, rows=[["1"]], header=["h"])
-    t2 = Block("b", "table", 1, rows=[["2"]], header=["h"])  ***REMOVED*** 同页两表不合并
+    t2 = Block("b", "table", 1, rows=[["2"]], header=["h"]) # 同页两表不合并
     assert len(_merge_blocks([t1, t2])) == 2
 
 
@@ -55,7 +55,7 @@ def test_smart_chunk_table_not_split_mid_group():
     chunks = smart_chunk(doc, chunk_size=300)
     assert len(chunks) >= 2
     for c in chunks:
-        assert "名称 | 型号 | 价格" in c.text  ***REMOVED*** 每块都带表头上下文
+        assert "名称 | 型号 | 价格" in c.text # 每块都带表头上下文
 
 
 def test_docx_corpus_table_parsed():

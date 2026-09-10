@@ -6,7 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-***REMOVED*** 修复：原先从 rag.bm25 导入的 BM25Index 在本文件中并未使用，属未使用导入，已移除。
+# 修复：原先从 rag.bm25 导入的 BM25Index 在本文件中并未使用，属未使用导入，已移除。
 from rag.bm25 import tokenize
 
 
@@ -47,7 +47,7 @@ def test_rrf_fusion_prefers_double_hits():
     for rank, h in enumerate(kw, 1):
         scores[h.chunk_id] = scores.get(h.chunk_id, 0) + 1 / (rrf_k + rank)
     ranked = sorted(scores, key=scores.get, reverse=True)
-    ***REMOVED*** b 在两路都靠前，应排第一；a 两路均被命中也应靠前
+    # b 在两路都靠前，应排第一；a 两路均被命中也应靠前
     assert ranked[0] == "b"
     assert set(ranked[:2]) == {"a", "b"}
 
@@ -64,4 +64,4 @@ def test_retriever_dedup_drops_near_duplicate_chunks():
             score=0.7),
     ]
     kept = _dedup(hits)
-    assert [h.chunk_id for h in kept] == ["a", "c"]  ***REMOVED*** 保留排序更靠前的重复块
+    assert [h.chunk_id for h in kept] == ["a", "c"] # 保留排序更靠前的重复块

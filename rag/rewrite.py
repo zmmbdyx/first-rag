@@ -9,7 +9,7 @@ import re
 from .config import LLM_MODEL
 from .llm import chat
 
-***REMOVED*** 常见指代/省略信号词
+# 常见指代/省略信号词
 _ANAPHORA_RE = re.compile(
     r"(那|那么|这个|该|此|上述|以上|它|他们|它们|前面(说)?的|刚才|还有|另外|呢|呢？|？怎么|怎么样)$"
     r"|^(那|那么|这个|该|此|它|他们)"
@@ -22,7 +22,7 @@ def needs_rewrite(message: str, history: list[dict]) -> bool:
     if not history:
         return False
     msg = message.strip()
-    if len(msg) <= 4:                      ***REMOVED*** "那社保呢？"类省略句
+    if len(msg) <= 4: # "那社保呢？"类省略句
         return True
     return bool(_ANAPHORA_RE.search(msg))
 
@@ -35,7 +35,7 @@ def rule_rewrite(message: str, history: list[dict]) -> str | None:
     if not last_user:
         return None
     topic = re.sub(r"[？?。！]", "", last_user)
-    ***REMOVED*** 去掉上一轮问题的疑问词部分，保留主题（粗粒度：整句前置）
+    # 去掉上一轮问题的疑问词部分，保留主题（粗粒度：整句前置）
     return f"关于「{topic}」：{message.strip()}"
 
 
@@ -73,7 +73,7 @@ def rewrite_query(message: str, history: list[dict] | None = None,
     if use_llm:
         try:
             return {"query": llm_rewrite(message, history), "method": "llm"}
-        except Exception:  ***REMOVED*** noqa: BLE001 — LLM 不可用时降级到规则
+        except Exception: # noqa: BLE001 — LLM 不可用时降级到规则
             pass
     rule = rule_rewrite(message, history)
     return {"query": rule or message, "method": "rule" if rule else "none"}

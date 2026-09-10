@@ -16,15 +16,15 @@ import os
 import time
 from pathlib import Path
 
-***REMOVED*** ---------- 配置 ----------
+# ---------- 配置 ----------
 REDIS_URL = os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0")
-CACHE_ENABLED = os.getenv("CACHE_ENABLED", "auto").strip().lower()   ***REMOVED*** auto | on | off
-CACHE_TTL = int(os.getenv("CACHE_TTL", "1800"))                      ***REMOVED*** 秒，默认 30 分钟
+CACHE_ENABLED = os.getenv("CACHE_ENABLED", "auto").strip().lower() # auto | on | off
+CACHE_TTL = int(os.getenv("CACHE_TTL", "1800")) # 秒，默认 30 分钟
 CACHE_PREFIX = os.getenv("CACHE_PREFIX", "rag:qa")
 CACHE_MAX_ITEMS = int(os.getenv("CACHE_MAX_ITEMS", "5000"))
 KB_VERSION_KEY = f"{CACHE_PREFIX}:kbver"
 
-***REMOVED*** 命中统计（进程级，用于 UI / 基准报告展示）
+# 命中统计（进程级，用于 UI / 基准报告展示）
 _stats = {"hit": 0, "miss": 0, "error": 0, "enabled": False}
 
 _client = None
@@ -38,7 +38,7 @@ def _connect():
     会直接报 unknown command。这里先尝试默认协议，失败后退到 RESP2（protocol=2），
     再失败才判定不可用——避免"服务端明明是好的，却因为客户端协议协商失败而放弃缓存"。
     """
-    import redis  ***REMOVED*** 延迟导入：未装 redis-py 时不影响主流程
+    import redis # 延迟导入：未装 redis-py 时不影响主流程
 
     last_err: Exception | None = None
     for kwargs in ({"socket_connect_timeout": 1.5, "socket_timeout": 1.5, "decode_responses": True},
@@ -48,7 +48,7 @@ def _connect():
             c = redis.Redis.from_url(REDIS_URL, **kwargs)
             c.ping()
             return c
-        except Exception as e:  ***REMOVED*** noqa: BLE001 — 逐个尝试协议，最后统一降级
+        except Exception as e: # noqa: BLE001 — 逐个尝试协议，最后统一降级
             last_err = e
     raise last_err if last_err else RuntimeError("Redis 连接失败")
 
@@ -63,7 +63,7 @@ def _init() -> None:
         _stats["enabled"] = False
         return
     try:
-        import redis  ***REMOVED*** noqa: F401
+        import redis # noqa: F401
     except ImportError:
         if CACHE_ENABLED == "on":
             print("[cache] 已设置 CACHE_ENABLED=on 但未安装 redis-py，缓存关闭（pip install redis）")
@@ -72,7 +72,7 @@ def _init() -> None:
     try:
         _client = _connect()
         _stats["enabled"] = True
-    except Exception as e:  ***REMOVED*** noqa: BLE001 — 连不上就降级，不影响问答
+    except Exception as e: # noqa: BLE001 — 连不上就降级，不影响问答
         if CACHE_ENABLED == "on":
             print(f"[cache] Redis 连接失败，缓存关闭：{e}")
         _client = None
@@ -95,7 +95,7 @@ def stats() -> dict:
     return s
 
 
-***REMOVED*** ---------- KB 版本（入库失效用） ----------
+# ---------- KB 版本（入库失效用） ----------
 
 def kb_version() -> int:
     """读取当前知识库版本号；Redis 不可用时返回 0（键里固定带 0，不影响正确性）。"""
@@ -105,7 +105,7 @@ def kb_version() -> int:
     try:
         v = _client.get(KB_VERSION_KEY)
         return int(v) if v else 0
-    except Exception:  ***REMOVED*** noqa: BLE001
+    except Exception: # noqa: BLE001
         _stats["error"] += 1
         return 0
 
@@ -126,7 +126,7 @@ def bump_kb_version(invalidate: bool = True) -> int:
         if invalidate:
             _purge_older_versions()
         return int(_client.incr(KB_VERSION_KEY))
-    except Exception:  ***REMOVED*** noqa: BLE001
+    except Exception: # noqa: BLE001
         _stats["error"] += 1
         return 0
 
@@ -141,12 +141,12 @@ def _purge_older_versions() -> int:
     try:
         for key in _client.scan_iter(match=f"{CACHE_PREFIX}:v*:*", count=500):
             removed += _client.delete(key)
-    except Exception:  ***REMOVED*** noqa: BLE001
+    except Exception: # noqa: BLE001
         _stats["error"] += 1
     return removed
 
 
-***REMOVED*** ---------- 键与读写 ----------
+# ---------- 键与读写 ----------
 
 def cache_key(question: str, mode: str, k: int, model: str, version: int | None = None) -> str:
     """缓存键 = 前缀 : KB版本 : 参数摘要。
@@ -166,7 +166,7 @@ def get(key: str) -> dict | None:
         return None
     try:
         raw = _client.get(key)
-    except Exception:  ***REMOVED*** noqa: BLE001
+    except Exception: # noqa: BLE001
         _stats["error"] += 1
         return None
     if raw is None:
@@ -191,10 +191,10 @@ def set(key: str, value: dict, ttl: int | None = None) -> bool:
         payload = json.dumps(value, ensure_ascii=False, default=str)
         pipe = _client.pipeline()
         pipe.set(key, payload, ex=ttl or CACHE_TTL)
-        ***REMOVED*** 条目数上限护栏：近似 LRU 由 Redis maxmemory 负责，这里只在超限时告警式裁剪
+        # 条目数上限护栏：近似 LRU 由 Redis maxmemory 负责，这里只在超限时告警式裁剪
         pipe.execute()
         return True
-    except Exception:  ***REMOVED*** noqa: BLE001
+    except Exception: # noqa: BLE001
         _stats["error"] += 1
         return False
 

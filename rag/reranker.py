@@ -24,7 +24,7 @@ def _get_model():
             from sentence_transformers import CrossEncoder
 
             _model = CrossEncoder(RERANK_MODEL)
-        except Exception as e:  ***REMOVED*** noqa: BLE001
+        except Exception as e: # noqa: BLE001
             _load_failed = True
             logging.warning("Reranker 模型加载失败（已降级为不重排）: %s", e)
     return _model
@@ -47,7 +47,7 @@ def rerank(question: str, hits: list, top_n: int | None = None) -> list:
     cands = hits[:top_n]
     try:
         scores = model.predict([(question, h.text) for h in cands])
-    except Exception:  ***REMOVED*** noqa: BLE001
+    except Exception: # noqa: BLE001
         return hits
     for h, s in zip(cands, scores):
         h.rerank_score = float(s)

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>知识库智能问答</title>
+    <meta name="description" content="基于企业文档的检索增强问答系统，回答附带可核对的引用来源" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='12' fill='%234D6BFE'/%3E%3Cpath d='M24 11c1.7 5 3.9 7.2 8.9 8.9-5 1.7-7.2 3.9-8.9 8.9-1.7-5-3.9-7.2-8.9-8.9 5-1.7 7.2-3.9 8.9-8.9Z' fill='%23fff'/%3E%3C/svg%3E"
+    />
+    <script>
+      // 提前应用持久化的主题，消除首屏主题闪烁（与 store 的 storage key 保持一致）
+      ;(function () {
+        try {
+          var raw = localStorage.getItem('rag-ui')
+          var theme = raw ? (JSON.parse(raw).state || {}).theme : null
+          if (!theme) {
+            theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+          }
+          if (theme === 'dark') document.documentElement.classList.add('dark')
+        } catch (e) {
+          /* localStorage 不可用时忽略，走默认浅色 */
+        }
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,41 +1,50 @@
-***REMOVED*** LLM 服务
+# LLM 服务
 openai>=1.40
 python-dotenv>=1.0
 
-***REMOVED*** 嵌入与向量库
+# 嵌入与向量库
 sentence-transformers>=3.0
 torch>=2.2
 chromadb>=1.0
 numpy>=1.26
 
-***REMOVED*** 检索
+# 检索
 jieba>=0.42
 rank-bm25>=0.2.2
 
-***REMOVED*** 文档解析
+# 文档解析
 pymupdf>=1.24
 python-docx>=1.1
 
-***REMOVED*** Web 界面与服务化
+# Web 界面与服务化
 streamlit>=1.36
 fastapi>=0.110
 uvicorn[standard]>=0.29
-python-multipart>=0.0.9    ***REMOVED*** FastAPI 文件上传（/ingest 端点）
+python-multipart>=0.0.9 # FastAPI 文件上传（/api/upload、/ingest）
+sse-starlette>=2.0 # SSE 流式响应（备用；backend 目前直接用 StreamingResponse）
 
-***REMOVED*** Redis 问答缓存（未安装 / 连不上时自动降级为不走缓存，不影响主流程）
+# 前后端分离后端（backend/）
+pydantic-settings>=2.2 # 环境变量统一管理（backend/config.py）
+SQLAlchemy>=2.0 # 会话与消息持久化
+# PostgreSQL 部署时另装驱动：psycopg[binary]>=3.1
+
+# Redis 问答缓存（未安装 / 连不上时自动降级为不走缓存，不影响主流程）
 redis>=5.0
 
-***REMOVED*** 联网搜索
+# 联网搜索
 ddgs>=9.0
 
-***REMOVED*** 性能基准（可选，scripts/benchmark_*.py 使用）
+# 性能基准（可选，scripts/benchmark_*.py 使用）
 psutil>=5.9
-onnxruntime>=1.17          ***REMOVED*** ONNX/INT8 嵌入加速对比
+onnxruntime>=1.17 # ONNX/INT8 嵌入加速对比
 onnx>=1.15
-onnxscript>=0.1            ***REMOVED*** torch 2.14 onnx 导出依赖
+onnxscript>=0.1 # torch 2.14 onnx 导出依赖
 
-***REMOVED*** 示例文档生成（仅 scripts/make_samples.py / make_corpus.py 需要）
+# 界面验收与截图（可选，scripts/verify_frontend.py / capture_frontend.py 需要）
+playwright>=1.44
+
+# 示例文档生成（仅 scripts/make_samples.py / make_corpus.py 需要）
 reportlab>=4.0
 
-***REMOVED*** 测试
+# 测试
 pytest>=8.0

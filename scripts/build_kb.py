@@ -1,10 +1,10 @@
 """知识库入库 CLI：解析 → 智能切分 → 向量化 → Chroma + BM25 索引。
 
 用法：
-  python scripts/build_kb.py                          ***REMOVED*** 入库 data/samples 下全部示例文档
-  python scripts/build_kb.py D:\\docs other.pdf       ***REMOVED*** 入库指定文件/目录
-  python scripts/build_kb.py --rebuild                ***REMOVED*** 清空后重建
-  python scripts/build_kb.py --naive                  ***REMOVED*** 用朴素切分（评测基线用）
+  python scripts/build_kb.py # 入库 data/samples 下全部示例文档
+  python scripts/build_kb.py D:\\docs other.pdf # 入库指定文件/目录
+  python scripts/build_kb.py --rebuild # 清空后重建
+  python scripts/build_kb.py --naive # 用朴素切分（评测基线用）
 """
 
 import argparse
@@ -14,8 +14,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from rag.config import COLLECTION_NAME, INDEX_DIR, SAMPLES_DIR  ***REMOVED*** noqa: E402
-from rag.pipeline import ingest  ***REMOVED*** noqa: E402
+from rag.config import COLLECTION_NAME, INDEX_DIR, SAMPLES_DIR # noqa: E402
+from rag.pipeline import ingest # noqa: E402
 
 
 def main():
@@ -36,7 +36,7 @@ def main():
         try:
             client.delete_collection(args.collection)
             print(f"🗑️  已清空集合 {args.collection}")
-        except Exception:  ***REMOVED*** noqa: BLE001
+        except Exception: # noqa: BLE001
             pass
 
     print(f"📥 入库 → {index_dir}（集合 {args.collection}，切分={'朴素' if args.naive else '智能'}）")

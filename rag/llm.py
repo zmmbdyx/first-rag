@@ -14,9 +14,9 @@ from .retriever import Hit
 from .security import needs_citation, validate_citations
 
 _clients: dict[tuple[str, str], "OpenAI"] = {}
-_usage_local = threading.local()  ***REMOVED*** 每线程最近一次调用的 token 用量（并发安全）
+_usage_local = threading.local() # 每线程最近一次调用的 token 用量（并发安全）
 
-***REMOVED*** 忠实度判分时送入的上下文块数上限（原先是字面量 5，提为常量便于统一调整）
+# 忠实度判分时送入的上下文块数上限（原先是字面量 5，提为常量便于统一调整）
 FAITHFULNESS_CONTEXT_CHUNKS = 5
 
 
@@ -35,7 +35,7 @@ def get_client(model: str | None = None) -> tuple["OpenAI", str]:
     if ck not in _clients:
         _clients[ck] = OpenAI(
             api_key=api_key, base_url=base_url,
-            timeout=float(os.getenv("LLM_TIMEOUT", "60")),  ***REMOVED*** 防端点挂起阻塞整条链路
+            timeout=float(os.getenv("LLM_TIMEOUT", "60")), # 防端点挂起阻塞整条链路
             max_retries=1,
         )
     return _clients[ck], bare
@@ -71,7 +71,7 @@ def chat(messages: list[dict], model: str = LLM_MODEL, temperature: float = 0.2,
             resp = client.chat.completions.create(**kw)
             _usage_local.value = getattr(resp, "usage", None)
             return (resp.choices[0].message.content or "").strip()
-        except Exception as e:  ***REMOVED*** noqa: BLE001
+        except Exception as e: # noqa: BLE001
             last_err = e
             if "insufficient_quota" in str(e) or "PermissionDenied" in type(e).__name__ \
                     or "403" in str(e)[:80] or "401" in str(e)[:80]:
@@ -79,7 +79,7 @@ def chat(messages: list[dict], model: str = LLM_MODEL, temperature: float = 0.2,
     raise RuntimeError(f"大模型调用失败: {last_err}") from last_err
 
 
-***REMOVED*** ---------- 带溯源的答案生成 ----------
+# ---------- 带溯源的答案生成 ----------
 
 
 def build_context(hits: list[Hit]) -> str:
@@ -100,8 +100,8 @@ def answer_question(question: str, hits: list[Hit], model: str = LLM_MODEL,
     两种情况给的提示语不同，避免把"检索无命中"误导成"需要重新入库"。
     """
     if not hits:
-        ***REMOVED*** 修复：原先无命中时一律返回"知识库为空，请先调用入库脚本导入文档"，
-        ***REMOVED*** 检索不到内容（问题与语料不匹配）的用户会被误导去反复入库。
+        # 修复：原先无命中时一律返回"知识库为空，请先调用入库脚本导入文档"，
+        # 检索不到内容（问题与语料不匹配）的用户会被误导去反复入库。
         msg = ("知识库为空，请先调用入库脚本导入文档。" if empty_kb
                else "根据知识库中的资料，未找到与该问题相关的内容。请尝试换个说法或补充关键词。")
         return {"answer": msg, "sources": [], "citations": [],
@@ -125,7 +125,7 @@ def answer_question(question: str, hits: list[Hit], model: str = LLM_MODEL,
     answer = _gen()
     valid, forged = validate_citations(answer, len(hits))
     citation_retry = 0
-    ***REMOVED*** 引用校验：伪造编号（超出范围）或实质性回答完全无引用 → 重新生成一次
+    # 引用校验：伪造编号（超出范围）或实质性回答完全无引用 → 重新生成一次
     if validate and (forged or (needs_citation(answer) and not valid)):
         citation_retry = 1
         answer = _gen(f"上一次回答的引用标注有误（编号超出 1~{len(hits)} 范围或完全没有标注）。"
@@ -152,7 +152,7 @@ def answer_question(question: str, hits: list[Hit], model: str = LLM_MODEL,
     }
 
 
-***REMOVED*** ---------- 评测判分（LLM as Judge） ----------
+# ---------- 评测判分（LLM as Judge） ----------
 
 _JUDGE_PROMPT = """你是问答质量评审员。根据「标准答案」判断「模型回答」是否正确。
 
@@ -195,7 +195,7 @@ def judge_answer(question: str, gold_answer: str, pred_answer: str,
     return {"verdict": verdict, "reason": data.get("reason", text[:120])}
 
 
-***REMOVED*** ---------- 忠实度 / 答案相关性（RAGAS 式指标的 LLM 判分实现） ----------
+# ---------- 忠实度 / 答案相关性（RAGAS 式指标的 LLM 判分实现） ----------
 
 _FAITH_PROMPT = """你是事实核查员。逐句判断「回答」中的每个陈述是否能被「参考资料」支持。
 判定规则：
@@ -243,7 +243,7 @@ def judge_faithfulness(answer: str, hits: list[Hit], model: str | None = None) -
             return None
         supported = sum(1 for i in range(1, len(sentences) + 1) if flags.get(i, False))
         return round(supported / len(sentences), 4)
-    except Exception:  ***REMOVED*** noqa: BLE001
+    except Exception: # noqa: BLE001
         return None
 
 
@@ -257,11 +257,11 @@ def judge_relevance(question: str, answer: str, model: str | None = None) -> flo
         data = json.loads(m.group(0)) if m else {}
         score = float(data.get("score", -1))
         return round(score, 4) if 0 <= score <= 1 else None
-    except Exception:  ***REMOVED*** noqa: BLE001
+    except Exception: # noqa: BLE001
         return None
 
 
-***REMOVED*** ---------- 查询扩展 ----------
+# ---------- 查询扩展 ----------
 
 _EXPAND_PROMPT = """为下面的检索查询生成补充关键词，用于提升文档召回：给出同义词、上义词、常见别称。
 要求：只输出空格分隔的关键词（不超过 8 个），不要解释，不要重复查询里已有的词。
@@ -277,5 +277,5 @@ def expand_query_llm(question: str, model: str | None = None) -> str:
         out = chat([{"role": "user", "content": _EXPAND_PROMPT.format(question=question)}],
                    model=model or LLM_MODEL, temperature=0.0, max_tokens=100)
         return out.strip().replace("\n", " ")[:120]
-    except Exception:  ***REMOVED*** noqa: BLE001
+    except Exception: # noqa: BLE001
         return ""

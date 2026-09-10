@@ -12,7 +12,7 @@ import pytest
 from rag import cache as qa_cache
 
 
-***REMOVED*** ---------------- 假 Redis（实现用到的子集） ----------------
+# ---------------- 假 Redis（实现用到的子集） ----------------
 
 class FakeRedis:
     def __init__(self):
@@ -79,7 +79,7 @@ def fake_redis(monkeypatch):
     return fake
 
 
-***REMOVED*** ---------------- 键设计 ----------------
+# ---------------- 键设计 ----------------
 
 def test_cache_key_isolates_mode_model_and_k():
     """换检索模式 / 换模型 / 换 top_k 必须是不同的键。
@@ -91,7 +91,7 @@ def test_cache_key_isolates_mode_model_and_k():
     assert base != qa_cache.cache_key("试用期多久", "vector", 5, "m1", version=0)
     assert base != qa_cache.cache_key("试用期多久", "hybrid", 3, "m1", version=0)
     assert base != qa_cache.cache_key("试用期多久", "hybrid", 5, "m2", version=0)
-    ***REMOVED*** 同一输入必须稳定（否则永远命中不了）
+    # 同一输入必须稳定（否则永远命中不了）
     assert base == qa_cache.cache_key("试用期多久", "hybrid", 5, "m1", version=0)
 
 
@@ -109,13 +109,13 @@ def test_cache_key_does_not_collide_on_separator():
     assert a != b
 
 
-***REMOVED*** ---------------- 读写与统计 ----------------
+# ---------------- 读写与统计 ----------------
 
 def test_set_get_roundtrip_and_stats(fake_redis):
-    ***REMOVED*** 用独立的问题串，避免与其他用例共用同一个键（每个用例都拿到全新的空 store，
-    ***REMOVED*** 但显式不同的键能让失败信息更清晰）
+    # 用独立的问题串，避免与其他用例共用同一个键（每个用例都拿到全新的空 store，
+    # 但显式不同的键能让失败信息更清晰）
     k = qa_cache.cache_key("roundtrip-question", "hybrid", 5, "m", version=0)
-    assert qa_cache.get(k) is None          ***REMOVED*** miss
+    assert qa_cache.get(k) is None # miss
     assert qa_cache.set(k, {"answer": "A", "citations": [1]})
     got = qa_cache.get(k)
     assert got["answer"] == "A" and got["cache_hit"] is True
@@ -131,7 +131,7 @@ def test_get_returns_none_on_corrupt_payload(fake_redis):
     assert qa_cache.stats()["error"] >= 1
 
 
-***REMOVED*** ---------------- 失效语义（本次修复的核心） ----------------
+# ---------------- 失效语义（本次修复的核心） ----------------
 
 def test_bump_version_purges_old_entries(fake_redis):
     """入库后版本 +1，且**旧键必须被真正删除**。
@@ -145,11 +145,11 @@ def test_bump_version_purges_old_entries(fake_redis):
 
     newv = qa_cache.bump_kb_version()
     assert newv == 1
-    assert old not in fake_redis.store            ***REMOVED*** 旧键被清理
+    assert old not in fake_redis.store # 旧键被清理
 
     new = qa_cache.cache_key("q", "hybrid", 5, "m")
     assert ":v1:" in new
-    assert qa_cache.get(new) is None              ***REMOVED*** 新命名空间里没有旧答案
+    assert qa_cache.get(new) is None # 新命名空间里没有旧答案
 
 
 def test_clear_removes_all_versions(fake_redis):
@@ -160,7 +160,7 @@ def test_clear_removes_all_versions(fake_redis):
     assert not [k for k in fake_redis.store if k.startswith(qa_cache.CACHE_PREFIX)]
 
 
-***REMOVED*** ---------------- 降级行为（可用性优先） ----------------
+# ---------------- 降级行为（可用性优先） ----------------
 
 def test_degrades_gracefully_without_redis(monkeypatch):
     """Redis 不可用时所有方法都要安全 no-op，绝不抛异常。"""
@@ -190,11 +190,11 @@ def test_corrupt_cache_does_not_break_chat(monkeypatch):
 
     monkeypatch.setattr(qa_cache, "_client", Boom(), raising=False)
     monkeypatch.setattr(qa_cache, "_init_done", True, raising=False)
-    ***REMOVED*** get 内部已捕获异常 → 返回 None，不应向外抛
+    # get 内部已捕获异常 → 返回 None，不应向外抛
     assert qa_cache.get("k") is None
 
 
-***REMOVED*** ---------------- 异步入库 ----------------
+# ---------------- 异步入库 ----------------
 
 def _docs(tmp_path: Path, n: int) -> list[Path]:
     files = []
@@ -217,7 +217,7 @@ def test_async_parse_matches_sync_results(tmp_path):
     sync = [_parse_and_chunk(f, "smart") for f in files]
     a_sync = asyncio.run(_gather_parse(todo, "smart", 4))
 
-    assert [d for d, _ in a_sync] == [d for d, _ in sync]      ***REMOVED*** 顺序保持
+    assert [d for d, _ in a_sync] == [d for d, _ in sync] # 顺序保持
     assert [len(c) for _, c in a_sync] == [len(c) for _, c in sync]
     assert [c[0].text for _, c in a_sync] == [c[0].text for _, c in sync]
 
@@ -253,7 +253,7 @@ def test_run_async_works_inside_event_loop(tmp_path):
     async def outer():
         async def inner():
             return 42
-        ***REMOVED*** 直接 asyncio.run 会 RuntimeError: event loop is already running
+        # 直接 asyncio.run 会 RuntimeError: event loop is already running
         return _run_async(inner())
 
     assert asyncio.run(outer()) == 42

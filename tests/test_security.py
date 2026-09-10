@@ -9,8 +9,8 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-import rag.security as sec  ***REMOVED*** noqa: E402
-from rag.security import (  ***REMOVED*** noqa: E402
+import rag.security as sec # noqa: E402
+from rag.security import ( # noqa: E402
     InputBlocked,
     check_input,
     needs_citation,
@@ -37,7 +37,7 @@ def test_injection_blocked_and_logged(tmp_path, monkeypatch):
 
 def test_benign_input_passes():
     assert check_input("试用期多长时间？") == "试用期多长时间？"
-    assert check_input("ignore 无关英文单词的普通问题")  ***REMOVED*** 未命中完整注入句式
+    assert check_input("ignore 无关英文单词的普通问题") # 未命中完整注入句式
 
 
 def test_validate_citations():

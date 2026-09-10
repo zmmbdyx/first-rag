@@ -38,9 +38,14 @@ PATTERNS: list[tuple[str, re.Pattern]] = [
     ("私钥文件内容", re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----")),
     ("URL 内嵌密码", re.compile(r"://[^/\s:@]{3,}:[^/\s:@]{3,}@")),
     ("私有推理端点", re.compile(r"ws-[a-z0-9]{10,}\.[a-z0-9\-]*\.?(?:maas\.)?aliyuncs\.com")),
+    # 内网 IP：用 \b 而不是 (?<![\d.]) 做边界。
+    # 关键点有两个，都是实测踩出来的：
+    #   1) 必须用 \b —— `(?<![\w.])` 会挡掉紧跟在点号后面的地址，
+    #      于是 "redis://192.168.1.10" 反而检测不到；
+    #   2) 每个八位组都要吃掉（(?:\.\d{1,3}){3}），否则 npm 版本号会误报：
+    #      `10.13.0` 里的一段恰好长得像 10.x.x 私有网段。
     ("内网 IP", re.compile(
-        r"(?<![\d.])(?:10\.\d{1,3}|192\.168\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3})"
-        r"\.\d{1,3}(?![\d.])")),
+        r"\b(?:192\.168|172\.(?:1[6-9]|2\d|3[01])|10)(?:\.\d{1,3}){3}\b")),
     ("内网域名", re.compile(
         r"(?<![.\w])(?!threading|locale|gettext)[a-z0-9\-]{3,}\.(?:internal|corp|intranet)(?![.\w])",
         re.I)),
@@ -57,6 +62,16 @@ ALLOW = re.compile(
     r"liming@email\.com|138\*{4}5678|@email\.com)",
     re.I,
 )
+
+# 尖括号占位符：文档模板里写 `://<db_user>:<db_password>@<db_host>` 这类形式时，
+# 正则会把 "…<db_password>@" 当成"URL 内嵌密码"误报。凡是账号或口令部分
+# 被尖括号包住的，一律视为占位符跳过。
+PLACEHOLDER_CREDS = re.compile(r"://<[^>]*>:<[^>]*>@")
+
+
+def _is_placeholder(match: str) -> bool:
+    """判断命中片段是否只是文档占位符。"""
+    return bool(PLACEHOLDER_CREDS.search(match))
 
 # 二进制/大文件不扫描
 SKIP_EXT = re.compile(
@@ -77,6 +92,8 @@ def _scan_text(text: str, label: str, findings: dict) -> None:
             for m in pat.finditer(line):
                 val = m.group(0)
                 if ALLOW.search(val) or ALLOW.search(line):
+                    continue
+                if _is_placeholder(val):
                     continue
                 findings[name].append((label, val))
 

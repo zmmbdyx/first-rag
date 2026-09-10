@@ -1,5 +1,5 @@
-***REMOVED***!/usr/bin/env python
-***REMOVED*** -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """异步入库基准：对比「串行 / 线程池 / asyncio+线程池」三种解析并发模型的入库耗时。
 
 方法学（避免数字注水）：
@@ -11,7 +11,7 @@
    所以线程/异步并发的收益来自并行等待 IO 与 C 扩展计算，而非绕过 GIL。
 
 用法：
-    python scripts/benchmark_async_ingest.py                    ***REMOVED*** 默认 data/corpus
+    python scripts/benchmark_async_ingest.py # 默认 data/corpus
     python scripts/benchmark_async_ingest.py --dir data/samples --repeat 3
 """
 import argparse
@@ -27,7 +27,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from rag.pipeline import collect_files, ingest  ***REMOVED*** noqa: E402
+from rag.pipeline import collect_files, ingest # noqa: E402
 
 
 def _run_once(files_dir: Path, mode: str, workers: int, tmp_root: Path) -> dict:
@@ -36,7 +36,7 @@ def _run_once(files_dir: Path, mode: str, workers: int, tmp_root: Path) -> dict:
     idx.mkdir(parents=True, exist_ok=True)
 
     if mode == "serial":
-        ***REMOVED*** 串行：workers=1 且关闭异步
+        # 串行：workers=1 且关闭异步
         stats = ingest([files_dir], index_dir=idx, incremental=False,
                        workers=1, async_parse=False, quiet=True)
     elif mode == "thread":

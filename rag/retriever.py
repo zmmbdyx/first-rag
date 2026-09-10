@@ -24,7 +24,7 @@ from .config import (
 from .embeddings import embed_query
 from .reranker import rerank, rerank_available
 
-***REMOVED*** 近似去重的字符 3-gram 重合率阈值：短文本被长文本"包含"到该比例即视为同一内容
+# 近似去重的字符 3-gram 重合率阈值：短文本被长文本"包含"到该比例即视为同一内容
 DEDUP_CONTAINMENT = 0.85
 
 
@@ -60,7 +60,7 @@ class Hit:
     kw_rank: int | None = None
     rerank_score: float | None = None
     has_table: bool = False
-    sources: list[str] = field(default_factory=list)  ***REMOVED*** 命中路径：vector/keyword
+    sources: list[str] = field(default_factory=list) # 命中路径：vector/keyword
 
     @property
     def location(self) -> str:
@@ -78,15 +78,15 @@ class Retriever:
     def __init__(self, index_dir, collection_name: str = COLLECTION_NAME, normalize: bool | None = None):
         client = vector_store.get_client(index_dir)
         self.collection = vector_store.get_collection(client, collection_name, create=True)
-        ***REMOVED*** 余弦空间配归一化向量；旧集合（无 metadata，默认 l2）保持未归一化以兼容历史向量
+        # 余弦空间配归一化向量；旧集合（无 metadata，默认 l2）保持未归一化以兼容历史向量
         if normalize is None:
             normalize = (self.collection.metadata or {}).get("hnsw:space") == "cosine"
         self.normalize = normalize
-        ***REMOVED*** BM25 索引按集合隔离，避免多集合共享同一 pickle 串位
+        # BM25 索引按集合隔离，避免多集合共享同一 pickle 串位
         self.bm25_path = Path(index_dir) / f"bm25_{collection_name}.pkl"
         self.bm25: BM25Index | None = BM25Index.load(self.bm25_path)
 
-    ***REMOVED*** ---------- 单路检索 ----------
+    # ---------- 单路检索 ----------
 
     def vector_search(self, question: str, k: int = VECTOR_TOP_K) -> list[Hit]:
         if self.collection.count() == 0:
@@ -104,13 +104,13 @@ class Retriever:
         pairs = self.bm25.search(question, k)
         if not pairs:
             return []
-        ***REMOVED*** 一次批量取回元数据，避免逐命中回查的 N+1
+        # 一次批量取回元数据，避免逐命中回查的 N+1
         got = self.collection.get(ids=[cid for cid, _ in pairs],
                                   include=["documents", "metadatas"])
         by_id = {cid: (doc or "", meta or {}) for cid, doc, meta in
                  zip(got["ids"], got["documents"], got["metadatas"])}
         hits = []
-        for cid, score in pairs:  ***REMOVED*** 保持 BM25 排名顺序
+        for cid, score in pairs: # 保持 BM25 排名顺序
             if cid not in by_id:
                 continue
             text, meta = by_id[cid]
@@ -124,7 +124,7 @@ class Retriever:
             ))
         return hits
 
-    ***REMOVED*** ---------- 混合检索 ----------
+    # ---------- 混合检索 ----------
 
     def retrieve(self, question: str, mode: str = RETRIEVAL_MODE, k_final: int = FINAL_TOP_K,
                  k_each: int | None = None, rrf_k: int | None = None,
@@ -141,9 +141,9 @@ class Retriever:
         rrf_p = RRF_P if rrf_p is None else rrf_p
         k_each = k_each or max(VECTOR_TOP_K, KEYWORD_TOP_K)
         use_rerank = rerank_available() if rerank_on is None else rerank_on
-        ***REMOVED*** 重排需要比 k_final 更多的候选
-        ***REMOVED*** 修复：原先只取 max(k_each, k_final)，使 RERANK_CANDIDATES（默认 20）从未生效——
-        ***REMOVED*** 重排最多只能看到 10 个候选，配置项形同虚设。这里把重排候选数纳入召回规模。
+        # 重排需要比 k_final 更多的候选
+        # 修复：原先只取 max(k_each, k_final)，使 RERANK_CANDIDATES（默认 20）从未生效——
+        # 重排最多只能看到 10 个候选，配置项形同虚设。这里把重排候选数纳入召回规模。
         k_search = max(k_each, k_final, RERANK_CANDIDATES) if use_rerank else k_final
         query = f"{question} {expansion}".strip() if expansion else question
 
@@ -154,7 +154,7 @@ class Retriever:
         else:
             vec_hits = self.vector_search(query, k_each)
             kw_hits = self.keyword_search(query, k_each)
-            if not kw_hits:      ***REMOVED*** 查询词完全不在语料中（如纯英文问题）→ 回退向量
+            if not kw_hits: # 查询词完全不在语料中（如纯英文问题）→ 回退向量
                 hits = vec_hits
             elif not vec_hits:
                 hits = kw_hits
@@ -175,7 +175,7 @@ class Retriever:
                                   for r in (h.vec_rank, h.kw_rank) if r is not None)
                 hits = sorted(fused.values(), key=lambda h: h.score, reverse=True)
 
-        ***REMOVED*** 修复：先做近似去重再去重排/截断，避免重复块挤占最终 top-k 名额
+        # 修复：先做近似去重再去重排/截断，避免重复块挤占最终 top-k 名额
         hits = _dedup(hits)
         if not hits:
             return []
@@ -183,7 +183,7 @@ class Retriever:
             hits = rerank(question, hits)
         return hits[:k_final]
 
-    ***REMOVED*** ---------- 索引维护 ----------
+    # ---------- 索引维护 ----------
 
     def rebuild_bm25(self, variant: str | None = None) -> int:
         from .config import BM25_VARIANT

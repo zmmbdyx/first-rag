@@ -2,8 +2,8 @@
 
 用法：
   python scripts/ask.py "试用期多长？"
-  python scripts/ask.py "年假有几天" --mode vector     ***REMOVED*** 对比纯向量检索
-  python scripts/ask.py                                ***REMOVED*** 多轮交互（支持"那转正后呢？"类追问）
+  python scripts/ask.py "年假有几天" --mode vector # 对比纯向量检索
+  python scripts/ask.py # 多轮交互（支持"那转正后呢？"类追问）
 """
 
 import argparse
@@ -13,9 +13,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from rag.config import COLLECTION_NAME, FINAL_TOP_K, INDEX_DIR, RETRIEVAL_MODE  ***REMOVED*** noqa: E402
-from rag.pipeline import chat, load_retriever  ***REMOVED*** noqa: E402
-from rag.security import InputBlocked  ***REMOVED*** noqa: E402
+from rag.config import COLLECTION_NAME, FINAL_TOP_K, INDEX_DIR, RETRIEVAL_MODE # noqa: E402
+from rag.pipeline import chat, load_retriever # noqa: E402
+from rag.security import InputBlocked # noqa: E402
 
 
 def answer_once(retriever, question: str, mode: str, k: int, history: list[dict],
@@ -44,7 +44,7 @@ def answer_once(retriever, question: str, mode: str, k: int, history: list[dict]
 
     history.append({"role": "user", "content": question})
     history.append({"role": "assistant", "content": result["answer"]})
-    del history[:-6]  ***REMOVED*** 保留最近 3 轮
+    del history[:-6] # 保留最近 3 轮
 
 
 def main():

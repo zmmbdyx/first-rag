@@ -1,4 +1,4 @@
-***REMOVED*** -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """端到端验证：/ingest 上传入库 → 缓存按 KB 版本失效 → 新文档可被检索到。
 
 用法（需先启动 API）：
@@ -84,7 +84,7 @@ def main():
         check("KB 版本号已自增", qa_cache.kb_version() > ver_before,
               f"{ver_before} -> {qa_cache.kb_version()}")
         left = list(qa_cache._client.scan_iter(match=f"{qa_cache.CACHE_PREFIX}:v*:*", count=500))
-        ***REMOVED*** 旧版本的键应被清理（新版本刚自增，尚无写入）
+        # 旧版本的键应被清理（新版本刚自增，尚无写入）
         old_left = [k for k in left if f":v{ver_before}:" in k]
         check("旧版本缓存键已被清理", not old_left, f"剩余 {len(old_left)} 条旧键")
 

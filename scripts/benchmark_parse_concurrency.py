@@ -1,5 +1,5 @@
-***REMOVED***!/usr/bin/env python
-***REMOVED*** -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """解析阶段并发模型基准（纯解析/切分，不含嵌入）。
 
 为什么单独测解析：
@@ -29,7 +29,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from rag.pipeline import _gather_parse, _parse_and_chunk, collect_files  ***REMOVED*** noqa: E402
+from rag.pipeline import _gather_parse, _parse_and_chunk, collect_files # noqa: E402
 
 
 def run_serial(files, chunker):
@@ -73,7 +73,7 @@ def main():
     for name, fn in (("serial", lambda: run_serial(files, args.chunker)),
                      ("thread", lambda: run_thread(files, args.chunker, args.workers)),
                      ("async", lambda: run_async(files, args.chunker, args.workers))):
-        ***REMOVED*** 预热一次（排除首次导入/懒加载开销）
+        # 预热一次（排除首次导入/懒加载开销）
         fn()
         for i in range(args.repeat):
             t = time.time()

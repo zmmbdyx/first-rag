@@ -1,0 +1,124 @@
+# 后端服务（FastAPI + LangChain 编排）
+
+企业知识库 RAG 问答系统的后端。提供 RESTful + SSE 接口，负责文档解析入库、向量检索、多轮改写、
+大模型流式生成与会话持久化。
+
+## 快速启动
+
+```bash
+# 在项目根目录执行（backend 需要导入同级的 rag/ 核心包）
+uvicorn backend.main:app --reload --port 8000
+```
+
+- OpenAPI 文档：<http://127.0.0.1:8000/docs>
+- 健康检查：<http://127.0.0.1:8000/api/health>
+
+也可以用 `python -m backend.main`（读取 `HOST` / `PORT` / `RELOAD` 环境变量）。
+
+## 目录结构
+
+```
+backend/
+├── main.py              # FastAPI 入口：CORS、路由注册、lifespan 预热
+├── config.py            # Pydantic Settings（新增配置；密钥复用 rag/config.py 的 .env 契约）
+├── api/
+│   ├── chat.py          # POST /api/chat —— SSE 流式问答
+│   ├── conversations.py # 会话 CRUD
+│   └── upload.py        # POST /api/upload —— 文档上传入库
+├── core/
+│   ├── rag_chain.py     # RAG 编排：安全校验 → 多轮改写 → 混合检索 → 流式生成
+│   ├── streaming.py     # 大模型流式封装（含 extra_body 逐级降级重试）
+│   ├── vectorstore.py   # 检索器进程级单例（入库后热重载）
+│   └── embeddings.py    # Embedding 配置元信息
+├── models/              # SQLAlchemy：database / conversation / message
+├── schemas/             # Pydantic：chat / conversation / common / upload
+├── services/            # 业务层：conversation_service / upload_service
+├── uploads/             # 上传文件落盘目录（已 gitignore）
+└── data/                # SQLite 会话库（已 gitignore）
+```
+
+> **注意**：本目录**不包含**任何 RAG 核心逻辑。文档切分策略、Embedding 模型、向量库、
+ *检索策略（向量/BM25/RRF/重排）、多轮改写与引用校验全部复用项目根目录的 `rag/` 核心包*，
+ 与 Streamlit（`app.py`）和 CLI（`scripts/ask.py`）共用同一套实现。
+
+## API 一览
+
+| 方法 | 路径 | 说明 |
+|---|---|---|
+| `POST` | `/api/chat` | SSE 流式问答 |
+| `POST` | `/api/conversations` | 新建会话 |
+| `GET` | `/api/conversations` | 会话列表（按更新时间倒序） |
+| `GET` | `/api/conversations/{id}/messages` | 某会话全部消息 |
+| `DELETE` | `/api/conversations/{id}` | 删除会话 |
+| `PUT` | `/api/conversations/{id}/title` | 重命名会话 |
+| `POST` | `/api/upload` | 上传文档（PDF/Word/TXT/Markdown） |
+| `GET` | `/api/health` | 服务与知识库状态 |
+
+### SSE 事件协议
+
+`POST /api/chat` 的响应是 `text/event-stream`，帧格式为 `event: <name>` + 单行 JSON 的 `data:`：
+
+```
+event: conversation
+data: {"conversation_id":"...","title":"员工手册里试用期是多久？"}
+
+event: sources
+data: [{"index":1,"doc_name":"员工手册.pdf","section_path":"第二章 > 2.2 试用期","page":3,"similarity":0.73,...}]
+
+event: status
+data: {"stage":"generating"}
+
+event: reasoning
+data: {"delta":"…"}      # 思考过程增量（模型支持时才有）
+
+event: content
+data: {"delta":"根据"}    # 正文增量，逐 token
+
+event: done
+data: {"message_id":12,"latency":1.8,"ttft":1.1,"prompt_tokens":587,...}
+```
+
+出错时下发 `event: error`，`data` 为 `{"detail": "...", "code": "..."}`。
+
+**为什么来源先于正文**：`sources` 在检索完成后、生成开始前立即下发，
+前端可以在第一个 token 到达之前就把引用卡片渲染出来，观感上"检索与生成分离"。
+
+## 环境变量
+
+后端**新增**的配置见下表；大模型、Embedding、向量库、检索等配置**复用** `rag/config.py`
+已有的环境变量（`API_KEY` / `BASE_URL` / `LLM_MODEL` / `MODEL_OPTIONS` / `EMBED_MODEL` /
+`INDEX_DIR` / `COLLECTION_NAME` / `REDIS_URL` …），完整清单见项目根目录 `.env.example`。
+
+| 变量 | 默认值 | 说明 |
+|---|---|---|
+| `HOST` | `0.0.0.0` | 监听地址 |
+| `PORT` | `8000` | 监听端口 |
+| `DATABASE_URL` | `sqlite:///./backend/data/conversations.db` | 会话库连接串，可换 PostgreSQL |
+| `UPLOAD_DIR` | `backend/uploads` | 上传文件落盘目录 |
+| `MAX_UPLOAD_MB` | `50` | 单文件大小上限 |
+| `INGEST_ON_UPLOAD` | `true` | 上传后是否立即向量化入库 |
+| `CORS_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173` | 允许跨域的前端地址（逗号分隔） |
+| `HISTORY_ROUNDS` | `3` | 参与改写与生成的最近对话轮数 |
+| `TITLE_MAX_LEN` | `20` | 会话标题取首条消息的前 N 字 |
+| `DEFAULT_TOP_K` | `5` | 送入大模型的片段数 |
+
+## 设计说明
+
+**为什么自己管理消息历史，而不用 `ConversationBufferMemory`**：
+对话要能在刷新页面、换设备后完整还原（含引用来源与耗时统计），必须落库；
+LangChain 的内存对象活不过进程重启，且只保留纯文本、会丢掉 sources。
+因此历史存进数据库，每轮按"最近 N 轮"取出来喂给模型。
+
+**同步 IO 与事件循环**：检索（嵌入 + Chroma + BM25 + 重排）与生成都是阻塞调用，
+统一用 `asyncio.to_thread` 丢进线程池；流式生成在线程里消费同步迭代器，
+再通过 `loop.call_soon_threadsafe` 把事件投回事件循环，避免阻塞其他请求。
+
+**停止生成**：客户端 abort 触发 `asyncio.CancelledError`，后端把**已生成的部分回答**保存后再退出，
+所以刷新页面能看到被中止的回答，而不是凭空消失。
+
+## 自检
+
+```bash
+python scripts/check_backend.py        # 离线自检：配置/建表/CRUD/路由契约
+python scripts/verify_backend_e2e.py   # 端到端：会话 + 上传 + SSE + 持久化（需能访问大模型）
+```

@@ -82,7 +82,7 @@ def main():
         import shutil
         shutil.rmtree(BENCH_DIR)
 
-    ***REMOVED*** ---- 首次入库（全量） ----
+    # ---- 首次入库（全量） ----
     t_all = time.time()
     stats = ingest(paths, index_dir=BENCH_DIR, quiet=True)
     t_ingest = time.time() - t_all
@@ -90,15 +90,15 @@ def main():
     mem1 = proc.memory_info().rss / 1024 / 1024
     print(f"首次入库: {t_ingest:.1f}s（{n_chunks} 块，{n_chunks / t_ingest:.0f} 块/s）")
 
-    ***REMOVED*** ---- 增量入库（应全部跳过） ----
+    # ---- 增量入库（应全部跳过） ----
     t_inc = time.time()
     stats_inc = ingest(paths, index_dir=BENCH_DIR, quiet=True)
     t_incremental = time.time() - t_inc
     print(f"增量入库: {t_incremental:.2f}s（跳过 {len(stats_inc['skipped'])} 篇）")
 
-    ***REMOVED*** ---- 查询延迟 ----
+    # ---- 查询延迟 ----
     retriever = Retriever(BENCH_DIR)
-    retriever.vector_search("预热查询", 5)  ***REMOVED*** 模型已在此前入库时加载
+    retriever.vector_search("预热查询", 5) # 模型已在此前入库时加载
 
     qs = [f"{DEPTS[i % len(DEPTS)]}第{i // len(DEPTS) + 1}号细则里{i}类差旅补贴是多少钱？"
           for i in range(args.queries)]
@@ -127,7 +127,7 @@ def main():
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     (RESULTS_DIR / "benchmark_scale.json").write_text(json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    md = ["***REMOVED*** 大规模入库与查询基准", "",
+    md = [" # 大规模入库与查询基准", "",
           f"- 规模：{args.docs} 篇文档 / {n_chunks} 个 chunk（纯 CPU）",
           f"- 首次入库：**{t_ingest:.1f}s**（{n_chunks / t_ingest:.0f} 块/s，含解析/切分/向量编码/双索引构建）",
           f"- 增量入库（MD5 未变）：**{t_incremental:.2f}s**，跳过 {len(stats_inc['skipped'])}/{args.docs} 篇",

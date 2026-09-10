@@ -8,8 +8,8 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-import rag.config as cfg  ***REMOVED*** noqa: E402
-from rag.config import resolve_model  ***REMOVED*** noqa: E402
+import rag.config as cfg # noqa: E402
+from rag.config import resolve_model # noqa: E402
 
 
 def test_default_endpoint(monkeypatch):
@@ -28,7 +28,7 @@ def test_alias_routing(monkeypatch):
     bare, base, key = resolve_model("some-model@myep")
     assert bare == "some-model"
     assert base == "https://myep.example/v1" and key == "sk-myep"
-    ***REMOVED*** 别名大小写不敏感
+    # 别名大小写不敏感
     bare, base, _ = resolve_model("m2@MyEp")
     assert bare == "m2" and base == "https://myep.example/v1"
 
@@ -41,7 +41,7 @@ def test_missing_alias_raises(monkeypatch):
 
 
 def test_alias_takes_last_at(monkeypatch):
-    ***REMOVED*** 模型名理论上不含 @；rsplit 保证只按最后一个 @ 切
+    # 模型名理论上不含 @；rsplit 保证只按最后一个 @ 切
     monkeypatch.setenv("B__BASE_URL", "https://b.example/v1")
     monkeypatch.setenv("B__API_KEY", "sk-b")
     bare, base, key = resolve_model("a@b")

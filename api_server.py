@@ -8,7 +8,7 @@
 
 启动：
     uvicorn api_server:app --host 0.0.0.0 --port 8000
-    ***REMOVED*** 或 python api_server.py
+    # 或 python api_server.py
 """
 from __future__ import annotations
 
@@ -26,9 +26,9 @@ from pydantic import BaseModel, Field
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
-from rag import cache as qa_cache  ***REMOVED*** noqa: E402
-from rag import vector_store  ***REMOVED*** noqa: E402
-from rag.config import (  ***REMOVED*** noqa: E402
+from rag import cache as qa_cache # noqa: E402
+from rag import vector_store # noqa: E402
+from rag.config import ( # noqa: E402
     API_KEYS,
     CACHE_TTL,
     COLLECTION_NAME,
@@ -38,9 +38,9 @@ from rag.config import (  ***REMOVED*** noqa: E402
     RETRIEVAL_MODE,
     UPLOAD_DIR,
 )
-from rag.parsers import SUPPORTED_EXTS  ***REMOVED*** noqa: E402
-from rag.pipeline import chat, ingest, load_retriever  ***REMOVED*** noqa: E402
-from rag.security import InputBlocked  ***REMOVED*** noqa: E402
+from rag.parsers import SUPPORTED_EXTS # noqa: E402
+from rag.pipeline import chat, ingest, load_retriever # noqa: E402
+from rag.security import InputBlocked # noqa: E402
 
 STATE: dict = {"retriever": None, "started_at": time.time()}
 
@@ -73,7 +73,7 @@ async def lifespan(app: FastAPI):
         if r.bm25 is None and r.collection.count() > 0:
             r.rebuild_bm25()
         STATE["retriever"] = r
-    except Exception as e:  ***REMOVED*** noqa: BLE001 — 库缺失不该阻止服务启动，健康检查会暴露
+    except Exception as e: # noqa: BLE001 — 库缺失不该阻止服务启动，健康检查会暴露
         print(f"[api] 检索器加载失败（/health 会报告 degraded）：{e}")
         STATE["retriever"] = None
     if qa_cache.available():
@@ -92,7 +92,7 @@ app = FastAPI(
 )
 
 
-***REMOVED*** ---------------- 鉴权 ----------------
+# ---------------- 鉴权 ----------------
 def auth(authorization: str | None = Header(default=None),
          x_api_key: str | None = Header(default=None)) -> None:
     """可选 Bearer / X-API-Key 鉴权。
@@ -110,7 +110,7 @@ def auth(authorization: str | None = Header(default=None),
         raise HTTPException(status_code=401, detail="无效或缺失的 API Key")
 
 
-***REMOVED*** ---------------- 请求 / 响应模型（Pydantic 校验） ----------------
+# ---------------- 请求 / 响应模型（Pydantic 校验） ----------------
 class Message(BaseModel):
     role: str = Field(..., pattern="^(user|assistant|system)$")
     content: str
@@ -151,8 +151,8 @@ class AskResponse(BaseModel):
     retrieval_latency: float = 0.0
     cache_hit: bool = False
     tokens: dict = Field(default_factory=dict)
-    ***REMOVED*** sources 是内部的 Hit 对象列表（用于构造上下文），类型不定；
-    ***REMOVED*** 对外开放的溯源信息走 hits 字段。这里不声明严格类型，避免响应校验报 500。
+    # sources 是内部的 Hit 对象列表（用于构造上下文），类型不定；
+    # 对外开放的溯源信息走 hits 字段。这里不声明严格类型，避免响应校验报 500。
     sources: list = Field(default_factory=list)
     hits: list[Source] = Field(default_factory=list)
 
@@ -169,14 +169,14 @@ class IngestResponse(BaseModel):
     cache_version: int = 0
 
 
-***REMOVED*** ---------------- 基础端点 ----------------
+# ---------------- 基础端点 ----------------
 @app.get("/health", summary="健康检查")
 def health():
     r = STATE["retriever"]
     count = None
     try:
         count = r.collection.count() if r else None
-    except Exception:  ***REMOVED*** noqa: BLE001
+    except Exception: # noqa: BLE001
         pass
     return {
         "status": "ok" if r is not None else "degraded",
@@ -203,7 +203,7 @@ def cache_clear():
     return {"removed": qa_cache.clear(), "stats": qa_cache.stats()}
 
 
-***REMOVED*** ---------------- 问答 ----------------
+# ---------------- 问答 ----------------
 @app.post("/ask", response_model=AskResponse, summary="RAG 问答（含答案溯源）")
 def ask(req: AskRequest, _: None = Depends(auth)):
     r = STATE["retriever"]
@@ -222,7 +222,7 @@ def ask(req: AskRequest, _: None = Depends(auth)):
         )
     except InputBlocked as e:
         raise HTTPException(status_code=400, detail=f"输入被安全策略拦截：{e}") from e
-    ***REMOVED*** sources 内部是 Hit 对象（供上层构造上下文），对外统一转成可序列化的结构
+    # sources 内部是 Hit 对象（供上层构造上下文），对外统一转成可序列化的结构
     result["sources"] = [_hit_to_dict(h) for h in (result.get("sources") or [])]
     return result
 
@@ -251,7 +251,7 @@ def ask_stream(req: AskRequest, _: None = Depends(auth)):
         except InputBlocked as e:
             yield f"event: error\ndata: {json.dumps({'detail': str(e)}, ensure_ascii=False)}\n\n"
             return
-        except Exception as e:  ***REMOVED*** noqa: BLE001
+        except Exception as e: # noqa: BLE001
             yield f"event: error\ndata: {json.dumps({'detail': str(e)}, ensure_ascii=False)}\n\n"
             return
         for h in result.get("hits", []):
@@ -269,7 +269,7 @@ def ask_stream(req: AskRequest, _: None = Depends(auth)):
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
-***REMOVED*** ---------------- 入库 ----------------
+# ---------------- 入库 ----------------
 @app.post("/ingest", response_model=IngestResponse, summary="上传并入库文档（异步并发解析）",
           dependencies=[Depends(auth)])
 def ingest_upload(files: list[UploadFile] = File(..., description="待入库文档"),
@@ -282,7 +282,7 @@ def ingest_upload(files: list[UploadFile] = File(..., description="待入库文�
         if suffix not in SUPPORTED_EXTS:
             raise HTTPException(status_code=400,
                                 detail=f"不支持的文件类型 {suffix}，支持 {sorted(SUPPORTED_EXTS)}")
-        ***REMOVED*** 只取文件名，防路径穿越（../）
+        # 只取文件名，防路径穿越（../）
         dest = UPLOAD_DIR / Path(f.filename or "upload").name
         with open(dest, "wb") as out:
             shutil.copyfileobj(f.file, out)
@@ -290,7 +290,7 @@ def ingest_upload(files: list[UploadFile] = File(..., description="待入库文�
 
     stats = ingest(saved, index_dir=INDEX_DIR, collection_name=COLLECTION_NAME,
                    incremental=incremental, workers=workers, quiet=True)
-    ***REMOVED*** 入库会重建 BM25 索引，检索器需重新加载才能看到新块
+    # 入库会重建 BM25 索引，检索器需重新加载才能看到新块
     STATE["retriever"] = load_retriever(INDEX_DIR, COLLECTION_NAME)
     return stats
 

@@ -16,7 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-import numpy as np  ***REMOVED*** noqa: E402
+import numpy as np # noqa: E402
 
 CACHE = ROOT / "data" / ".cache"
 N_TEXTS = 256
@@ -38,7 +38,7 @@ def main():
     st_model = get_model()
 
     def bench_st() -> float:
-        st_model.encode(texts[:16], show_progress_bar=False)  ***REMOVED*** 预热
+        st_model.encode(texts[:16], show_progress_bar=False) # 预热
         best = float("inf")
         for _ in range(REPEAT):
             t0 = time.time()
@@ -49,7 +49,7 @@ def main():
     t_torch = bench_st()
     print(f"PyTorch(CPU):   {t_torch:.2f}s / {N_TEXTS} 条 → {N_TEXTS / t_torch:.0f} 条/s")
 
-    ***REMOVED*** ---------- 导出 ONNX：Transformer + 均值池化 + L2 归一化 ----------
+    # ---------- 导出 ONNX：Transformer + 均值池化 + L2 归一化 ----------
     class MeanPoolModel(nn.Module):
         def __init__(self, transformer):
             super().__init__()
@@ -75,14 +75,14 @@ def main():
             enc = st_model.tokenizer(["测试输入"], return_tensors="pt")
             sample = (enc["input_ids"], enc["attention_mask"],
                       enc.get("token_type_ids", torch.zeros_like(enc["input_ids"])))
-            ***REMOVED*** 始终传入并命名 3 个输入（BERT 需要 token_type_ids）
+            # 始终传入并命名 3 个输入（BERT 需要 token_type_ids）
             input_names = ["input_ids", "attention_mask", "token_type_ids"]
             torch.onnx.export(
                 core, sample, str(onnx_fp32),
                 input_names=input_names, output_names=["embedding"],
                 dynamic_axes={n: {0: "batch", 1: "seq"} for n in input_names} | {"embedding": {0: "batch"}},
                 opset_version=17, do_constant_folding=True,
-                dynamo=False)  ***REMOVED*** torch 2.14 的 dynamo 导出器与 onnxruntime 不兼容，用传统导出
+                dynamo=False) # torch 2.14 的 dynamo 导出器与 onnxruntime 不兼容，用传统导出
         import onnxruntime as ort
         from onnxruntime.quantization import QuantType, quantize_dynamic
 
@@ -95,7 +95,7 @@ def main():
 
         def bench_onnx(sess, tag) -> float:
             enc = tok(texts[:16], return_tensors="np", padding=True, truncation=True, max_length=512)
-            sess.run(None, {k: v.astype(np.int64) for k, v in enc.items()})  ***REMOVED*** 预热
+            sess.run(None, {k: v.astype(np.int64) for k, v in enc.items()}) # 预热
             best = float("inf")
             for _ in range(REPEAT):
                 enc = tok(texts, return_tensors="np", padding=True, truncation=True, max_length=512)
@@ -120,7 +120,7 @@ def main():
             "speedup_int8": round(t_torch / t_int8, 2),
             "note": "同机同批大小对比；PyTorch 编码含 sentence-transformers 归一化流水线",
         })
-    except Exception as e:  ***REMOVED*** noqa: BLE001
+    except Exception as e: # noqa: BLE001
         print(f"ONNX 导出/推理失败（{type(e).__name__}: {str(e)[:150]}）")
         result["error"] = f"{type(e).__name__}: {str(e)[:200]}"
 

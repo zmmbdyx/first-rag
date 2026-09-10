@@ -17,20 +17,20 @@ except ImportError:
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
-from rag import vector_store  ***REMOVED*** noqa: E402
-from rag.config import API_KEY, COLLECTION_NAME, MODEL_OPTIONS  ***REMOVED*** noqa: E402
-from rag.config import INDEX_DIR as CFG_INDEX_DIR  ***REMOVED*** noqa: E402
-from rag.llm import get_client  ***REMOVED*** noqa: E402
-from rag.parsers import SUPPORTED_EXTS  ***REMOVED*** noqa: E402
-from rag.pipeline import load_retriever  ***REMOVED*** noqa: E402
-from rag.retriever import Retriever  ***REMOVED*** noqa: E402
-from rag.rewrite import rewrite_query  ***REMOVED*** noqa: E402
-from rag.security import InputBlocked, check_input, validate_citations  ***REMOVED*** noqa: E402
+from rag import vector_store # noqa: E402
+from rag.config import API_KEY, COLLECTION_NAME, MODEL_OPTIONS # noqa: E402
+from rag.config import INDEX_DIR as CFG_INDEX_DIR # noqa: E402
+from rag.llm import get_client # noqa: E402
+from rag.parsers import SUPPORTED_EXTS # noqa: E402
+from rag.pipeline import load_retriever # noqa: E402
+from rag.retriever import Retriever # noqa: E402
+from rag.rewrite import rewrite_query # noqa: E402
+from rag.security import InputBlocked, check_input, validate_citations # noqa: E402
 
-***REMOVED*** ============ 配置 ============
-***REMOVED*** 修复：原先把索引目录硬编码为 <项目根>/chroma_db，忽略了 rag.config 里
-***REMOVED*** INDEX_DIR 环境变量的覆盖能力——一旦用 INDEX_DIR 指定了别的库，
-***REMOVED*** Web 界面会与 build_kb.py / ask.py 指向不同的库，表现为"刚入库的文档看不到"。
+# ============ 配置 ============
+# 修复：原先把索引目录硬编码为 <项目根>/chroma_db，忽略了 rag.config 里
+# INDEX_DIR 环境变量的覆盖能力——一旦用 INDEX_DIR 指定了别的库，
+# Web 界面会与 build_kb.py / ask.py 指向不同的库，表现为"刚入库的文档看不到"。
 INDEX_DIR = str(CFG_INDEX_DIR)
 MODE_LABELS = {
     "hybrid": "混合检索（向量+关键词，RRF 融合）",
@@ -42,14 +42,14 @@ SUGGESTIONS = [
     "简单介绍一下 RLHF 的训练流程",
     "大模型的 Scaling Law 是什么？",
 ]
-***REMOVED*** ===============================
+# ===============================
 
 st.set_page_config(page_title="AI 知识库问答", page_icon="🤖", layout="wide",
-                   initial_sidebar_state="auto")  ***REMOVED*** 桌面默认展开，手机自动收起
+                   initial_sidebar_state="auto") # 桌面默认展开，手机自动收起
 
-***REMOVED*** ---------- 界面样式 ----------
-***REMOVED*** 颜色一律取自 Streamlit 主题变量（--text-color / --secondary-background-color 等），
-***REMOVED*** 切换浅色/深色主题时自动适配，只有点缀色 --accent 是自定义的
+# ---------- 界面样式 ----------
+# 颜色一律取自 Streamlit 主题变量（--text-color / --secondary-background-color 等），
+# 切换浅色/深色主题时自动适配，只有点缀色 --accent 是自定义的
 st.markdown("""
 <style>
     /* 只隐藏页脚；保留顶部工具栏（侧边栏展开按钮和主题设置都在里面） */
@@ -62,21 +62,21 @@ st.markdown("""
 
     /* 侧边栏收起时，展开按钮做成醒目的悬浮按钮，一眼可见 */
     [data-testid="stExpandSidebarButton"] {
-        background: ***REMOVED***4f46e5 !important;
+        background: #4f46e5 !important;
         border-radius: 10px !important;
         box-shadow: 0 2px 12px rgba(79, 70, 229, .45) !important;
     }
     [data-testid="stExpandSidebarButton"] span,
-    [data-testid="stExpandSidebarButton"] svg {color: ***REMOVED***fff !important;}
+    [data-testid="stExpandSidebarButton"] svg {color: #fff !important;}
 
     /* 主区域居中限宽，聊天阅读更舒适 */
     .block-container {max-width: 920px; margin: 0 auto; padding-top: 1.4rem; padding-bottom: 5rem;}
 
     /* 渐变标题（浅深色背景上都可读） */
-    .hero-title {background: linear-gradient(90deg, ***REMOVED***4f46e5, ***REMOVED***0891b2);
+    .hero-title {background: linear-gradient(90deg, #4f46e5, #0891b2);
         -webkit-background-clip: text; background-clip: text; color: transparent;
         font-size: 2.3rem; font-weight: 800; line-height: 1.25; margin-bottom: 0;}
-    .hero-sub {color: ***REMOVED***7f89a3; font-size: .95rem; margin-top: .25rem;}
+    .hero-sub {color: #7f89a3; font-size: .95rem; margin-top: .25rem;}
 
     /* 聊天气泡：只加边框圆角，不写死背景色，颜色由主题自动适配 */
     [data-testid="stChatMessage"] {border-radius: 16px; border: 1px solid rgba(122, 124, 140, .28);
@@ -91,7 +91,7 @@ st.markdown("""
     .welcome {text-align: center; padding: 6px 4px 2px;}
     .welcome-emoji {font-size: 2rem; line-height: 1.2;}
     .welcome-text {font-size: 1.02rem; margin: .45rem 0 0;}
-    .welcome-hint {color: ***REMOVED***7f89a3; font-size: .9rem; margin: .15rem 0 0;}
+    .welcome-hint {color: #7f89a3; font-size: .9rem; margin: .15rem 0 0;}
 
     /* 手机端适配 */
     @media (max-width: 640px) {
@@ -119,19 +119,19 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 
 
-***REMOVED*** ---------- 资源加载（懒加载，只加载一次） ----------
+# ---------- 资源加载（懒加载，只加载一次） ----------
 @st.cache_resource
 def get_retriever() -> Retriever:
     """加载检索器：优先使用智能切分入库的 rag_chunks 集合，否则回退旧 langchain 集合。"""
     client = vector_store.get_client(INDEX_DIR)
-    ***REMOVED*** 修复：集合名原先硬编码为 "rag_chunks"，忽略了 rag.config 的 COLLECTION_NAME 配置；
-    ***REMOVED*** 现优先使用配置的集合名，旧库仍回退 "langchain" 以兼容历史数据。
+    # 修复：集合名原先硬编码为 "rag_chunks"，忽略了 rag.config 的 COLLECTION_NAME 配置；
+    # 现优先使用配置的集合名，旧库仍回退 "langchain" 以兼容历史数据。
     name = (COLLECTION_NAME
             if vector_store.get_collection(client, COLLECTION_NAME, create=False) is not None
             else "langchain")
-    st.session_state["kb_collection"] = name  ***REMOVED*** 上传入库时写入同一集合
+    st.session_state["kb_collection"] = name # 上传入库时写入同一集合
     retriever = load_retriever(INDEX_DIR, name)
-    if retriever.bm25 is None:  ***REMOVED*** 首次运行：现场构建一次 BM25 关键词索引并缓存
+    if retriever.bm25 is None: # 首次运行：现场构建一次 BM25 关键词索引并缓存
         with st.spinner("首次运行：正在构建 BM25 关键词索引（一次性）..."):
             retriever.rebuild_bm25()
     return retriever
@@ -143,7 +143,7 @@ def load_client(model: str):
     return get_client(model)
 
 
-***REMOVED*** ---------- 知识库操作 ----------
+# ---------- 知识库操作 ----------
 @st.cache_data(ttl=1800, show_spinner=False)
 def cached_retrieve(query: str, k: int, mode: str):
     """检索结果缓存：相同问题 30 分钟内不再重复向量化与检索。"""
@@ -159,10 +159,10 @@ def do_web_search(query: str, n: int):
         return [], str(e)
 
 
-***REMOVED*** ---------- 流式调用大模型 ----------
+# ---------- 流式调用大模型 ----------
 def stream_answer(model, history, system_prompt, question, temperature, thinking_on, budget, max_tokens):
     """流式生成回答，边生成边渲染。返回 (回答, 思考过程, usage, 总耗时, 首字耗时)。"""
-    client, bare_model = load_client(model)  ***REMOVED*** 多厂商：按模型标识路由到对应端点
+    client, bare_model = load_client(model) # 多厂商：按模型标识路由到对应端点
     api_messages = [{"role": "system", "content": system_prompt}]
     api_messages += [{"role": m["role"], "content": m["content"]} for m in history]
     api_messages.append({"role": "user", "content": question})
@@ -184,11 +184,11 @@ def stream_answer(model, history, system_prompt, question, temperature, thinking
         candidates = [{"enable_thinking": False}, None]
 
     stream, last_err = None, None
-    ***REMOVED*** 修复：原先 t0 是在 create() 返回之后才取的，而 OpenAI 流式接口在 create() 阶段
-    ***REMOVED*** 就完成了建连与排队——导致界面上的「首字耗时」只统计到首块解析时间，长期显示 0.0s，
-    ***REMOVED*** 「总耗时」也漏掉了真实的请求往返。这里把计时起点提前到发起请求之前。
+    # 修复：原先 t0 是在 create() 返回之后才取的，而 OpenAI 流式接口在 create() 阶段
+    # 就完成了建连与排队——导致界面上的「首字耗时」只统计到首块解析时间，长期显示 0.0s，
+    # 「总耗时」也漏掉了真实的请求往返。这里把计时起点提前到发起请求之前。
     t0 = time.time()
-    for extra in candidates:  ***REMOVED*** 个别参数不被端点支持时逐级降级重试
+    for extra in candidates: # 个别参数不被端点支持时逐级降级重试
         kw = dict(base)
         if extra:
             kw["extra_body"] = extra
@@ -216,7 +216,7 @@ def stream_answer(model, history, system_prompt, question, temperature, thinking
         if rc:
             if ttft is None:
                 ttft = time.time() - t0
-            if status_box is None:  ***REMOVED*** 思考块懒创建，避免不思考时留下空块
+            if status_box is None: # 思考块懒创建，避免不思考时留下空块
                 status_box = st.status("🧠 思考中...", expanded=True)
                 with status_box:
                     reason_ph = st.empty()
@@ -234,15 +234,15 @@ def stream_answer(model, history, system_prompt, question, temperature, thinking
 
     if status_box is not None:
         status_box.update(label="🧠 思考完成", state="complete", expanded=False)
-    ***REMOVED*** 修复：流式打字机用的 answer_ph 占位块原先不清除，调用方随后又 st.markdown(answer)
-    ***REMOVED*** 渲染一遍，导致同一条回答在界面上重复显示两次（截图可见）。这里用完即清，
-    ***REMOVED*** 最终答案统一由调用方渲染一次。
+    # 修复：流式打字机用的 answer_ph 占位块原先不清除，调用方随后又 st.markdown(answer)
+    # 渲染一遍，导致同一条回答在界面上重复显示两次（截图可见）。这里用完即清，
+    # 最终答案统一由调用方渲染一次。
     if answer_ph is not None:
         answer_ph.empty()
     return "".join(answer_parts), "".join(reasoning_parts), usage, time.time() - t0, ttft
 
 
-***REMOVED*** ---------- 侧边栏 ----------
+# ---------- 侧边栏 ----------
 with st.sidebar:
     st.header("⚙️ AI 设置")
     model = st.selectbox("模型", MODEL_OPTIONS,
@@ -274,21 +274,21 @@ with st.sidebar:
         st.session_state.messages = []
         st.rerun()
 
-    ***REMOVED*** ---------- 文档上传入库：解析 → 智能切分 → 向量化 → 写入 Chroma + BM25 ----------
+    # ---------- 文档上传入库：解析 → 智能切分 → 向量化 → 写入 Chroma + BM25 ----------
     st.divider()
     st.subheader("📤 文档入库")
     uploaded = st.file_uploader("PDF / Word / TXT / MD（可多选）",
                                 type=["pdf", "docx", "txt", "md"], accept_multiple_files=True)
     if st.button("入库到知识库", type="primary", disabled=not uploaded) and uploaded:
-        ***REMOVED*** 修复：原先在这里又 `from rag.config import COLLECTION_NAME` 局部导入一次，
-        ***REMOVED*** 与文件顶部已导入的同名符号重复（遮蔽 + 易漏改），直接复用顶部导入。
+        # 修复：原先在这里又 `from rag.config import COLLECTION_NAME` 局部导入一次，
+        # 与文件顶部已导入的同名符号重复（遮蔽 + 易漏改），直接复用顶部导入。
         from rag.pipeline import ingest
 
         up_dir = Path(ROOT) / "data" / "uploads"
         up_dir.mkdir(parents=True, exist_ok=True)
         saved = []
         for f in uploaded:
-            safe_name = Path(f.name).name  ***REMOVED*** 去掉任何目录成分，防止路径穿越
+            safe_name = Path(f.name).name # 去掉任何目录成分，防止路径穿越
             if safe_name in ("", ".", "..") or Path(safe_name).suffix.lower() not in SUPPORTED_EXTS:
                 st.warning(f"跳过不合规文件：{f.name}")
                 continue
@@ -300,26 +300,26 @@ with st.sidebar:
             try:
                 with st.spinner("解析 → 切分 → 向量化 → 写入索引 ..."):
                     stats = ingest(saved, collection_name=collection, quiet=True)
-                    get_retriever().rebuild_bm25()  ***REMOVED*** 刷新常驻检索器的 BM25 索引
-                st.cache_data.clear()  ***REMOVED*** 检索缓存失效，新文档立即可查
+                    get_retriever().rebuild_bm25() # 刷新常驻检索器的 BM25 索引
+                st.cache_data.clear() # 检索缓存失效，新文档立即可查
                 n = sum(stats["docs"].values())
                 st.success(f"✅ 入库完成：{len(stats['docs'])} 篇 / 新增 {n} 块"
                            f"（库内共 {stats['collection_count']} 块），现在可以直接提问了")
-            except Exception as e:  ***REMOVED*** noqa: BLE001
+            except Exception as e: # noqa: BLE001
                 st.error(f"入库失败：{e}")
         else:
             st.warning("没有可入库的合规文件")
 
 
-***REMOVED*** ---------- 知识库加载（首次打开有加载提示，完成后提示自动消失，不留残影） ----------
-***REMOVED*** 标题和侧边栏设置先渲染出来，加载过程放在这里明确提示，避免打开时白屏让人以为界面丢了
+# ---------- 知识库加载（首次打开有加载提示，完成后提示自动消失，不留残影） ----------
+# 标题和侧边栏设置先渲染出来，加载过程放在这里明确提示，避免打开时白屏让人以为界面丢了
 if "kb_ready" not in st.session_state:
     with st.spinner("🔄 正在加载向量数据库与嵌入模型（首次约需 10-20 秒）..."):
         get_retriever()
     st.session_state.kb_ready = True
 
 
-***REMOVED*** ---------- 空状态：欢迎 + 示例问题 ----------
+# ---------- 空状态：欢迎 + 示例问题 ----------
 if not st.session_state.messages and "pending_prompt" not in st.session_state:
     with st.container(border=True):
         st.markdown("""
@@ -336,7 +336,7 @@ if not st.session_state.messages and "pending_prompt" not in st.session_state:
                 st.rerun()
 
 
-***REMOVED*** ---------- 渲染历史消息 ----------
+# ---------- 渲染历史消息 ----------
 for msg in st.session_state.messages:
     avatar = "🤖" if msg["role"] == "assistant" else "🙋"
     with st.chat_message(msg["role"], avatar=avatar):
@@ -346,7 +346,7 @@ for msg in st.session_state.messages:
         st.markdown(msg["content"])
 
 
-***REMOVED*** ---------- 问答主流程 ----------
+# ---------- 问答主流程 ----------
 prompt = st.chat_input("请输入你的问题...")
 if prompt is None and "pending_prompt" in st.session_state:
     prompt = st.session_state.pending_prompt
@@ -358,24 +358,24 @@ if prompt:
         st.markdown(prompt)
 
     with st.chat_message("assistant", avatar="🤖"):
-        ***REMOVED*** ---- 安全检查：注入/超长输入拦截（拦截记录写入 logs/blocked_queries.log）----
+        # ---- 安全检查：注入/超长输入拦截（拦截记录写入 logs/blocked_queries.log）----
         try:
             clean_prompt = check_input(prompt)
         except InputBlocked as e:
             st.warning(f"⛔ 输入被安全策略拦截：{e.reason}")
             st.stop()
 
-        ***REMOVED*** ---- 多轮改写：指代消解与省略补全（"那转正后呢？"→ 独立问题）----
+        # ---- 多轮改写：指代消解与省略补全（"那转正后呢？"→ 独立问题）----
         history_for_rewrite = [m for m in st.session_state.messages[:-1]
                                if m["role"] in ("user", "assistant")][-4:]
         try:
             rw = rewrite_query(clean_prompt, history_for_rewrite, use_llm=True)
-        except Exception:  ***REMOVED*** noqa: BLE001
+        except Exception: # noqa: BLE001
             rw = {"query": clean_prompt, "method": "none"}
         if rw["method"] != "none":
             st.caption(f"🔁 已结合对话历史改写查询：{rw['query']}")
 
-        ***REMOVED*** 联网搜索放进后台线程，与本地检索并行执行
+        # 联网搜索放进后台线程，与本地检索并行执行
         pool = ThreadPoolExecutor(max_workers=1) if enable_web else None
         web_future = pool.submit(do_web_search, rw["query"], web_num) if pool else None
 
@@ -386,7 +386,7 @@ if prompt:
 
         context_parts, sources_info = [], []
         for i, h in enumerate(hits, 1):
-            ***REMOVED*** 上下文编号 [i] 与答案中的引用标注一一对应，实现答案溯源
+            # 上下文编号 [i] 与答案中的引用标注一一对应，实现答案溯源
             context_parts.append(f"[{i}] 来源：{h.location or h.doc_name}\n{h.text}")
             sources_info.append({"type": "本地文档", "title": f"来源 {i}",
                                  "content": h.text, "source": h.location or h.doc_name,
@@ -414,14 +414,14 @@ if prompt:
 
 参考资料：
 {final_context}"""
-        ***REMOVED*** 携带最近几轮对话，保证多轮问答的连贯性
+        # 携带最近几轮对话，保证多轮问答的连贯性
         history = [m for m in st.session_state.messages[:-1] if m["role"] in ("user", "assistant")]
         history = history[-2 * history_rounds:]
 
         answer, reasoning = None, ""
         gen_error = None
-        ***REMOVED*** Redis 问答缓存：命中则直接复用上次答案，跳过生成（最高频、最贵的环节）。
-        ***REMOVED*** 只在未启用联网搜索时缓存 —— 搜索结果随时间和网络变化，缓存会返回过期信息。
+        # Redis 问答缓存：命中则直接复用上次答案，跳过生成（最高频、最贵的环节）。
+        # 只在未启用联网搜索时缓存 —— 搜索结果随时间和网络变化，缓存会返回过期信息。
         from rag import cache as qa_cache
 
         cache_key = None
@@ -442,7 +442,7 @@ if prompt:
                     model, history, system_prompt, rw["query"],
                     temperature, thinking_on, budget, max_tokens,
                 )
-            except Exception as e:  ***REMOVED*** noqa: BLE001
+            except Exception as e: # noqa: BLE001
                 gen_error = e
                 answer, usage, elapsed, ttft = None, None, time.time() - t0, None
                 st.error(f"调用模型失败：{e}")
@@ -450,9 +450,9 @@ if prompt:
                 qa_cache.set(cache_key, {"answer": answer, "reasoning": reasoning,
                                          "query_used": rw["query"], "model": model})
 
-        ***REMOVED*** 修复：Web 界面此前完全不写运行指标（只有 CLI / pipeline.chat 会写），
-        ***REMOVED*** 导致 scripts/metrics_report.py 看到的全是命令行数据、错误率恒为 0。
-        ***REMOVED*** 这里补齐同样的落库（含失败样本），让 P95/错误率告警覆盖图形界面链路。
+        # 修复：Web 界面此前完全不写运行指标（只有 CLI / pipeline.chat 会写），
+        # 导致 scripts/metrics_report.py 看到的全是命令行数据、错误率恒为 0。
+        # 这里补齐同样的落库（含失败样本），让 P95/错误率告警覆盖图形界面链路。
         try:
             from rag.metrics import estimate_tokens, record as record_metric
 
@@ -460,11 +460,11 @@ if prompt:
             c_tok = usage.completion_tokens if usage else estimate_tokens(answer or "")
             record_metric(model, retrieval_mode, t_retrieval * 1000, elapsed * 1000,
                           p_tok, c_tok, error=gen_error is not None)
-        except Exception:  ***REMOVED*** noqa: BLE001 — 指标失败绝不影响问答主流程
+        except Exception: # noqa: BLE001 — 指标失败绝不影响问答主流程
             pass
 
         if answer is not None:
-            ***REMOVED*** ---- 引用校验：伪造编号提示（编号必须真实对应检索结果）----
+            # ---- 引用校验：伪造编号提示（编号必须真实对应检索结果）----
             _, forged_c = validate_citations(answer, len(hits))
             if forged_c:
                 st.warning(f"⚠️ 引用校验未通过：回答引用了不存在的编号 {forged_c}，内容可能不可靠。")

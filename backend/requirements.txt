@@ -1,0 +1,16 @@
+# backend/ 依赖说明
+#
+# 后端不引入任何新的大模型/向量库依赖：Embedding、Chroma、BM25、LangChain 组件
+# 全部复用项目根目录的 requirements.txt。
+#
+# 因此本文件只是一个「指向根依赖清单」的入口，避免两份依赖清单各自漂移：
+# 装了根依赖就等于装好了后端运行所需的全部依赖。
+#
+# 用法：
+#     pip install -r backend/requirements.txt
+#
+# 后端单独新增的依赖只有这两个（已包含在根清单里）：
+#     pydantic-settings  环境变量管理（backend/config.py）
+#     SQLAlchemy         会话与消息持久化
+
+-r ../requirements.txt

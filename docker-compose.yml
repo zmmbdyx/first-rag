@@ -1,11 +1,11 @@
-***REMOVED*** 企业知识库 RAG 问答系统 —— 一键起服务
-***REMOVED***
-***REMOVED***   docker compose up -d --build        ***REMOVED*** 起 redis + api + ui
-***REMOVED***   docker compose logs -f api          ***REMOVED*** 看 API 日志
-***REMOVED***   docker compose down                 ***REMOVED*** 停止
-***REMOVED***
-***REMOVED*** 首次使用需先准备 .env（复制 .env.example 并填入 API_KEY / BASE_URL）。
-***REMOVED*** Redis 用于问答缓存：容器内通过服务名 redis 连接，无需改代码。
+# 企业知识库 RAG 问答系统 —— 一键起服务
+#
+#   docker compose up -d --build        # 起 redis + api + ui
+#   docker compose logs -f api          # 看 API 日志
+#   docker compose down                 # 停止
+#
+# 首次使用需先准备 .env（复制 .env.example 并填入 API_KEY / BASE_URL）。
+# Redis 用于问答缓存：容器内通过服务名 redis 连接，无需改代码。
 
 services:
   redis:
@@ -34,14 +34,14 @@ services:
     env_file:
       - .env
     environment:
-      ***REMOVED*** 覆盖 .env 里的本地地址，指向 compose 内的 redis 服务
+      # 覆盖 .env 里的本地地址，指向 compose 内的 redis 服务
       REDIS_URL: redis://redis:6379/0
       CACHE_ENABLED: "auto"
       INDEX_DIR: /app/chroma_db
     ports:
       - "8000:8000"
     volumes:
-      ***REMOVED*** 向量库、日志、上传文档、模型缓存都持久化到宿主机
+      # 向量库、日志、上传文档、模型缓存都持久化到宿主机
       - ./chroma_db:/app/chroma_db
       - ./logs:/app/logs
       - ./data/uploads:/app/data/uploads
@@ -55,7 +55,7 @@ services:
     build: .
     image: rag-kb:latest
     container_name: rag-ui
-    ***REMOVED*** Streamlit 演示界面（与 API 共用同一镜像与同一份向量库）
+    # Streamlit 演示界面（与 API 共用同一镜像与同一份向量库）
     command: streamlit run app.py --server.address 0.0.0.0 --server.port 8501
     env_file:
       - .env

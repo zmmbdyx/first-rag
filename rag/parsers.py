@@ -11,17 +11,17 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-***REMOVED*** ---------- 数据结构 ----------
+# ---------- 数据结构 ----------
 
 
 @dataclass
 class Block:
     text: str
-    kind: str = "paragraph"  ***REMOVED*** heading | paragraph | table | list
+    kind: str = "paragraph" # heading | paragraph | table | list
     page: int | None = None
     level: int = 0
-    rows: list[list[str]] | None = None   ***REMOVED*** 表格数据（kind="table" 时存在）
-    header: list[str] | None = None       ***REMOVED*** 表头行（无表头为 None）
+    rows: list[list[str]] | None = None # 表格数据（kind="table" 时存在）
+    header: list[str] | None = None # 表头行（无表头为 None）
 
 
 _GENERIC_HEADER = {"项目", "参数项", "名称", "配置项", "项目名称"}
@@ -61,16 +61,16 @@ class ParsedDoc:
     blocks: list[Block] = field(default_factory=list)
 
 
-***REMOVED*** ---------- 标题识别 ----------
+# ---------- 标题识别 ----------
 
-***REMOVED*** 强特征：几乎可以断定是标题
+# 强特征：几乎可以断定是标题
 _STRONG_HEADINGS = [
     re.compile(r"^第\s*[一二三四五六七八九十百0-9]+\s*[章节篇讲]"),
-    re.compile(r"^***REMOVED***{1,6}\s+"),                       ***REMOVED*** markdown
-    re.compile(r"^Q\s*\d+\s*[：:.?？]"),              ***REMOVED*** FAQ 问答体
-    re.compile(r"^\d{1,2}(\.\d{1,2}){1,3}[\s、.．]\s*\S"),  ***REMOVED*** 3.1 / 6.2.1 需跟分隔符
+    re.compile(r"^ #{1,6}\s+"), # markdown
+    re.compile(r"^Q\s*\d+\s*[：:.?？]"), # FAQ 问答体
+    re.compile(r"^\d{1,2}(\.\d{1,2}){1,3}[\s、.．]\s*\S"), # 3.1 / 6.2.1 需跟分隔符
 ]
-***REMOVED*** 弱特征：短行才可信
+# 弱特征：短行才可信
 _WEAK_HEADINGS = [
     re.compile(r"^[一二三四五六七八九十]+\s*、"),
     re.compile(r"^[（(][一二三四五六七八九十0-9]+[）)]"),
@@ -85,17 +85,17 @@ def is_heading_text(text: str) -> bool:
     if not text or len(text) > 40:
         return False
     if any(p.match(text) for p in _STRONG_HEADINGS):
-        return True  ***REMOVED*** 强特征（Q1：/第四章/3.1/***REMOVED***）即使以问号结尾也是标题
+        return True # 强特征（Q1：/第四章/3.1/ #）即使以问号结尾也是标题
     if text.endswith(_BLACKLIST_TAIL):
         return False
     return len(text) <= 30 and any(p.match(text) for p in _WEAK_HEADINGS)
 
 
 def _clean_heading(text: str) -> str:
-    return text.lstrip("***REMOVED***").strip()
+    return text.lstrip(" #").strip()
 
 
-***REMOVED*** ---------- PDF ----------
+# ---------- PDF ----------
 
 
 def parse_pdf(path: Path) -> ParsedDoc:
@@ -105,7 +105,7 @@ def parse_pdf(path: Path) -> ParsedDoc:
     表格用 PyMuPDF find_tables 结构化提取（跳过表格区域内的普通文本块），
     连续页的同列数续表自动合并并回填表头。
     """
-    import pymupdf  ***REMOVED*** PyMuPDF
+    import pymupdf # PyMuPDF
 
     pd = ParsedDoc(path.name, str(path))
     pdf = pymupdf.open(path)
@@ -122,9 +122,9 @@ def parse_pdf(path: Path) -> ParsedDoc:
             ]
             body_size = _median(sizes) if sizes else 10.5
 
-            ***REMOVED*** --- 表格结构化提取 ---
+            # --- 表格结构化提取 ---
             tboxes: list[tuple[float, float, float, float]] = []
-            items: list[tuple[float, Block]] = []  ***REMOVED*** (y0, Block) 用于页内按版面顺序排列
+            items: list[tuple[float, Block]] = [] # (y0, Block) 用于页内按版面顺序排列
             try:
                 for t in page.find_tables():
                     grid = [[(c or "").replace("\n", " ").strip() for c in row] for row in t.extract()]
@@ -136,7 +136,7 @@ def parse_pdf(path: Path) -> ParsedDoc:
                     items.append((t.bbox[1], Block(render_table(header, rows), "table", pno,
                                                    rows=rows, header=header)))
                     tboxes.append(tuple(t.bbox))
-            except Exception:  ***REMOVED*** noqa: BLE001 — 个别页面表格检测失败不影响文本
+            except Exception: # noqa: BLE001 — 个别页面表格检测失败不影响文本
                 pass
 
             def _in_table(blk) -> bool:
@@ -144,7 +144,7 @@ def parse_pdf(path: Path) -> ParsedDoc:
                 cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
                 return any(bx0 <= cx <= bx1 and by0 <= cy <= by1 for bx0, by0, bx1, by1 in tboxes)
 
-            ***REMOVED*** --- 普通文本块（行→段：标题行单独成块；普通行合并） ---
+            # --- 普通文本块（行→段：标题行单独成块；普通行合并） ---
             for block in data["blocks"]:
                 if block.get("type") != 0 or _in_table(block):
                     continue
@@ -218,12 +218,12 @@ def _median(values: list[float]) -> float:
 def _smart_join(a: str, b: str) -> str:
     if not a:
         return b
-    cjk = lambda ch: "\u4e00" <= ch <= "\u9fff"  ***REMOVED*** noqa: E731
+    cjk = lambda ch: "\u4e00" <= ch <= "\u9fff" # noqa: E731
     sep = "" if (cjk(a[-1]) or cjk(b[:1]) or b[:1] in "，。、；：！？（）") else " "
     return a + sep + b
 
 
-***REMOVED*** ---------- Word (.docx) ----------
+# ---------- Word (.docx) ----------
 
 
 def parse_docx(path: Path) -> ParsedDoc:
@@ -262,7 +262,7 @@ def parse_docx(path: Path) -> ParsedDoc:
     return pd
 
 
-***REMOVED*** ---------- TXT / Markdown ----------
+# ---------- TXT / Markdown ----------
 
 
 def parse_txt(path: Path) -> ParsedDoc:
@@ -285,8 +285,8 @@ def parse_txt(path: Path) -> ParsedDoc:
             continue
         lines = [ln.strip() for ln in para.splitlines() if ln.strip()]
         first = lines[0]
-        if first.startswith("***REMOVED***"):
-            level = max(1, len(first) - len(first.lstrip("***REMOVED***")))
+        if first.startswith(" #"):
+            level = max(1, len(first) - len(first.lstrip(" #")))
             pd.blocks.append(Block(_clean_heading(first), "heading", None, level))
             rest = "\n".join(lines[1:]).strip()
             if rest:
@@ -301,7 +301,7 @@ def parse_txt(path: Path) -> ParsedDoc:
     return pd
 
 
-***REMOVED*** ---------- 统一入口 ----------
+# ---------- 统一入口 ----------
 
 SUPPORTED_EXTS = {".pdf", ".docx", ".txt", ".md"}
 

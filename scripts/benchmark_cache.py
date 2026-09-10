@@ -1,5 +1,5 @@
-***REMOVED***!/usr/bin/env python
-***REMOVED*** -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """Redis 问答缓存基准：量化"缓存命中跳过检索+生成"带来的端到端延迟收益。
 
 方法学（避免数字注水）：
@@ -14,7 +14,7 @@
    因此该收益的前提是**访问重复率**。脚本会同时打印重复率，便于判断适用性。
 
 用法：
-    python scripts/benchmark_cache.py                 ***REMOVED*** 默认 8 题 × 3 轮
+    python scripts/benchmark_cache.py # 默认 8 题 × 3 轮
     python scripts/benchmark_cache.py --questions 6 --rounds 2 --no-llm
 """
 import argparse
@@ -29,9 +29,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from rag import cache as qa_cache  ***REMOVED*** noqa: E402
-from rag.config import INDEX_DIR, LLM_MODEL, RETRIEVAL_MODE  ***REMOVED*** noqa: E402
-from rag.pipeline import chat, load_retriever  ***REMOVED*** noqa: E402
+from rag import cache as qa_cache # noqa: E402
+from rag.config import INDEX_DIR, LLM_MODEL, RETRIEVAL_MODE # noqa: E402
+from rag.pipeline import chat, load_retriever # noqa: E402
 
 DEFAULT_QUESTIONS = [
     "试用期多长时间？",
@@ -90,7 +90,7 @@ def main():
                  use_cache=use_cache, audit_enabled=False, return_hits=False)
         return time.time() - t, r
 
-    ***REMOVED*** 诊断：确认缓存写入/读取在基准进程里真的生效（避免"看起来在测缓存，其实一直 miss"）
+    # 诊断：确认缓存写入/读取在基准进程里真的生效（避免"看起来在测缓存，其实一直 miss"）
     if qa_cache.available():
         _diag_key = qa_cache.cache_key(questions[0], args.mode, 5, args.model)
         qa_cache.set(_diag_key, {"answer": "__diag__"})
@@ -101,7 +101,7 @@ def main():
         if not _ok:
             print("⚠️  缓存自检失败，本次基准的缓存收益不可信。")
 
-    ***REMOVED*** 预热（模型加载 / 检索器首次查询开销不计入）
+    # 预热（模型加载 / 检索器首次查询开销不计入）
     print("\n预热中（加载嵌入模型与检索器）...")
     one(questions[0], use_cache=False)
 
@@ -109,8 +109,8 @@ def main():
     cache_hits = 0
     total = 0
 
-    ***REMOVED*** ---- 阶段 1：冷启动 —— 缓存开启但库是空的，全部 MISS 并写入缓存 ----
-    ***REMOVED*** 这一轮才是"第一个用户提问"的真实延迟（检索 + LLM 生成 + 写缓存）。
+    # ---- 阶段 1：冷启动 —— 缓存开启但库是空的，全部 MISS 并写入缓存 ----
+    # 这一轮才是"第一个用户提问"的真实延迟（检索 + LLM 生成 + 写缓存）。
     print("\n[阶段1] 冷启动：缓存为空，全部未命中（并写入缓存）...")
     for i, q in enumerate(questions):
         total += 1
@@ -121,7 +121,7 @@ def main():
         cache_hits += 1 if hit else 0
         print(f"  [{'HIT ' if hit else 'MISS'}] q{i+1} {dt*1000:7.1f} ms  {q[:24]}")
 
-    ***REMOVED*** ---- 阶段 2：重复访问 —— 同一批问题再问 N 轮，应全部命中 ----
+    # ---- 阶段 2：重复访问 —— 同一批问题再问 N 轮，应全部命中 ----
     if args.rounds > 0 and qa_cache.available():
         print(f"\n[阶段2] 重复访问 {args.rounds} 轮：应全部命中缓存...")
         for rnd in range(args.rounds):
@@ -134,7 +134,7 @@ def main():
                 cache_hits += 1 if hit else 0
                 print(f"  [{'HIT ' if hit else 'MISS'}] r{rnd} q{i+1} {dt*1000:7.1f} ms  {q[:24]}")
 
-    ***REMOVED*** ---- 阶段 3：对照组 —— 完全相同的题目，全程关闭缓存走完整链路 ----
+    # ---- 阶段 3：对照组 —— 完全相同的题目，全程关闭缓存走完整链路 ----
     print("\n[阶段3] 对照组：关闭缓存，全部走完整链路...")
     base = []
     for _ in range(1 + args.rounds):

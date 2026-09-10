@@ -12,10 +12,10 @@ BLOCKED_LOG = LOG_DIR / "blocked_queries.log"
 AUDIT_LOG = LOG_DIR / "audit.jsonl"
 
 MAX_QUESTION_CHARS = 500
-***REMOVED*** 零宽字符与控制字符（保留换行）
+# 零宽字符与控制字符（保留换行）
 _CONTROL_RE = re.compile(r"[\u200b-\u200f\u202a-\u202e\u2060\ufeff\t\x00-\x08\x0b\x0c\x0e-\x1f]")
 
-***REMOVED*** 提示注入特征（大小写不敏感）；命中即拦截。覆盖指令覆盖/提示词套取/角色劫持/越狱四大类。
+# 提示注入特征（大小写不敏感）；命中即拦截。覆盖指令覆盖/提示词套取/角色劫持/越狱四大类。
 _INJECTION_PATTERNS = [
     re.compile(p, re.I) for p in [
         r"忽略(之前|以上|上述|上面|前面|先前)(的)?(所有|全部)?(指令|提示|规则|要求|设定)",
@@ -35,7 +35,7 @@ _INJECTION_PATTERNS = [
     ]
 ]
 
-***REMOVED*** 拒答类回答的识别（引用校验时用于区分"拒答"与"实质性回答"）
+# 拒答类回答的识别（引用校验时用于区分"拒答"与"实质性回答"）
 _REFUSAL_RE = re.compile(r"(未找到|没有找到|无法回答|未提及|没有相关|找不到|无法回答这个问题|i don't know|not found)", re.I)
 
 
@@ -93,7 +93,7 @@ def _append_log(path: Path, record: dict) -> None:
         with open(path, "a", encoding="utf-8") as f:
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
     except OSError:
-        pass  ***REMOVED*** 日志失败不影响主流程
+        pass # 日志失败不影响主流程
 
 
 def audit(event: dict) -> None:

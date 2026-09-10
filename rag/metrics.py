@@ -17,7 +17,7 @@ from .config import ROOT
 DB_PATH = Path(ROOT / "logs" / "metrics.db")
 ALERT_LOG = Path(ROOT / "logs" / "alerts.log")
 
-***REMOVED*** 告警阈值（环境变量可覆盖）
+# 告警阈值（环境变量可覆盖）
 ALERT_LATENCY_P95_MS = 5000
 ALERT_ERROR_RATE = 0.1
 ALERT_MIN_SAMPLES = 20
@@ -52,9 +52,9 @@ def record(model: str, mode: str, retrieval_ms: float, gen_ms: float,
         finally:
             con.close()
         _check_alerts()
-    except sqlite3.Error as e:  ***REMOVED*** 并发写锁等 SQLite 异常——指标失败绝不影响主流程
+    except sqlite3.Error as e: # 并发写锁等 SQLite 异常——指标失败绝不影响主流程
         logging.warning("metrics 落库失败: %s", e)
-    except OSError as e:  ***REMOVED*** 磁盘/权限问题
+    except OSError as e: # 磁盘/权限问题
         logging.warning("metrics 落库失败: %s", e)
 
 

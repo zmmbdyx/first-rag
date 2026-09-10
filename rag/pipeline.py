@@ -54,7 +54,7 @@ def _parse_and_chunk(path: Path, chunker: str):
     return parsed.doc_name, chunks
 
 
-***REMOVED*** ---------- 异步入库：解析阶段真并发 ----------
+# ---------- 异步入库：解析阶段真并发 ----------
 
 async def _parse_and_chunk_async(path: Path, chunker: str, sem: "asyncio.Semaphore"):
     """在线程池里执行阻塞式解析（PyMuPDF/python-docx 是同步库，且底层释放 GIL）。
@@ -90,7 +90,7 @@ def _run_async(coro):
     def _worker():
         try:
             box["result"] = asyncio.run(coro)
-        except BaseException as e:  ***REMOVED*** noqa: BLE001 — 跨线程回传原始异常
+        except BaseException as e: # noqa: BLE001 — 跨线程回传原始异常
             box["error"] = e
 
     t = threading.Thread(target=_worker, daemon=True)
@@ -105,7 +105,7 @@ def ingest(
     paths: list[str | Path],
     index_dir=INDEX_DIR,
     collection_name: str = COLLECTION_NAME,
-    chunker: str = "smart",  ***REMOVED*** smart | naive
+    chunker: str = "smart", # smart | naive
     rebuild_bm25: bool = True,
     quiet: bool = False,
     incremental: bool = True,
@@ -170,7 +170,7 @@ def ingest(
         all_chunks: list[Chunk] = []
         per_doc: dict[str, int] = {}
         for (doc_name, chunks), (f, digest) in zip(results, todo):
-            vector_store.delete_doc(collection, doc_name)  ***REMOVED*** 幂等：先清旧块
+            vector_store.delete_doc(collection, doc_name) # 幂等：先清旧块
             all_chunks.extend(chunks)
             per_doc[doc_name] = len(chunks)
             manifest[doc_name] = {"md5": digest, "chunker": chunker, "chunks": len(chunks)}
@@ -190,8 +190,8 @@ def ingest(
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=1), encoding="utf-8")
 
-    ***REMOVED*** ---- 入库成功 → 知识库版本 +1，让所有旧问答缓存立即失效 ----
-    ***REMOVED*** 放在最后一步：只有索引真正写成功才失效，否则会把还能用的缓存白白清掉。
+    # ---- 入库成功 → 知识库版本 +1，让所有旧问答缓存立即失效 ----
+    # 放在最后一步：只有索引真正写成功才失效，否则会把还能用的缓存白白清掉。
     cache_version = 0
     if per_doc:
         from . import cache as qa_cache
@@ -218,7 +218,7 @@ def load_retriever(index_dir=INDEX_DIR, collection_name: str = COLLECTION_NAME) 
     return Retriever(index_dir, collection_name)
 
 
-***REMOVED*** ---------- 问答入口 ----------
+# ---------- 问答入口 ----------
 
 
 def chat(
@@ -251,10 +251,10 @@ def chat(
     model = model or LLM_MODEL
     retriever = retriever or load_retriever(INDEX_DIR)
 
-    ***REMOVED*** ---- Redis 问答缓存查询（高频问题直接返回，跳过检索与生成） ----
-    ***REMOVED*** 键用改写前的原始问题：改写依赖 history，同一原始问题在不同会话里会被改写
-    ***REMOVED*** 成不同检索式，但最终答案应当一致；且若拿改写后的问题做键，缓存命中率会被
-    ***REMOVED*** 历史上下文人为拉低，失去"高频问答对"的意义。
+    # ---- Redis 问答缓存查询（高频问题直接返回，跳过检索与生成） ----
+    # 键用改写前的原始问题：改写依赖 history，同一原始问题在不同会话里会被改写
+    # 成不同检索式，但最终答案应当一致；且若拿改写后的问题做键，缓存命中率会被
+    # 历史上下文人为拉低，失去"高频问答对"的意义。
     ckey = None
     if use_cache and qa_cache.available():
         ckey = qa_cache.cache_key(clean, mode, k_final, model)
@@ -268,7 +268,7 @@ def chat(
                 "mode": mode,
                 "blocked": False,
                 "cache_hit": True,
-                ***REMOVED*** 缓存命中 = 零生成耗时，延迟真实反映"直接返回"的收益
+                # 缓存命中 = 零生成耗时，延迟真实反映"直接返回"的收益
                 "latency": 0.0,
                 "retrieval_latency": 0.0,
             })
@@ -288,22 +288,22 @@ def chat(
     hits = retriever.retrieve(rw["query"], mode=mode, k_final=k_final, expansion=expansion)
     retrieval_latency = time.time() - t0
 
-    ***REMOVED*** 修复：区分「知识库为空」与「检索无命中」——原先两种情况的答案文案完全一样
-    ***REMOVED*** （都是"知识库为空，请先调用入库脚本导入文档"），检索不到内容时会误导用户去重复入库。
+    # 修复：区分「知识库为空」与「检索无命中」——原先两种情况的答案文案完全一样
+    # （都是"知识库为空，请先调用入库脚本导入文档"），检索不到内容时会误导用户去重复入库。
     kb_is_empty = False
     if not hits:
         try:
             kb_is_empty = retriever.collection.count() == 0
-        except Exception:  ***REMOVED*** noqa: BLE001 — 统计失败不影响主流程，按"无命中"处理
+        except Exception: # noqa: BLE001 — 统计失败不影响主流程，按"无命中"处理
             kb_is_empty = False
 
     t_gen0 = time.time()
     try:
         result = answer_question(rw["query"], hits, model=model, empty_kb=kb_is_empty)
     except Exception:
-        ***REMOVED*** 修复：生成失败此前会直接抛出，metrics 一条都不落库，导致 logs/metrics.db 的
-        ***REMOVED*** error_rate 恒为 0、ALERT_ERROR_RATE 阈值告警永远不可能触发（监控形同虚设）。
-        ***REMOVED*** 这里补记一条 error=True 的指标后原样抛出，保证调用方语义不变。
+        # 修复：生成失败此前会直接抛出，metrics 一条都不落库，导致 logs/metrics.db 的
+        # error_rate 恒为 0、ALERT_ERROR_RATE 阈值告警永远不可能触发（监控形同虚设）。
+        # 这里补记一条 error=True 的指标后原样抛出，保证调用方语义不变。
         from .metrics import record as _record
         _record(model, mode, retrieval_latency * 1000, (time.time() - t_gen0) * 1000,
                 0, 0, error=True)
@@ -332,7 +332,7 @@ def chat(
         ],
     })
 
-    ***REMOVED*** ---- 指标落库（延迟 / Token / 错误率；含阈值告警） ----
+    # ---- 指标落库（延迟 / Token / 错误率；含阈值告警） ----
     from .llm import get_last_usage
     from .metrics import estimate_tokens, record
 
@@ -362,7 +362,7 @@ def chat(
             "forged_citations": result["forged_citations"],
             "latency": round(result["latency"], 3),
         })
-    ***REMOVED*** ---- 写入 Redis 问答缓存（只缓存成功生成的答案） ----
+    # ---- 写入 Redis 问答缓存（只缓存成功生成的答案） ----
     if ckey:
         to_cache = {k: v for k, v in result.items() if k != "hits"}
         to_cache.pop("cache_hit", None)

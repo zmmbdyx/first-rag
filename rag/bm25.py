@@ -25,7 +25,7 @@ from .config import CUSTOM_DICT
 
 _PUNCT = re.compile(r"^[\W_]+$")
 
-jieba.setLogLevel(60)  ***REMOVED*** 关闭初始化日志
+jieba.setLogLevel(60) # 关闭初始化日志
 
 _DICT_LOADED = False
 
@@ -85,10 +85,10 @@ class BM25Index:
         try:
             with open(p, "rb") as f:
                 idx = pickle.load(f)
-            if not hasattr(idx, "variant"):  ***REMOVED*** 兼容旧版本索引
+            if not hasattr(idx, "variant"): # 兼容旧版本索引
                 idx.variant = "precise"
             return idx
-        except Exception:  ***REMOVED*** noqa: BLE001
+        except Exception: # noqa: BLE001
             return None
 
 

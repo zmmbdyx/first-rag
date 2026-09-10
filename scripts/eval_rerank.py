@@ -13,11 +13,11 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from rag.config import FINAL_TOP_K  ***REMOVED*** noqa: E402
-from rag.retriever import Retriever  ***REMOVED*** noqa: E402
+from rag.config import FINAL_TOP_K # noqa: E402
+from rag.retriever import Retriever # noqa: E402
 
 sys.path.insert(0, str(ROOT / "scripts"))
-from run_eval import eval_retrieval, aggregate_retrieval, load_questions  ***REMOVED*** noqa: E402
+from run_eval import eval_retrieval, aggregate_retrieval, load_questions # noqa: E402
 
 EVAL_DIR = ROOT / "eval"
 RESULTS_DIR = EVAL_DIR / "results"
@@ -58,14 +58,14 @@ def main():
     (RESULTS_DIR / "rerank_compare.json").write_text(
         json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8")
     off, on = results["rerank_off"], results["rerank_on"]
-    md = ["***REMOVED*** Reranker 开关对比（同索引、同题集，纯检索）", "",
+    md = [" # Reranker 开关对比（同索引、同题集，纯检索）", "",
           f"题集：{results['n_questions']} 道可回答题（single+multi_hop+paraphrase+adversarial）；k={results['k']}", "",
           "| 配置 | R@1 | R@3 | R@5 | MRR | 均耗时/题 |", "|---|---|---|---|---|---|",
           f"| 重排关闭 | {off['answer_recall@1']:.1%} | {off['answer_recall@3']:.1%} "
           f"| {off['answer_recall@5']:.1%} | {off['mrr']:.3f} | {off['avg_retrieval_ms']}ms |",
           f"| 重排开启 | {on['answer_recall@1']:.1%} | {on['answer_recall@3']:.1%} "
           f"| {on['answer_recall@5']:.1%} | {on['mrr']:.3f} | {on['avg_retrieval_ms']}ms |", "",
-          "***REMOVED******REMOVED*** 分题型 R@5", "", "| 题型 | 关闭 | 开启 |", "|---|---|---|"]
+          " # # 分题型 R@5", "", "| 题型 | 关闭 | 开启 |", "|---|---|---|"]
     for t in sorted(set(off["per_qtype"]) | set(on["per_qtype"])):
         o = off["per_qtype"].get(t, {}).get("recall@5")
         n = on["per_qtype"].get(t, {}).get("recall@5")

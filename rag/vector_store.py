@@ -15,7 +15,7 @@ def get_collection(client, name: str = COLLECTION_NAME, create: bool = True):
         return client.get_or_create_collection(name, metadata={"hnsw:space": "cosine"})
     try:
         return client.get_collection(name)
-    except Exception:  ***REMOVED*** noqa: BLE001
+    except Exception: # noqa: BLE001
         return None
 
 
@@ -67,10 +67,10 @@ def _to_hits(res) -> list[dict]:
 
 
 def query(collection, qvec, k: int = 10) -> list[dict]:
-    ***REMOVED*** 修复：原实现 `k = max(1, min(k, collection.count()))` 在空集合时会把 0 抬回 1，
-    ***REMOVED*** 紧随其后的 `if k == 0: return []` 是永远走不到的死代码——空库查询仍会以
-    ***REMOVED*** n_results=1 打到 Chroma（轻则返回空、重则抛 "Number of requested results > count"）。
-    ***REMOVED*** 改为先判空直接返回，再对 k 做合法的区间钳制。
+    # 修复：原实现 `k = max(1, min(k, collection.count()))` 在空集合时会把 0 抬回 1，
+    # 紧随其后的 `if k == 0: return []` 是永远走不到的死代码——空库查询仍会以
+    # n_results=1 打到 Chroma（轻则返回空、重则抛 "Number of requested results > count"）。
+    # 改为先判空直接返回，再对 k 做合法的区间钳制。
     n = collection.count()
     if n <= 0:
         return []

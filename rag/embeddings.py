@@ -17,7 +17,7 @@ def get_model():
 
         device = "cuda" if torch.cuda.is_available() else "cpu"
         try:
-            ***REMOVED*** LangChain 封装：与项目其他 LangChain 组件保持一致的加载方式
+            # LangChain 封装：与项目其他 LangChain 组件保持一致的加载方式
             from langchain_huggingface import HuggingFaceEmbeddings
 
             wrapper = HuggingFaceEmbeddings(
@@ -26,7 +26,7 @@ def get_model():
                 encode_kwargs={"normalize_embeddings": True, "batch_size": 64},
             )
             _model = _LangChainAdapter(wrapper)
-        except Exception:  ***REMOVED*** noqa: BLE001 — langchain 包缺失时回退直连
+        except Exception: # noqa: BLE001 — langchain 包缺失时回退直连
             from sentence_transformers import SentenceTransformer
 
             _model = SentenceTransformer(EMBED_MODEL, device=device)

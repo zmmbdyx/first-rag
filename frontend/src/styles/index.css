@@ -1,0 +1,244 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   设计令牌：深/浅色只切换 <html class="dark">，
+   所有组件用的都是这些变量，因此主题全局生效。
+   ============================================================ */
+@layer base {
+  :root {
+    /* 主色（低饱和度蓝 #4D6BFE） */
+    --brand-soft: 77 107 254;
+
+    /* 表面层次：canvas 最底 → surface 面板 → elevated 浮起 → hover 交互态 */
+    --canvas: 255 255 255;
+    --surface: 249 250 251;
+    --elevated: 255 255 255;
+    --hover: 243 244 246;
+    --line: 229 231 235;
+
+    /* 文字层次 */
+    --ink: 26 29 35;
+    --ink-soft: 90 96 110;
+    --ink-muted: 138 145 160;
+
+    /* 用户消息气泡 */
+    --bubble: 239 243 255;
+
+    color-scheme: light;
+  }
+
+  .dark {
+    --brand-soft: 77 107 254;
+
+    --canvas: 15 15 17;
+    --surface: 24 25 28;
+    --elevated: 33 35 39;
+    --hover: 42 44 49;
+    --line: 48 50 56;
+
+    --ink: 233 235 240;
+    --ink-soft: 168 174 187;
+    --ink-muted: 128 134 148;
+
+    --bubble: 38 48 82;
+
+    color-scheme: dark;
+  }
+
+  * {
+    @apply border-line;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-canvas text-ink font-sans antialiased;
+    margin: 0;
+    /* 移动端点击不出现灰色高亮块 */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  ::selection {
+    background: rgb(var(--brand-soft) / 0.22);
+  }
+
+  /* 细滚动条，悬停才明显 */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--ink-muted) / 0.35) transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: rgb(var(--ink-muted) / 0.3);
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(var(--ink-muted) / 0.55);
+  }
+
+  /* 键盘焦点可见，鼠标点击不出现描边 */
+  :focus-visible {
+    outline: 2px solid rgb(var(--brand-soft) / 0.7);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* 统一的图标按钮 */
+  .icon-btn {
+    @apply inline-flex items-center justify-center rounded-lg text-ink-muted
+           transition-colors duration-150 hover:bg-hover hover:text-ink
+           disabled:opacity-40 disabled:pointer-events-none;
+  }
+
+  /* 会话列表项（group 标记写在 JSX 上，@apply 不接受它） */
+  .conv-item {
+    @apply relative flex items-center gap-2 rounded-lg px-2.5 py-2
+           text-sm cursor-pointer select-none transition-colors duration-150;
+  }
+}
+
+/* ============================================================
+   Markdown 正文排版（AI 回答）
+   ============================================================ */
+.md-body {
+  @apply text-[15px] leading-7 text-ink;
+  word-break: break-word;
+}
+
+.md-body > *:first-child {
+  margin-top: 0;
+}
+
+.md-body > *:last-child {
+  margin-bottom: 0;
+}
+
+.md-body p {
+  @apply my-3;
+}
+
+.md-body h1,
+.md-body h2,
+.md-body h3,
+.md-body h4 {
+  @apply font-semibold text-ink scroll-mt-20;
+}
+
+.md-body h1 {
+  @apply text-xl mt-6 mb-3;
+}
+
+.md-body h2 {
+  @apply text-lg mt-6 mb-3;
+}
+
+.md-body h3 {
+  @apply text-base mt-5 mb-2;
+}
+
+.md-body h4 {
+  @apply text-[15px] mt-4 mb-2;
+}
+
+.md-body ul {
+  @apply my-3 pl-6 list-disc space-y-1.5;
+}
+
+.md-body ol {
+  @apply my-3 pl-6 list-decimal space-y-1.5;
+}
+
+.md-body li::marker {
+  @apply text-ink-muted;
+}
+
+.md-body li > ul,
+.md-body li > ol {
+  @apply my-1.5;
+}
+
+.md-body a {
+  @apply text-brand underline underline-offset-2 hover:text-brand-hover;
+}
+
+.md-body strong {
+  @apply font-semibold text-ink;
+}
+
+.md-body blockquote {
+  @apply my-4 border-l-[3px] border-line pl-4 text-ink-soft italic;
+}
+
+.md-body hr {
+  @apply my-6 border-t border-line;
+}
+
+/* 行内代码 */
+.md-body :not(pre) > code {
+  @apply rounded-md bg-hover px-1.5 py-0.5 font-mono text-[13px] text-ink;
+}
+
+/* 表格：宽表可横向滚动，不撑破气泡 */
+.md-body .table-wrap {
+  @apply my-4 w-full overflow-x-auto rounded-xl border border-line;
+}
+
+.md-body table {
+  @apply w-full border-collapse text-sm;
+}
+
+.md-body thead {
+  @apply bg-surface;
+}
+
+.md-body th {
+  @apply border-b border-line px-3.5 py-2.5 text-left font-semibold text-ink whitespace-nowrap;
+}
+
+.md-body td {
+  @apply border-b border-line px-3.5 py-2.5 align-top text-ink-soft;
+}
+
+.md-body tbody tr:last-child td {
+  @apply border-b-0;
+}
+
+.md-body tbody tr:hover {
+  @apply bg-surface;
+}
+
+/* 代码块外层容器（由 MarkdownRenderer 渲染，带语言标签与复制按钮） */
+.code-block {
+  @apply my-4 overflow-hidden rounded-xl border border-line;
+}
+
+.code-block pre {
+  @apply m-0 overflow-x-auto p-4 text-[13px] leading-6;
+}
+
+.code-block code {
+  @apply font-mono;
+}
+
+/* 流式输出时正文末尾的光标 */
+.stream-caret::after {
+  content: '';
+  @apply ml-0.5 inline-block h-4 w-[2px] translate-y-0.5 bg-brand align-middle animate-blink;
+}

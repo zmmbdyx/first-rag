@@ -14,10 +14,10 @@
 所有主要指标给出 95% bootstrap 置信区间；关键对比给出配对显著性检验。
 
 用法：
-  python scripts/run_eval.py                          ***REMOVED*** 全量评测（4 配置）
-  python scripts/run_eval.py --retrieval-only         ***REMOVED*** 只跑检索指标
+  python scripts/run_eval.py # 全量评测（4 配置）
+  python scripts/run_eval.py --retrieval-only # 只跑检索指标
   python scripts/run_eval.py --configs baseline,hybrid
-  python scripts/run_eval.py --legacy                 ***REMOVED*** 兼容 v1 的 30 题回归
+  python scripts/run_eval.py --legacy # 兼容 v1 的 30 题回归
 """
 
 import argparse
@@ -32,8 +32,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from rag.config import API_KEY, FINAL_TOP_K, JUDGE_MODEL  ***REMOVED*** noqa: E402
-from rag.stats import bootstrap_ci, fmt_ci, paired_bootstrap_diff  ***REMOVED*** noqa: E402
+from rag.config import API_KEY, FINAL_TOP_K, JUDGE_MODEL # noqa: E402
+from rag.stats import bootstrap_ci, fmt_ci, paired_bootstrap_diff # noqa: E402
 
 EVAL_DIR = ROOT / "eval"
 RESULTS_DIR = EVAL_DIR / "results"
@@ -48,7 +48,7 @@ CONFIGS = {
     "full": {"label": "完整系统(混合检索+多轮改写)", "chunker": "smart", "mode": "hybrid", "rewrite": True},
 }
 
-_norm = lambda s: re.sub(r"[^\w\u4e00-\u9fff]+", "", s.lower())  ***REMOVED*** noqa: E731
+_norm = lambda s: re.sub(r"[^\w\u4e00-\u9fff]+", "", s.lower()) # noqa: E731
 
 
 def _gold_spans(gold_answer: str) -> list[str]:
@@ -100,7 +100,7 @@ def build_index(name: str, chunker: str, corpus: Path):
     return Retriever(idx_dir)
 
 
-***REMOVED*** ---------- 检索评测 ----------
+# ---------- 检索评测 ----------
 
 
 def eval_retrieval(questions: list[dict], retriever, cfg: dict, k: int, use_llm_rewrite: bool) -> list[dict]:
@@ -125,9 +125,9 @@ def eval_retrieval(questions: list[dict], retriever, cfg: dict, k: int, use_llm_
                                   rerank_on=cfg.get("rerank"))
         gold_doc, spans = q["gold_doc"], _gold_spans(q["gold_answer"])
         if q.get("qtype") == "multi_hop" and q.get("gold"):
-            ***REMOVED*** 修复：原先这里硬编码 hits[:5]，与函数参数 k（--k 可调）脱节——
-            ***REMOVED*** 一旦用 --k 调小/调大召回窗口，多跳题的 first_hit_rank 仍按 5 计算，
-            ***REMOVED*** 导致 MRR 与 Recall@k 口径不一致。统一改用 k。
+            # 修复：原先这里硬编码 hits[:5]，与函数参数 k（--k 可调）脱节——
+            # 一旦用 --k 调小/调大召回窗口，多跳题的 first_hit_rank 仍按 5 计算，
+            # 导致 MRR 与 Recall@k 口径不一致。统一改用 k。
             covered, max_rank = _multi_gold_covered(hits[:k], q["gold"])
             for kk in (1, 3, 5):
                 c, _ = _multi_gold_covered(hits[:kk], q["gold"])
@@ -157,7 +157,7 @@ def aggregate_retrieval(rows: list[dict]) -> dict:
     return agg
 
 
-***REMOVED*** ---------- 生成评测（判分 + 忠实度 + 相关性） ----------
+# ---------- 生成评测（判分 + 忠实度 + 相关性） ----------
 
 
 def _judge_one(q: dict, hits: list, k: int, query: str | None = None) -> dict:
@@ -167,10 +167,10 @@ def _judge_one(q: dict, hits: list, k: int, query: str | None = None) -> dict:
            "doc_type": q.get("doc_type", ""), "multi_turn": q.get("multi_turn", False),
            "qtype": _qtype(q)}
     used = hits[:k]
-    ***REMOVED*** 多轮题用改写后的独立问题生成（上下文也是按改写问题检索的）
+    # 多轮题用改写后的独立问题生成（上下文也是按改写问题检索的）
     try:
         result = answer_question(query or q["question"], used, max_tokens=512)
-    except Exception as e:  ***REMOVED*** noqa: BLE001 — 单题失败不中断整体评测（如配额耗尽）
+    except Exception as e: # noqa: BLE001 — 单题失败不中断整体评测（如配额耗尽）
         out.update({"answer": "", "latency": 0.0, "has_citation": False, "citations": [],
                     "forged_citations": [], "citation_retry": 0,
                     "citation_warning": "", "cited": [],
@@ -190,7 +190,7 @@ def _judge_one(q: dict, hits: list, k: int, query: str | None = None) -> dict:
         j = judge_answer(q["question"], q["gold_answer"], result["answer"],
                          answerable=q["answerable"], model=JUDGE_MODEL)
         out["verdict"], out["judge_reason"] = j["verdict"], j["reason"]
-    except Exception as e:  ***REMOVED*** noqa: BLE001
+    except Exception as e: # noqa: BLE001
         out["verdict"], out["judge_reason"] = "error", str(e)[:150]
 
     if q["answerable"]:
@@ -210,16 +210,16 @@ def eval_generation(questions: list[dict], retriever, cfg: dict, k: int,
     from rag.llm import get_client
     from rag.rewrite import rewrite_query
 
-    get_client()[0]  ***REMOVED*** 提前初始化并校验配置
+    get_client()[0] # 提前初始化并校验配置
     jobs = []
     for q in questions:
         query = q["question"]
         if cfg["rewrite"] and q.get("history"):
             query = rewrite_query(query, [{"role": "user", "content": h} for h in q["history"]],
                                   use_llm=use_llm_rewrite)["query"]
-        ***REMOVED*** 修复：与 eval_retrieval 保持一致地传入 rerank_on——
-        ***REMOVED*** 否则同一配置下"检索指标"与"生成指标"基于不同的候选集（一个重排了、一个没重排），
-        ***REMOVED*** 报告里的检索/生成两栏数据无法互相解释。
+        # 修复：与 eval_retrieval 保持一致地传入 rerank_on——
+        # 否则同一配置下"检索指标"与"生成指标"基于不同的候选集（一个重排了、一个没重排），
+        # 报告里的检索/生成两栏数据无法互相解释。
         hits = retriever.retrieve(query, mode=cfg["mode"], k_final=min(k, 10), k_each=10,
                                   rerank_on=cfg.get("rerank"))
         jobs.append((q, hits, query))
@@ -267,7 +267,7 @@ def aggregate_generation(rows: list[dict]) -> dict:
     return agg
 
 
-***REMOVED*** ---------- 置信区间数组 / 分类型 ----------
+# ---------- 置信区间数组 / 分类型 ----------
 
 
 def collect_arrays(ret_rows: list[dict], gen_rows: list[dict] | None) -> dict:
@@ -320,12 +320,12 @@ def per_qtype_table(ret_rows: list[dict], gen_rows: list[dict] | None) -> dict:
     return out
 
 
-***REMOVED*** ---------- 报告 ----------
+# ---------- 报告 ----------
 
 
 def write_report(results: dict, args) -> Path:
     order = [c for c in ("baseline", "smart_vector", "hybrid", "full") if c in results]
-    lines = ["***REMOVED*** RAG 效果评测报告 v2（升级后）", "",
+    lines = [" # RAG 效果评测报告 v2（升级后）", "",
              f"- 评测集：`{results['_meta']['questions_file']}`，{results['_meta']['n_questions']} 题"
              f"（可回答 {results['_meta']['n_answerable']}（含多轮 {results['_meta']['n_multi_turn']}）"
              f"+ 拒答 {results['_meta']['n_unanswerable']}，拒答占比 {results['_meta']['refusal_ratio']:.1%}）",
@@ -333,7 +333,7 @@ def write_report(results: dict, args) -> Path:
              "- 判分：检索=金标原文片段匹配；生成=LLM-as-Judge + 忠实度/相关性逐题判分",
              f"- 置信区间：{args.bootstrap} 次bootstrap重采样的95%CI；评测时间：{results['_meta']['time']}", ""]
 
-    lines += ["***REMOVED******REMOVED*** 一、检索效果（可回答题，均值 [95%CI]）", "",
+    lines += [" # # 一、检索效果（可回答题，均值 [95%CI]）", "",
               "| 配置 | Recall@1 | Recall@3 | Recall@5 | MRR |",
               "|---|---|---|---|---|"]
     for name in order:
@@ -348,7 +348,7 @@ def write_report(results: dict, args) -> Path:
 
     gen_names = [n for n in order if results[n].get("generation")]
     if gen_names:
-        lines += ["", "***REMOVED******REMOVED*** 二、端到端回答质量（五项指标，均值 [95%CI]）", "",
+        lines += ["", " # # 二、端到端回答质量（五项指标，均值 [95%CI]）", "",
                   "| 配置 | 准确率(correct) | 正确+部分 | 忠实度 | 相关性 | 引用率 | 溯源准确率 | 拒答正确率 |",
                   "|---|---|---|---|---|---|---|---|"]
         for name in gen_names:
@@ -363,7 +363,7 @@ def write_report(results: dict, args) -> Path:
                 f"| {g['citation_rate']:.1%} | {g['citation_accuracy']:.1%} | {ref} |")
         lines += ["", "> 忠实度=答案句子被检索块支持的比例；相关性=直接回答问题且无冗余的程度（均由 LLM 0~1 判分）。"]
 
-    lines += ["", "***REMOVED******REMOVED*** 三、按文档类型分项（Recall@5 / 准确率）", ""]
+    lines += ["", " # # 三、按文档类型分项（Recall@5 / 准确率）", ""]
     types = sorted({t for name in order for t in results[name].get("per_type", {})})
     lines += ["| 类型 | 题数 | " + " | ".join(f"{CONFIGS[n]['label']}" for n in order) + " |",
               "|---|---|" + "---|" * len(order)]
@@ -380,7 +380,7 @@ def write_report(results: dict, args) -> Path:
 
     qtypes = sorted({t for name in order for t in results[name].get("per_qtype", {})})
     if qtypes:
-        lines += ["", "***REMOVED******REMOVED*** 三之二、按题型分项（Recall@5 / 准确率）", "",
+        lines += ["", " # # 三之二、按题型分项（Recall@5 / 准确率）", "",
                   "| 题型 | 题数 | " + " | ".join(f"{CONFIGS[n]['label']}" for n in order) + " |",
                   "|---|---|" + "---|" * len(order)]
         for t in qtypes:
@@ -394,7 +394,7 @@ def write_report(results: dict, args) -> Path:
                 cells.append(f"{r5} / {acc}")
             lines.append(f"| {t} | {n} | " + " | ".join(cells) + " |")
 
-    lines += ["", "***REMOVED******REMOVED*** 四、多轮查询改写消融（仅多轮指代题，改写前 vs 改写后）", "",
+    lines += ["", " # # 四、多轮查询改写消融（仅多轮指代题，改写前 vs 改写后）", "",
               "| 配置 | 题数 | Recall@5 | 准确率 |", "|---|---|---|---|"]
     for name in order:
         ret_rows = results[name].get("retrieval_detail", [])
@@ -408,14 +408,14 @@ def write_report(results: dict, args) -> Path:
 
     sig = results.get("_significance", {})
     if sig:
-        lines += ["", "***REMOVED******REMOVED*** 五、关键对比的显著性（配对bootstrap，双侧）", "",
+        lines += ["", " # # 五、关键对比的显著性（配对bootstrap，双侧）", "",
                   "| 对比 | 指标 | 差值 | 95%CI | p值 | n |", "|---|---|---|---|---|---|"]
         for key, s in sig.items():
             lines.append(f"| {key} | {s['metric']} | {s['diff']:+.1%} | [{s['lo']:+.1%}, {s['hi']:+.1%}] "
                          f"| {s['p']:.4f} | {s['n']} |")
         lines += ["", "> p<0.05 视为显著；95%CI 不含 0 与之等价。"]
 
-    lines += ["", "***REMOVED******REMOVED*** 六、说明与局限", "",
+    lines += ["", " # # 六、说明与局限", "",
               "- 金标答案一律为文档原文片段（生成时校验“片段⊆文档文本”），答案级命中要求同一召回块包含全部片段；",
               "- full 配置的单轮路径与 hybrid 完全一致（改写仅在多轮触发），故仅在多轮题上单独评测；",
               "- 忠实度/相关性/判分由大模型完成（与被测模型同源），存在自判偏差；",
@@ -425,7 +425,7 @@ def write_report(results: dict, args) -> Path:
     return out
 
 
-***REMOVED*** ---------- 主流程 ----------
+# ---------- 主流程 ----------
 
 
 def main():
@@ -452,7 +452,7 @@ def main():
 
     questions = load_questions(qpath, args.limit)
     names = [c.strip() for c in args.configs.split(",") if c.strip() in CONFIGS]
-    ***REMOVED*** full 只需评测多轮题（单轮路径与 hybrid 一致）
+    # full 只需评测多轮题（单轮路径与 hybrid 一致）
     eval_q = {name: ([q for q in questions if q.get("multi_turn")] if CONFIGS[name]["rewrite"] else questions)
               for name in names}
     use_llm_rewrite = bool(API_KEY) and not args.no_llm_rewrite
@@ -501,14 +501,14 @@ def main():
         results[name]["per_type"] = per_type_table(ret_rows, results[name].get("generation_detail"))
         results[name]["per_qtype"] = per_qtype_table(ret_rows, results[name].get("generation_detail"))
 
-        ***REMOVED*** 每个配置完成即落盘，中断时保留已完成部分
+        # 每个配置完成即落盘，中断时保留已完成部分
         RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-        ***REMOVED*** 修复：这里原先硬编码写回 eval_results_v2.json，忽略了 --out 参数——
-        ***REMOVED*** 用 `--out eval_results_v4_harden.json` 分次评测时，中间结果会覆盖/写错文件。
+        # 修复：这里原先硬编码写回 eval_results_v2.json，忽略了 --out 参数——
+        # 用 `--out eval_results_v4_harden.json` 分次评测时，中间结果会覆盖/写错文件。
         (RESULTS_DIR / args.out).write_text(
             json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    ***REMOVED*** ---- 显著性检验（配对，按题目对齐） ----
+    # ---- 显著性检验（配对，按题目对齐） ----
     sig = {}
 
     def by_id(rows, field, ids):
@@ -547,7 +547,7 @@ def main():
     results["_significance"] = sig
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    ***REMOVED*** 与既有结果合并：分次调用评测不同配置时，已完成的配置保留
+    # 与既有结果合并：分次调用评测不同配置时，已完成的配置保留
     out_path = RESULTS_DIR / args.out
     if out_path.exists():
         try:

@@ -1,4 +1,4 @@
-***REMOVED*** jieba 自定义词典：词 [词频] [词性]
+# jieba 自定义词典：词 [词频] [词性]
 RRF 100 n
 BM25 100 n
 RAG 100 n

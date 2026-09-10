@@ -1,4 +1,4 @@
-***REMOVED*** -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """静态校验 Docker 配置：compose 语法 + 引用文件存在性 + Dockerfile 关键指令。
 
 说明：本机未安装 Docker，无法真正 docker build；此脚本做的是可做的静态检查，
@@ -33,7 +33,7 @@ try:
     check("api 依赖 redis 健康检查",
           "redis" in (comp["services"]["api"].get("depends_on") or {}))
     check("redis 有健康检查", "healthcheck" in comp["services"]["redis"])
-    ***REMOVED*** 端口不与宿主机常见冲突
+    # 端口不与宿主机常见冲突
     ports = [p for s in comp["services"].values() for p in (s.get("ports") or [])]
     check("端口已声明", len(ports) >= 3, str(ports))
 except ImportError:

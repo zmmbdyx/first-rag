@@ -61,48 +61,48 @@ def main() -> int:
                                 device_scale_factor=1.5)
         print(f"→ 打开 {args.url}")
         page.goto(args.url, wait_until="domcontentloaded", timeout=60_000)
-        ***REMOVED*** 首页需要加载嵌入模型 + 构建 BM25（首次约 10-30s）
+        # 首页需要加载嵌入模型 + 构建 BM25（首次约 10-30s）
         page.wait_for_selector("text=智能知识库问答", timeout=args.timeout * 1000)
         wait_idle(page)
         page.wait_for_timeout(2500)
         page.screenshot(path=str(OUT_DIR / "rag_main.png"))
         print("  ✅ rag_main.png")
 
-        ***REMOVED*** ---- 提问：触发检索 + 流式生成 ----
+        # ---- 提问：触发检索 + 流式生成 ----
         box = page.locator('[data-testid="stChatInput"] textarea').first
         box.click()
         box.fill(args.question)
         box.press("Enter")
 
-        ***REMOVED*** 运行过程：检索 spinner 与流式回答都在这一刻出现
+        # 运行过程：检索 spinner 与流式回答都在这一刻出现
         page.wait_for_timeout(1200)
         page.screenshot(path=str(OUT_DIR / "rag_answering.png"))
         print("  ✅ rag_answering.png")
 
-        ***REMOVED*** 等回答结束（无 RUNNING 标记且出现耗时说明）
+        # 等回答结束（无 RUNNING 标记且出现耗时说明）
         try:
             page.wait_for_selector("text=总耗时", timeout=args.timeout * 1000)
-        except Exception:  ***REMOVED*** noqa: BLE001 — 模型不可用时也要留下结果截图
+        except Exception: # noqa: BLE001 — 模型不可用时也要留下结果截图
             print("  ⚠️  未捕获到「总耗时」，可能模型调用失败，仍继续截图")
         time.sleep(1.5)
 
-        ***REMOVED*** 把最后一条助手回复滚到视口顶部（block:'start'），保证"答案 + 耗时说明"完整入镜
+        # 把最后一条助手回复滚到视口顶部（block:'start'），保证"答案 + 耗时说明"完整入镜
         scroll_last_message_top(page)
         page.screenshot(path=str(OUT_DIR / "rag_result.png"))
         print("  ✅ rag_result.png")
 
-        ***REMOVED*** ---- 展开引用来源，单独出一张「答案溯源」截图 ----
+        # ---- 展开引用来源，单独出一张「答案溯源」截图 ----
         expander = page.locator('details:has-text("查看引用来源")').first
         if expander.count():
             expander.click()
-            ***REMOVED*** 展开后 Streamlit 需要一次增量渲染把来源列表推下来，等列表出现再截图
+            # 展开后 Streamlit 需要一次增量渲染把来源列表推下来，等列表出现再截图
             try:
                 page.wait_for_function(
                     "() => { const d = [...document.querySelectorAll('details')]"
                     ".find(x => x.textContent.includes('查看引用来源'));"
                     "return !!d && d.querySelectorAll('div[data-testid=\"stMarkdown\"]').length > 0; }",
                     timeout=30_000)
-            except Exception:  ***REMOVED*** noqa: BLE001
+            except Exception: # noqa: BLE001
                 pass
             page.wait_for_timeout(2500)
             page.screenshot(path=str(OUT_DIR / "rag_sources.png"))

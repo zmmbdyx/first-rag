@@ -14,7 +14,7 @@ OUT = ROOT / "data" / "samples"
 OUT.mkdir(parents=True, exist_ok=True)
 
 
-***REMOVED*** ==================== 1. 员工手册 PDF ====================
+# ==================== 1. 员工手册 PDF ====================
 
 HANDBOOK = [
     ("第一章 公司简介", [
@@ -82,7 +82,7 @@ def make_pdf():
             pdfmetrics.registerFont(TTFont(name, path, **kw))
             font = name
             break
-        except Exception:  ***REMOVED*** noqa: BLE001
+        except Exception: # noqa: BLE001
             continue
     if font is None:
         raise RuntimeError("未找到可用的中文字体（simhei/msyh/simsun）")
@@ -105,7 +105,7 @@ def make_pdf():
     print("  ✅ 星辰科技员工手册.pdf")
 
 
-***REMOVED*** ==================== 2. 产品说明书 Word ====================
+# ==================== 2. 产品说明书 Word ====================
 
 def make_docx():
     import docx
@@ -172,7 +172,7 @@ def make_docx():
     print("  ✅ 云滴咖啡机C3产品说明书.docx")
 
 
-***REMOVED*** ==================== 3/4. TXT 文档 ====================
+# ==================== 3/4. TXT 文档 ====================
 
 REMOTE_WORK = """星辰科技远程办公管理制度
 

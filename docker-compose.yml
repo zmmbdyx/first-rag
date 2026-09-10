@@ -1,11 +1,17 @@
 # 企业知识库 RAG 问答系统 —— 一键起服务
 #
-#   docker compose up -d --build        # 起 redis + api + ui
-#   docker compose logs -f api          # 看 API 日志
-#   docker compose down                 # 停止
+#   docker compose up -d --build          # 起 redis + api + web（前后端分离）
+#   docker compose --profile legacy up -d # 额外起 Streamlit 演示界面
+#   docker compose logs -f api            # 看后端日志
+#   docker compose down                   # 停止
 #
 # 首次使用需先准备 .env（复制 .env.example 并填入 API_KEY / BASE_URL）。
 # Redis 用于问答缓存：容器内通过服务名 redis 连接，无需改代码。
+#
+# 服务拓扑（v3.0 前后端分离）：
+#   web (nginx :8080) ── /api/* ──▶ api (FastAPI :8000) ──▶ redis
+#                                        └──▶ chroma_db（卷持久化）
+#                                        └──▶ rag.db（会话库，卷持久化）
 
 services:
   redis:
@@ -26,11 +32,13 @@ services:
       retries: 5
     restart: unless-stopped
 
+  # ---------------- 后端：FastAPI + SSE ----------------
   api:
     build: .
     image: rag-kb:latest
     container_name: rag-api
-    command: uvicorn api_server:app --host 0.0.0.0 --port 8000
+    # v3.0 入口：backend.main:app（旧的 api_server:app 仍可用）
+    command: uvicorn backend.main:app --host 0.0.0.0 --port 8000
     env_file:
       - .env
     environment:
@@ -38,24 +46,43 @@ services:
       REDIS_URL: redis://redis:6379/0
       CACHE_ENABLED: "auto"
       INDEX_DIR: /app/chroma_db
+      UPLOAD_DIR: /app/backend/uploads
+      # 会话库放到挂载卷上，容器重建不丢历史
+      DATABASE_URL: sqlite:////app/backend/data/conversations.db
+      # 前端通过 nginx 同源访问，无需额外放行来源；如需直连再加真实域名
+      CORS_ORIGINS: http://localhost:8080,http://127.0.0.1:8080
     ports:
       - "8000:8000"
     volumes:
-      # 向量库、日志、上传文档、模型缓存都持久化到宿主机
+      # 向量库、日志、上传文档、会话库、模型缓存都持久化到宿主机
       - ./chroma_db:/app/chroma_db
       - ./logs:/app/logs
-      - ./data/uploads:/app/data/uploads
+      - ./backend/uploads:/app/backend/uploads
+      - ./backend/data:/app/backend/data
       - hf_models:/models
     depends_on:
       redis:
         condition: service_healthy
     restart: unless-stopped
 
+  # ---------------- 前端：nginx 托管构建产物 ----------------
+  web:
+    build: ./frontend
+    image: rag-frontend:latest
+    container_name: rag-web
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  # ---------------- 可选：Streamlit 演示界面 ----------------
+  # 默认不启动，需要时用 --profile legacy 打开
   ui:
     build: .
     image: rag-kb:latest
     container_name: rag-ui
-    # Streamlit 演示界面（与 API 共用同一镜像与同一份向量库）
+    profiles: ["legacy"]
     command: streamlit run app.py --server.address 0.0.0.0 --server.port 8501
     env_file:
       - .env

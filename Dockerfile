@@ -38,14 +38,18 @@ COPY . .
 
 # 非 root 用户运行
 RUN useradd -m -u 10001 appuser \
-    && mkdir -p /app/chroma_db /app/logs /models \
+    && mkdir -p /app/chroma_db /app/logs /models /app/backend/data /app/backend/uploads \
     && chown -R appuser:appuser /app /models
 USER appuser
 
 EXPOSE 8000
 
+# 健康检查走 v3.0 后端的 /api/health（旧 api_server 的 /health 仍在，但入口已切换）
 HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3 \
-    CMD curl -fsS http://127.0.0.1:8000/health || exit 1
+    CMD curl -fsS http://127.0.0.1:8000/api/health || exit 1
 
-# 默认起 API 服务；要跑 Streamlit 演示界面可用 compose 里的 ui 服务
-CMD ["uvicorn", "api_server:app", "--host", "0.0.0.0", "--port", "8000"]
+# 默认起 v3.0 后端（backend/main.py）。
+# 旧的 api_server:app 与 Streamlit 界面仍可用，分别用：
+#   uvicorn api_server:app --host 0.0.0.0 --port 8000
+#   streamlit run app.py --server.address 0.0.0.0 --server.port 8501
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]

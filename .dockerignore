@@ -1,6 +1,7 @@
-# --- 运行时产物（不入版本库）---
+# --- 运行时产物（不入版本库，也不进镜像）---
 .chroma/
 chroma_db/
+data/index/
 logs/
 *.pkl
 .pytest_cache/
@@ -8,10 +9,31 @@ __pycache__/
 *.py[cod]
 .bench_big/
 .tools/
+*.db
+*.sqlite
+*.sqlite3
 
 # --- 密钥与个人数据 ---
 .env
+.env.*
+!.env.example
 data/uploads/
+backend/uploads/
+backend/data/
+
+# --- 前端（前端有自己的镜像与构建流程，不进后端镜像）---
+frontend/node_modules/
+frontend/dist/
+node_modules/
+dist/
+
+# --- 评测与验收产物 ---
+eval/.eval_db/
+screenshots/
+playwright-report/
+test-results/
+.coverage
+htmlcov/
 
 # --- 编辑器 / 系统 ---
 .idea/

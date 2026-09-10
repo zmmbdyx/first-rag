@@ -68,11 +68,18 @@ class _FakePipe:
 def fake_redis(monkeypatch):
     """把 cache 模块切到假 Redis，并重置其单例状态与命中统计。
 
-    注意：每个测试都拿到**全新的空 store**。否则前一个测试写进去的键会被
-    后一个测试读到，出现"测试之间互相污染"的假失败。
+    注意两点，都是踩过的坑：
+    1. 必须同时把 ``_init_done`` 置为 True。``get()/set()`` 内部会调用
+       ``_init()``，而 ``_init()`` 只在 ``_init_done`` 为 False 时才去连真实
+       Redis。若只替换 ``_client`` 而不封住 ``_init()``，第一次读写就会把
+       假 client **覆盖回真实连接** —— 于是本机跑着 Redis 时用例会读到上次
+       运行留下的真实缓存键，出现「单独跑也失败」的假失败（CI 无 Redis 时
+       恰好连不上、``_client`` 被置 None，反而掩盖了这个问题）。
+    2. 每个测试都拿到**全新的空 store**，避免测试之间互相污染。
     """
     fake = FakeRedis()
     monkeypatch.setattr(qa_cache, "_client", fake, raising=False)
+    monkeypatch.setattr(qa_cache, "_init_done", True, raising=False)
     monkeypatch.setattr(qa_cache, "_stats",
                         {"hit": 0, "miss": 0, "error": 0, "enabled": True}, raising=False)
     monkeypatch.setattr(qa_cache, "available", lambda: True)

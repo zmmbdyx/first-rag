@@ -26,23 +26,33 @@ try:
     import yaml
     comp = yaml.safe_load((ROOT / "docker-compose.yml").read_text(encoding="utf-8"))
     check("YAML 解析成功", True)
-    check("包含 redis/api/ui 三个服务",
-          set(comp.get("services", {})) == {"redis", "api", "ui"},
-          str(list(comp.get("services", {}))))
+    services = comp.get("services", {})
+    # v3.0 前后端分离：redis + api（FastAPI）+ web（前端 nginx）；
+    # ui（Streamlit）改为可选 profile，默认仍应在文件里声明。
+    check("包含 redis/api/web/ui 四个服务",
+          set(services) == {"redis", "api", "web", "ui"},
+          str(list(services)))
+    check("web 依赖 api", "api" in (services.get("web", {}).get("depends_on") or []))
+    check("ui 为可选 profile（默认不启动）",
+          (services.get("ui", {}).get("profiles") or []) == ["legacy"],
+          str(services.get("ui", {}).get("profiles")))
+    check("后端入口为 backend.main:app",
+          "backend.main:app" in str(services.get("api", {}).get("command", "")),
+          str(services.get("api", {}).get("command")))
     check("声明了 hf_models 卷", "hf_models" in comp.get("volumes", {}))
     check("api 依赖 redis 健康检查",
-          "redis" in (comp["services"]["api"].get("depends_on") or {}))
-    check("redis 有健康检查", "healthcheck" in comp["services"]["redis"])
+          "redis" in (services["api"].get("depends_on") or {}))
+    check("redis 有健康检查", "healthcheck" in services["redis"])
     # 端口不与宿主机常见冲突
-    ports = [p for s in comp["services"].values() for p in (s.get("ports") or [])]
-    check("端口已声明", len(ports) >= 3, str(ports))
+    ports = [p for s in services.values() for p in (s.get("ports") or [])]
+    check("端口已声明", len(ports) >= 4, str(ports))
 except ImportError:
     print("  ⚠️  未安装 pyyaml，跳过 compose 校验")
 except Exception as e:
     check(f"YAML 解析失败: {e}", False)
 
 print("== 2. compose 引用的挂载路径 ==")
-for p in ("chroma_db", "logs", "data/uploads"):
+for p in ("chroma_db", "logs", "data/uploads", "backend/uploads", "backend/data"):
     exists = (ROOT / p).exists() or (ROOT / p).parent.exists()
     check(f"{p} 的父目录存在（compose 会自动创建）", exists, str(ROOT / p))
 check(".env 模板存在（compose 的 env_file 指向 .env）", (ROOT / ".env.example").exists())

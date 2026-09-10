@@ -239,7 +239,29 @@ cd frontend && npm run build      # 产物在 frontend/dist/
 > 如需前端直连后端（跨域），在前端环境变量里设置 `VITE_API_BASE`，
 > 并把前端地址加入后端 `CORS_ORIGINS`。
 
-### 6.2 其他入口（保留，未删除）
+### 6.2 容器化一键起服务（前后端分离）
+
+```bash
+docker compose up -d --build          # 起 redis + api + web
+#   前端：   http://127.0.0.1:8080
+#   后端：   http://127.0.0.1:8000/docs
+
+docker compose logs -f api            # 看后端日志
+docker compose down                   # 停止
+```
+
+服务拓扑：`web(nginx :8080)` ──`/api/*`──▶ `api(FastAPI :8000)` ──▶ `redis`；
+向量库、会话库、上传文件、模型缓存都挂载到宿主机卷，容器重建不丢数据。
+
+nginx 已针对 SSE 关掉 `proxy_buffering`（见 `frontend/nginx.conf`）——
+不关的话流式输出会被攒成一坨再一次性吐出，打字机效果就没了。
+
+```bash
+# 额外起 Streamlit 演示界面（可选，默认不启动）
+docker compose --profile legacy up -d
+```
+
+### 6.3 其他入口（保留，未删除）
 
 ```bash
 # Streamlit 演示界面（与后端共用同一份 rag/ 核心包与向量库）
@@ -248,17 +270,18 @@ streamlit run app.py
 # 旧版服务化 API（/ask、/ask/stream、/ingest）
 uvicorn api_server:app --host 0.0.0.0 --port 8000
 
-# 容器化一键起服务（redis + api + ui）
-docker compose up -d --build
+# Docker 配置静态校验（compose 语法 / 引用 / 挂载路径 / 指令）
+python scripts/check_docker_config.py
 ```
 
-### 6.3 自检脚本
+### 6.4 自检脚本
 
 ```bash
 python scripts/check_backend.py        # 后端：配置/建表/CRUD/路由契约（离线，不需要 API Key）
 python scripts/verify_backend_e2e.py   # 后端端到端：会话 CRUD + 上传 + SSE 流式 + 持久化
-python scripts/verify_frontend.py      # 前端验收：Playwright 走一遍真实交互并断言
+python scripts/verify_frontend.py      # 前端验收：Playwright 走一遍真实交互并断言（27 项）
 python scripts/capture_frontend.py     # 生成界面截图到 screenshots/frontend/
+python scripts/check_docker_config.py  # Docker 配置静态校验
 ```
 
 ## Redis 问答缓存（可选但推荐）

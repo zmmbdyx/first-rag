@@ -12,7 +12,7 @@ class ChatRequest(BaseModel):
     生成 ID 并发起首条消息，后端若查不到就按该 ID 落库，省掉一次建会话往返。
     """
 
-    message: str = Field(..., min_length=1, max_length=4000, description="用户消息")
+    message: str = Field(default="", max_length=4000, description="用户消息；regenerate=true 时可省略")
     conversation_id: str = Field(..., min_length=1, max_length=32, description="会话 ID")
     model: str | None = Field(default=None, description="模型标识，支持「模型名@端点别名」")
     mode: str | None = Field(default=None, pattern="^(vector|keyword|hybrid)$", description="检索模式")
@@ -20,6 +20,14 @@ class ChatRequest(BaseModel):
     temperature: float | None = Field(default=None, ge=0.0, le=2.0)
     thinking: bool | None = Field(default=None, description="是否开启思考模式（模型支持时）")
     use_cache: bool = Field(default=True, description="是否允许命中 Redis 问答缓存")
+    regenerate: bool = Field(
+        default=False,
+        description=(
+            "重新生成最后一条回答：复用最近一条用户提问重跑，"
+            "并**覆盖**该提问之后的消息，不在历史里留下重复的用户气泡。"
+            "为 true 时 `message` 可省略。"
+        ),
+    )
 
 
 class ChatDone(BaseModel):

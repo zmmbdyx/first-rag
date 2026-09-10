@@ -22,9 +22,10 @@ import asyncio
 import json
 from collections.abc import AsyncIterator
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 
+from backend.api.deps import require_api_key
 from backend.config import settings
 from backend.core.rag_chain import ChatParams, stream_rag
 from backend.models import session_scope
@@ -49,16 +50,31 @@ def _sse(event: str, data: object) -> str:
 async def _generate(req: ChatRequest) -> AsyncIterator[str]:
     """SSE 事件生成器：负责持久化与事件封装，RAG 编排交给 rag_chain。"""
     # ---- 1) 会话与历史（放进线程：SQLAlchemy 是同步的）----
-    def _prepare() -> tuple[str, list[dict], str, str | None]:
+    def _prepare() -> tuple[str, list[dict], str, str | None, str]:
+        """返回 (会话ID, 历史, 标题, 会话模型, 本轮实际提问)。"""
         with session_scope() as db:
             conv = cs.get_or_create_conversation(db, req.conversation_id, model=req.model)
+
+            if req.regenerate:
+                # 重新生成：复用最近一条用户提问，并删除它之后的回答（覆盖而非追加）
+                message = cs.prepare_regenerate(db, conv.id)
+                if message is None:
+                    raise ValueError("没有可重新生成的提问")
+                history = cs.recent_history(db, conv.id)
+                db.refresh(conv)
+                return conv.id, history, conv.title, conv.model, message
+
             history = cs.recent_history(db, conv.id)
             cs.add_message(db, conv.id, "user", req.message)
             db.refresh(conv)
-            return conv.id, history, conv.title, conv.model
+            return conv.id, history, conv.title, conv.model, req.message
 
     try:
-        conv_id, history, title, conv_model = await asyncio.to_thread(_prepare)
+        conv_id, history, title, conv_model, message = await asyncio.to_thread(_prepare)
+    except ValueError as e:
+        # 没有可重跑的提问属于客户端用法问题
+        yield _sse("error", {"detail": str(e), "code": "nothing_to_regenerate"})
+        return
     except Exception as e:  # noqa: BLE001
         yield _sse("error", {"detail": f"会话初始化失败：{e}", "code": "db_error"})
         return
@@ -66,7 +82,7 @@ async def _generate(req: ChatRequest) -> AsyncIterator[str]:
     yield _sse("conversation", {"conversation_id": conv_id, "title": title})
 
     params = ChatParams(
-        message=req.message,
+        message=message,
         conversation_id=conv_id,
         model=req.model or conv_model,
         mode=req.mode or "hybrid",
@@ -179,9 +195,13 @@ def _persist(
         return {"message_id": msg.id, "title": conv.title if conv else ""}
 
 
-@router.post("/chat", summary="对话（SSE 流式输出）")
+@router.post("/chat", summary="对话（SSE 流式输出）", dependencies=[Depends(require_api_key)])
 async def chat_stream(req: ChatRequest) -> StreamingResponse:
-    """接收消息并以 ``text/event-stream`` 逐 token 推送回答与引用来源。"""
-    if not req.message.strip():
-        raise HTTPException(status_code=400, detail="message 不能为空")
+    """接收消息并以 ``text/event-stream`` 逐 token 推送回答与引用来源。
+
+    ``regenerate=true`` 时复用最近一条用户提问重跑，并覆盖它之后的回答
+    （而不是在历史里再追加一条相同的提问）。
+    """
+    if not req.regenerate and not req.message.strip():
+        raise HTTPException(status_code=400, detail="message 不能为空（regenerate=true 时除外）")
     return StreamingResponse(_generate(req), media_type="text/event-stream", headers=SSE_HEADERS)

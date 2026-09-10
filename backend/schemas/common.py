@@ -37,3 +37,6 @@ class HealthResponse(BaseModel):
     cache: dict = Field(default_factory=dict)
     upload_dir: str = ""
     default_top_k: int = settings.default_top_k
+    auth_required: bool = Field(
+        default=False, description="是否启用了 API Key 鉴权（前端据此提示用户配置密钥）"
+    )

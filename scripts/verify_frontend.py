@@ -89,7 +89,47 @@ def main() -> int:
               all(page.locator(f"button[aria-label='{a}']").count() > 0
                   for a in ("复制回答", "重新生成", "点赞", "点踩")))
 
-        print("\n=== 3) 侧边栏悬停互斥（重叠 bug 回归）===")
+        print("\n=== 3) 重新生成：不应出现重复的用户提问 ===")
+        # 记录当前用户气泡数量（用户消息右对齐气泡）
+        def user_bubble_count() -> int:
+            return page.evaluate(
+                """() => {
+                // 用户气泡：flex justify-end 容器里的消息块
+                return document.querySelectorAll('div.justify-end > div').length;
+            }"""
+            )
+
+        def bubble_texts() -> list[str]:
+            return page.evaluate(
+                """() => [...document.querySelectorAll('div.justify-end > div')]
+                        .map(e => (e.textContent || '').trim())"""
+            )
+
+        before_n = user_bubble_count()
+        texts_before = bubble_texts()
+        print(f"    重新生成前用户气泡: {before_n} 个")
+
+        regen = page.locator("button[aria-label='重新生成']").first
+        if regen.count() > 0:
+            regen.click()
+            page.wait_for_timeout(1500)
+            try:
+                page.wait_for_selector("button[aria-label='重新生成']", timeout=120_000)
+            except Exception:  # noqa: BLE001
+                pass
+            page.wait_for_timeout(1200)
+
+            after_n = user_bubble_count()
+            texts_after = bubble_texts()
+            check("重新生成后用户气泡数量不变", after_n == before_n, f"{before_n} → {after_n}")
+            check("没有出现重复的提问气泡", texts_after == texts_before,
+                  f"{texts_before} → {texts_after}")
+            check("回答仍然存在",
+                  page.locator("button[aria-label='复制回答']").count() > 0)
+        else:
+            check("存在重新生成按钮", False)
+
+        print("\n=== 4) 侧边栏悬停互斥（重叠 bug 回归）===")
         item = page.locator(".conv-item").first
         if item.count() > 0:
             # 把鼠标移到条目左侧的标题区，避开右侧按钮，避免"悬停后指针落在按钮上"导致状态翻转
@@ -118,7 +158,7 @@ def main() -> int:
         else:
             check("存在会话列表项", False)
 
-        print("\n=== 4) 搜索过滤 ===")
+        print("\n=== 5) 搜索过滤 ===")
         search = page.get_by_placeholder("搜索历史对话")
         if search.count() > 0:
             total_before = page.locator(".conv-item").count()
@@ -132,7 +172,7 @@ def main() -> int:
         else:
             check("存在搜索框", False)
 
-        print("\n=== 5) 重命名 ===")
+        print("\n=== 6) 重命名 ===")
         item = page.locator(".conv-item").first
         if item.count() > 0:
             hover_item_title(page, item)
@@ -153,7 +193,7 @@ def main() -> int:
         else:
             check("存在可重命名的会话", False)
 
-        print("\n=== 6) 主题切换 ===")
+        print("\n=== 7) 主题切换 ===")
         page.get_by_role("button", name="深色模式").first.click()
         page.wait_for_timeout(700)
         dark_class = page.evaluate("() => document.documentElement.classList.contains('dark')")
@@ -166,7 +206,7 @@ def main() -> int:
         check("切回浅色", not page.evaluate(
             "() => document.documentElement.classList.contains('dark')"))
 
-        print("\n=== 7) 拖拽上传文档 ===")
+        print("\n=== 8) 拖拽上传文档 ===")
         sample = ROOT / "data" / "samples" / "远程办公管理制度.txt"
         if sample.exists():
             data = sample.read_bytes()
@@ -201,7 +241,7 @@ def main() -> int:
         else:
             check("示例文件存在", False, str(sample))
 
-        print("\n=== 8) 移动端抽屉 ===")
+        print("\n=== 9) 移动端抽屉 ===")
         mobile = browser.new_page(viewport={"width": 390, "height": 844})
         mobile.goto(URL, wait_until="networkidle", timeout=60_000)
         mobile.wait_for_timeout(1000)

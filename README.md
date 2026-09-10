@@ -110,16 +110,23 @@ flowchart TB
 
 | 方法 | 路径 | 说明 |
 |---|---|---|
-| `POST` | `/api/chat` | **SSE 流式问答**。请求 `{message, conversation_id, model?, mode?, top_k?, thinking?}`；事件序列 `conversation → sources → status → reasoning* → content* → done` |
+| `POST` | `/api/chat` | **SSE 流式问答**。请求 `{message, conversation_id, model?, mode?, top_k?, thinking?, regenerate?}`；事件序列 `conversation → sources → status → reasoning* → content* → done` |
 | `POST` | `/api/conversations` | 新建会话 → `{conversation_id, title, created_at}` |
 | `GET` | `/api/conversations` | 会话列表（按 `updated_at` 倒序）→ `[{conversation_id, title, updated_at, message_count}]` |
 | `GET` | `/api/conversations/{id}/messages` | 某会话全部消息 → `[{role, content, sources?, created_at, ...}]` |
 | `DELETE` | `/api/conversations/{id}` | 删除会话（消息级联删除） |
 | `PUT` | `/api/conversations/{id}/title` | 重命名会话 |
 | `POST` | `/api/upload` | 上传文档（PDF / Word / TXT / Markdown）→ `{file_id, filename, status, chunks}` |
-| `GET` | `/api/health` | 服务与知识库状态（切片数、模型清单、缓存统计） |
+| `GET` | `/api/health` | 服务与知识库状态（切片数、模型清单、缓存统计、是否启用鉴权）**免鉴权** |
 
 完整 OpenAPI 文档：后端启动后访问 `http://127.0.0.1:8000/docs`。
+
+**关于 `regenerate`**：传 `regenerate: true` 时复用最近一条用户提问重跑，并**覆盖**该提问之后的回答，
+而不是再追加一轮——否则历史里会出现两条一模一样的提问（这一项刻意放在后端做，见第 9.1 节）。
+
+**关于鉴权**：配置 `API_KEYS`（逗号分隔，与旧版同名）后，除 `/api/health` 外所有端点都要求
+`Authorization: Bearer <key>` 或 `X-API-Key: <key>`；留空则不鉴权，本地开发零配置。
+密钥只以 SHA-256 摘要比对（`secrets.compare_digest` 常量时间），日志与 401 响应里都不会回显明文。
 
 ## 4. 技术选型理由
 
@@ -278,13 +285,15 @@ python scripts/check_docker_config.py
 
 ```bash
 python scripts/check_backend.py        # 后端：配置/建表/CRUD/路由契约（离线，不需要 API Key）
+python scripts/check_auth.py           # 鉴权：放行/401/Bearer/X-API-Key/多密钥（离线）
 python scripts/verify_backend_e2e.py   # 后端端到端：会话 CRUD + 上传 + SSE 流式 + 持久化
+python scripts/verify_regenerate.py    # 重新生成是覆盖语义（历史中不出现重复提问）
 python scripts/verify_frontend.py      # 前端验收：Playwright 走一遍真实交互并断言（27 项）
 python scripts/capture_frontend.py     # 生成界面截图到 screenshots/frontend/
 python scripts/check_docker_config.py  # Docker 配置静态校验
 ```
 
-## Redis 问答缓存（可选但推荐）
+### 6.5 Redis 问答缓存（可选但推荐）
 
 制度类知识库的访问高度重复，缓存高频问答对可以把「检索 + 生成」整段省掉：
 
@@ -318,7 +327,7 @@ CACHE_TTL=1800 # 秒
 失效机制：缓存键包含知识库版本号，`ingest()` 成功后版本 +1 并清理旧命名空间，
 保证**入库后不会返回过期答案**。Redis 不可用时 `rag/cache.py` 全部方法降级为 no-op。
 
-## 异步入库与并发模型（实测结论）
+### 6.6 异步入库与并发模型（实测结论）
 
 `ingest()` 的解析阶段支持 asyncio + 线程池并发（`ASYNC_INGEST=1`，默认开启），
 用 Semaphore 限制并发度。三份基准脚本分别测量不同层面：
@@ -343,7 +352,7 @@ python scripts/benchmark_async_ingest.py --dir data/corpus # 完整入库
 **用自己的文档**：`python scripts/build_kb.py D:\你的文档目录`（支持文件或目录，自动按扩展名解析；
 同一文档重复入库自动覆盖旧块）。
 
-### 多模型 / 多厂商配置
+### 6.7 多模型 / 多厂商配置
 
 单端点多模型：`.env` 里一行清单即可（Web 界面下拉切换）：
 
@@ -536,6 +545,16 @@ rag/
 - **multipart 上传的坑**：前端 `fetch` 绝不能手动设置 `Content-Type`，
   必须让浏览器自己带上 `multipart/form-data; boundary=...`；少了 boundary，FastAPI 会按 JSON 解析并回
   `422 {"loc":["body","file"],"msg":"Field required"}`。这条已在 `frontend/src/lib/api.ts` 里注明。
+- **「重新生成」为什么放在后端**：一次问答在库里是 (user, assistant) 两条消息，重新生成语义上是
+  **替换**这一轮的答案。若让前端直接重发同一条消息，历史里就会多出一条一模一样的提问，刷新后
+  看起来像问了两次。因此 `POST /api/chat` 支持 `regenerate: true`：后端取回最近一条用户提问、
+  删除它之后的消息、再重跑。实现里有个容易踩的坑——删除后必须 `db.expire_all()`，
+  否则紧接着的历史查询会从 Session 的 identity map 里命中已删除实例并抛 `ObjectDeletedError`。
+- **`message_count` 按实际行数重算，不做 `+1` 累加**：累加式计数在「先删后增」的重新生成流程里
+  必然漂移（实测出现过库里 2 条、侧边栏显示 3 条）。COUNT 走 `conversation_id` 索引，代价可忽略。
+- **可选鉴权**：`API_KEYS` 留空即放行（本地零配置），配置后除 `/api/health` 外全部强制校验。
+  用 SHA-256 摘要 + `secrets.compare_digest` 常量时间比较，避免明文进日志与按字符比较的时序侧信道；
+  `/api/health` 刻意豁免，因为容器 HEALTHCHECK 与前端"知识库是否就绪"都要能无凭据访问。
 
 ## 10. API Key 安全与脱敏
 

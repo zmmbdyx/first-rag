@@ -112,11 +112,19 @@ def delete_conversation(db: Session, conversation_id: str) -> bool:
     return True
 
 
-def touch_conversation(db: Session, conv: Conversation) -> None:
-    """刷新会话的更新时间与消息计数（列表排序依赖它）。"""
-    conv.message_count = int(
-        db.scalar(select(func.count(Message.id)).where(Message.conversation_id == conv.id)) or 0
+def count_messages(db: Session, conversation_id: str) -> int:
+    """该会话当前实际消息数（走 conversation_id 索引）。"""
+    return int(
+        db.scalar(select(func.count(Message.id)).where(Message.conversation_id == conversation_id))
+        or 0
     )
+
+
+def touch_conversation(db: Session, conv: Conversation | None) -> None:
+    """刷新会话的更新时间与消息计数（列表排序与侧边栏计数依赖它）。"""
+    if conv is None:
+        return
+    conv.message_count = count_messages(db, conv.id)
     db.add(conv)
     db.commit()
 
@@ -177,12 +185,16 @@ def add_message(
         from backend.models.conversation import utcnow
 
         conv.updated_at = utcnow()
-        conv.message_count = int(conv.message_count or 0) + 1
         # 首条用户消息 + 未锁定时自动生成标题
         if role == "user" and not conv.title_locked and (conv.title in ("", "新对话")):
             conv.title = make_title(content)
     db.commit()
     db.refresh(msg)
+
+    # message_count 一律按实际行数重算，不做 +1 累加：累加式计数在
+    # 「重新生成」这类先删后增的流程里必然漂移（实测出现过库里 2 条、
+    # 计数显示 3 条）。COUNT 走 conversation_id 索引，代价可忽略。
+    touch_conversation(db, get_conversation(db, conversation_id))
     return msg
 
 
@@ -217,3 +229,56 @@ def clear_all(db: Session) -> int:
     db.execute(delete(Conversation))
     db.commit()
     return n
+
+
+# ---------------------------------------------------------------- 重新生成
+def prepare_regenerate(db: Session, conversation_id: str) -> str | None:
+    """为「重新生成」做准备：取回最近一次用户提问，并删除它之后的消息。
+
+    返回要重跑的提问文本；没有可重跑的提问时返回 None。
+
+    为什么要在后端做：一次问答在库里是 (user, assistant) 两条消息，
+    「重新生成」语义上是**替换**这一轮的答案，而不是再追加一轮。
+    若让前端直接重发同一条消息，历史里就会出现两条一模一样的用户提问，
+    刷新后看起来像问了两次。
+    """
+    stmt = (
+        select(Message)
+        .where(Message.conversation_id == conversation_id, Message.role == "user")
+        .order_by(desc(Message.created_at), desc(Message.id))
+        .limit(1)
+    )
+    last_user = db.scalar(stmt)
+    if last_user is None:
+        return None
+
+    keep_id = int(last_user.id)
+    text = last_user.content or ""
+
+    # 删掉这条提问之后的所有消息（即上一轮的回答，可能还包含更早的中断残留）。
+    # 用 ORM 逐个删除而不是 Core 批量 delete：这些实例已加载进 Session，
+    # 批量删除会让它们的状态与数据库不一致。
+    stale = db.scalars(
+        select(Message).where(
+            Message.conversation_id == conversation_id,
+            Message.id > keep_id,
+        )
+    ).all()
+    for m in stale:
+        db.delete(m)
+
+    # message_count 是缓存字段，删除后必须重算，否则侧边栏计数虚高
+    conv = get_conversation(db, conversation_id)
+    if conv is not None:
+        from backend.models.conversation import utcnow
+
+        conv.message_count = count_messages(db, conversation_id)
+        conv.updated_at = utcnow()
+    db.commit()
+
+    # 关键：上面删掉的实例仍被 Session 的 identity map 持有，commit 默认
+    # 不刷新已加载对象（expire_on_commit=False）。若不清空，紧接着的
+    # recent_history() 查询重新取出这些行时会命中"已被删除"的实例，抛
+    # ObjectDeletedError（表现为"会话初始化失败：Instance has been deleted"）。
+    db.expire_all()
+    return text

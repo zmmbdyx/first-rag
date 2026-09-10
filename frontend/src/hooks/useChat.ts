@@ -78,31 +78,34 @@ export function useChat() {
   }, [])
 
   const runStream = useCallback(
-    async (req: ChatRequest, optimisticUserMessage: string) => {
+    async (req: ChatRequest, optimisticUserMessage: string, isRegenerate = false) => {
       const { activeId, setActiveId } = useAppStore.getState()
       const conversationId = req.conversation_id
-      lastPromptRef.current = { conversationId, message: req.message }
+      lastPromptRef.current = { conversationId, message: req.message || optimisticUserMessage }
 
-      // 1) 乐观上屏用户消息：不等服务端，输入立刻有反馈
-      const now = new Date().toISOString()
-      const optimistic: Message = {
-        id: null,
-        role: 'user',
-        content: optimisticUserMessage,
-        reasoning: '',
-        sources: [],
-        created_at: now,
-        model: '',
-        latency: 0,
-        retrieval_latency: 0,
-        ttft: 0,
-        cache_hit: false,
-        error: '',
+      // 1) 乐观上屏用户消息：不等服务端，输入立刻有反馈。
+      //    重新生成复用的是历史里已有的提问，不能再插一条，否则会闪出重复气泡。
+      if (!isRegenerate) {
+        const now = new Date().toISOString()
+        const optimistic: Message = {
+          id: null,
+          role: 'user',
+          content: optimisticUserMessage,
+          reasoning: '',
+          sources: [],
+          created_at: now,
+          model: '',
+          latency: 0,
+          retrieval_latency: 0,
+          ttft: 0,
+          cache_hit: false,
+          error: '',
+        }
+        qc.setQueryData<Message[]>(queryKeys.messages(conversationId), (old) => [
+          ...(old ?? []),
+          optimistic,
+        ])
       }
-      qc.setQueryData<Message[]>(queryKeys.messages(conversationId), (old) => [
-        ...(old ?? []),
-        optimistic,
-      ])
 
       // 2) 开始流式
       startStream(conversationId)
@@ -204,27 +207,23 @@ export function useChat() {
   }, [])
 
   /**
-   * 重新生成最后一条回答：重发同一问题。
+   * 重新生成最后一条回答。
    *
-   * 说明：后端把每次 `/api/chat` 都视为一轮新对话，因此重新生成会在历史里
-   * 再留下一条相同的用户提问（这也是多数聊天产品的行为）。若要做到"原地替换"，
-   * 需要后端支持按 message_id 覆盖，当前刻意不做，以免动到既有的问答链路。
+   * 交给后端 `regenerate=true` 处理：它会复用最近一条用户提问重跑，
+   * 并**覆盖**该提问之后的回答。因此历史里不会留下重复的用户提问，
+   * 也不需要前端自己拼 `message`。
    */
   const regenerate = useCallback(async () => {
-    const last = lastPromptRef.current
     const { activeId } = useAppStore.getState()
-    const conversationId = activeId ?? last?.conversationId
+    const conversationId = activeId ?? lastPromptRef.current?.conversationId
     if (!conversationId) return
 
-    // 优先用本会话记住的最后一问；刷新页面后回退到历史里最后一条用户消息
-    const cached = qc.getQueryData<Message[]>(queryKeys.messages(conversationId)) ?? []
-    const lastUser = [...cached].reverse().find((m) => m.role === 'user')
-    const message =
-      last?.conversationId === conversationId ? last.message : lastUser?.content
-    if (!message) return
-
-    await runStream({ message, conversation_id: conversationId }, message)
-  }, [qc, runStream])
+    await runStream(
+      { message: '', conversation_id: conversationId, regenerate: true },
+      '',
+      true,
+    )
+  }, [runStream])
 
   return { send, stop, regenerate }
 }

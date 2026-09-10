@@ -93,6 +93,7 @@ data: {"message_id":12,"latency":1.8,"ttft":1.1,"prompt_tokens":587,...}
 |---|---|---|
 | `HOST` | `0.0.0.0` | 监听地址 |
 | `PORT` | `8000` | 监听端口 |
+| `API_KEYS` | 空 | 服务端密钥，逗号分隔；**空 = 不鉴权**（与旧版同名） |
 | `DATABASE_URL` | `sqlite:///./backend/data/conversations.db` | 会话库连接串，可换 PostgreSQL |
 | `UPLOAD_DIR` | `backend/uploads` | 上传文件落盘目录 |
 | `MAX_UPLOAD_MB` | `50` | 单文件大小上限 |
@@ -101,6 +102,34 @@ data: {"message_id":12,"latency":1.8,"ttft":1.1,"prompt_tokens":587,...}
 | `HISTORY_ROUNDS` | `3` | 参与改写与生成的最近对话轮数 |
 | `TITLE_MAX_LEN` | `20` | 会话标题取首条消息的前 N 字 |
 | `DEFAULT_TOP_K` | `5` | 送入大模型的片段数 |
+
+## 鉴权
+
+`API_KEYS` 留空时不鉴权（本地开发零配置）；配置后，**除 `/api/health` 外**的所有
+`/api/*` 端点都要求：
+
+```
+Authorization: Bearer <key>      或      X-API-Key: <key>
+```
+
+- 逗号分隔支持多把密钥，便于轮换；
+- 只比对 SHA-256 摘要，并用 `secrets.compare_digest` 做常量时间比较——
+  密钥不会出现在日志或 401 响应里，也避免按字符提前返回的时序侧信道；
+- `/api/health` 刻意豁免：容器 HEALTHCHECK、负载均衡探针与前端"知识库是否就绪"
+  都要能无凭据访问，它不返回任何业务数据。是否启用鉴权通过响应里的
+  `auth_required` 字段如实告知前端；
+- 离线验证：`python scripts/check_auth.py`。
+
+## 重新生成（regenerate）
+
+`POST /api/chat` 支持 `regenerate: true`：复用最近一条用户提问重跑，并**删除**该提问之后的回答。
+
+放在后端做是因为一次问答在库里是 (user, assistant) 两条消息，"重新生成"语义上是**替换**这一轮，
+若让前端直接重发同一条消息，历史里会出现两条一模一样的提问。此时 `message` 可省略；
+会话里没有可重跑的提问时返回 `event: error` 且 `code: nothing_to_regenerate`。
+
+> 实现提示：删除旧回答后必须 `db.expire_all()`。否则紧接着的历史查询会从 Session 的
+> identity map 里命中已删除实例，抛 `ObjectDeletedError`（表现为"会话初始化失败"）。
 
 ## 设计说明
 

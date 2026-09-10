@@ -45,6 +45,13 @@ class Settings(BaseSettings):
         description="允许跨域的前端地址，逗号分隔",
     )
 
+    # ---------- 鉴权 ----------
+    # 逗号分隔的多把密钥；**留空表示不鉴权**（本地开发零配置）。
+    # 与旧版 api_server.py 的 API_KEYS 同名，迁移时无需改 .env。
+    # 一旦配置，除 /api/health 外的所有 /api/* 都要求 Authorization: Bearer
+    # 或 X-API-Key 请求头。
+    api_keys: str = Field(default="", description="服务端密钥，逗号分隔；空=不鉴权")
+
     # ---------- 会话数据库 ----------
     # 默认 SQLite；生产可换成 Postgres，连接串形如
     #   postgresql+psycopg://<db_user>:<db_password>@<db_host>:5432/rag
@@ -70,6 +77,10 @@ class Settings(BaseSettings):
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+
+    @property
+    def api_key_list(self) -> list[str]:
+        return [k.strip() for k in self.api_keys.split(",") if k.strip()]
 
     @property
     def upload_path(self) -> Path:

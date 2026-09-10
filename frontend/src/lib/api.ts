@@ -9,6 +9,23 @@ import type {
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? '/api'
 
+/**
+ * 可选的服务端 API Key。
+ *
+ * 后端 `API_KEYS` 留空时不鉴权（本地开发默认如此），此函数返回空对象即可；
+ * 部署时若配置了 `API_KEYS`，前端通过构建期变量注入同一把密钥：
+ *     VITE_API_KEY=xxx  npm run build
+ * 生产环境更推荐用 Nginx 在反代时注入 `Authorization` 头，
+ * 这样密钥不会打进前端产物、也不会出现在浏览器里。
+ *
+ * 注意：只允许 `VITE_` 前缀的变量进入前端产物 —— 任何被打进产物的值
+ * 都等于公开，切勿把大模型的真实密钥（API_KEY / BASE_URL）放到这里。
+ */
+export function authHeaders(): Record<string, string> {
+  const key = import.meta.env.VITE_API_KEY
+  return key ? { Authorization: `Bearer ${key}` } : {}
+}
+
 /** 把后端的错误响应转成可读的 Error。FastAPI 的 detail 可能是字符串或校验错误数组。 */
 async function toError(res: Response): Promise<Error> {
   let detail: unknown
@@ -41,6 +58,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     ...init,
     headers: {
       ...(init?.body && !isFormData ? { 'Content-Type': 'application/json' } : {}),
+      ...authHeaders(),
       ...init?.headers,
     },
   })

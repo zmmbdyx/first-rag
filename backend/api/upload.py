@@ -8,14 +8,15 @@ from __future__ import annotations
 
 import asyncio
 
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 
+from backend.api.deps import require_api_key
 from backend.config import settings
 from backend.schemas import UploadResponse
 from backend.services import upload_service
 from rag.parsers import SUPPORTED_EXTS
 
-router = APIRouter(prefix="/api", tags=["upload"])
+router = APIRouter(prefix="/api", tags=["upload"], dependencies=[Depends(require_api_key)])
 
 
 @router.post("/upload", response_model=UploadResponse, summary="上传文档（PDF/Word/TXT/Markdown）")

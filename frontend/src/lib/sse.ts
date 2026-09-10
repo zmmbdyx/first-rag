@@ -9,6 +9,7 @@
  */
 
 import type { ChatRequest, SSEEvent } from '@/types'
+import { authHeaders } from '@/lib/api'
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? '/api'
 
@@ -55,6 +56,7 @@ export async function* streamChat(
     headers: {
       'Content-Type': 'application/json',
       Accept: 'text/event-stream',
+      ...authHeaders(),
     },
     body: JSON.stringify(req),
     signal,

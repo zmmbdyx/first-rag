@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from backend.api.deps import require_api_key
 from backend.models import get_db
 from backend.schemas import (
     ConversationCreate,
@@ -15,7 +16,12 @@ from backend.schemas import (
 )
 from backend.services import conversation_service as cs
 
-router = APIRouter(prefix="/api/conversations", tags=["conversations"])
+router = APIRouter(
+    prefix="/api/conversations",
+    tags=["conversations"],
+    # 会话与消息属于用户数据，配置了 API_KEYS 时全部要求鉴权
+    dependencies=[Depends(require_api_key)],
+)
 
 
 def _to_out(conv) -> ConversationOut:

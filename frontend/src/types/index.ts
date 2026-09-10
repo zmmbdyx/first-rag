@@ -58,6 +58,8 @@ export interface ChatRequest {
   temperature?: number
   thinking?: boolean
   use_cache?: boolean
+  /** 重新生成最后一条回答：复用最近提问并覆盖旧回答，不追加重复提问 */
+  regenerate?: boolean
 }
 
 /** SSE done 事件的负载。 */
@@ -100,6 +102,8 @@ export interface HealthResponse {
   cache: Record<string, unknown>
   upload_dir: string
   default_top_k: number
+  /** 后端是否启用了 API Key 鉴权（部署时配置 API_KEYS 才为 true） */
+  auth_required: boolean
 }
 
 /** 前端本地维护的"正在流式生成"的回答。 */

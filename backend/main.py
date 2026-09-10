@@ -16,6 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from backend.api import chat, conversations, upload
+from backend.api.deps import auth_enabled
 from backend.config import settings
 from backend.core.vectorstore import collection_count, reload_retriever, retriever_ready
 from backend.models import init_db
@@ -42,6 +43,11 @@ async def lifespan(app: FastAPI):
         print("[backend] Redis 问答缓存已启用")
     else:
         print("[backend] Redis 问答缓存未启用（自动降级：每次请求走完整链路）")
+
+    if auth_enabled():
+        print("[backend] API Key 鉴权已启用（/api/health 豁免，便于健康探针）")
+    else:
+        print("[backend] API Key 鉴权未启用（API_KEYS 为空；生产部署请配置）")
     yield
 
 
@@ -73,7 +79,12 @@ app.include_router(upload.router)
 
 @app.get("/api/health", response_model=HealthResponse, tags=["system"], summary="健康检查")
 def health() -> HealthResponse:
-    """服务与知识库状态；检索器不可用时返回 ``degraded`` 而不是直接报错。"""
+    """服务与知识库状态；检索器不可用时返回 ``degraded`` 而不是直接报错。
+
+    **此端点故意不鉴权**：容器 HEALTHCHECK、负载均衡探针与前端"知识库是否就绪"
+    都要能无凭据访问；它不返回业务数据，只暴露切片数、模型名与缓存计数。
+    是否启用了鉴权通过 ``auth_required`` 如实告知前端。
+    """
     ready = retriever_ready()
     return HealthResponse(
         status="ok" if ready else "degraded",
@@ -84,6 +95,7 @@ def health() -> HealthResponse:
         models=MODEL_OPTIONS,
         cache=qa_cache.stats(),
         upload_dir=str(settings.upload_path),
+        auth_required=auth_enabled(),
     )
 
 

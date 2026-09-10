@@ -1,7 +1,10 @@
 """入库与问答编排：解析、切分、向量化、索引、检索、生成、改写、安全、审计的完整流程。"""
 
+import asyncio
 import hashlib
 import json
+import os
+import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -51,6 +54,53 @@ def _parse_and_chunk(path: Path, chunker: str):
     return parsed.doc_name, chunks
 
 
+***REMOVED*** ---------- 异步入库：解析阶段真并发 ----------
+
+async def _parse_and_chunk_async(path: Path, chunker: str, sem: "asyncio.Semaphore"):
+    """在线程池里执行阻塞式解析（PyMuPDF/python-docx 是同步库，且底层释放 GIL）。
+
+    用 Semaphore 限制并发上限，避免一次提交上千个文件把内存打满。
+    """
+    async with sem:
+        return await asyncio.to_thread(_parse_and_chunk, path, chunker)
+
+
+async def _gather_parse(todo: list, chunker: str, workers: int):
+    """并发解析全部待处理文档，**保持与 todo 相同的顺序**返回。"""
+    sem = asyncio.Semaphore(max(1, workers))
+    tasks = [_parse_and_chunk_async(f, chunker, sem) for f, _ in todo]
+    return await asyncio.gather(*tasks)
+
+
+def _run_async(coro):
+    """在同步调用栈里跑协程，兼容"已在事件循环中"的调用场景。
+
+    - 普通同步调用（CLI / FastAPI 的同步线程池端点）：直接 asyncio.run；
+    - 已经被包在事件循环里（例如从 async 端点直接调用 ingest）：当前线程无法再
+      run 一个循环，改到独立线程里新建事件循环执行，避免 RuntimeError。
+    """
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(coro)
+    import threading
+
+    box: dict = {}
+
+    def _worker():
+        try:
+            box["result"] = asyncio.run(coro)
+        except BaseException as e:  ***REMOVED*** noqa: BLE001 — 跨线程回传原始异常
+            box["error"] = e
+
+    t = threading.Thread(target=_worker, daemon=True)
+    t.start()
+    t.join()
+    if "error" in box:
+        raise box["error"]
+    return box.get("result")
+
+
 def ingest(
     paths: list[str | Path],
     index_dir=INDEX_DIR,
@@ -60,12 +110,22 @@ def ingest(
     quiet: bool = False,
     incremental: bool = True,
     workers: int = 4,
+    async_parse: bool | None = None,
 ) -> dict:
     """解析 → 切分 → 向量化 → 写入 Chroma → 重建 BM25。
 
     增量更新：基于文件 MD5 清单（manifest.json），内容未变且切分器一致的文档
     直接跳过，仅重新处理变更文档。同一文档重复入库自动覆盖旧块。
+
+    并发模型：解析阶段默认走 **asyncio 事件循环 + 线程池**（`asyncio.to_thread`），
+    相比串行解析能显著压缩入库墙钟时间；`async_parse=False` 可退回串行/线程池
+    两种旧路径（用于基准对比）。
     """
+    from .config import ASYNC_INGEST
+
+    if async_parse is None:
+        async_parse = ASYNC_INGEST
+
     files = collect_files(paths)
     if not files:
         raise FileNotFoundError(f"未找到可解析的文档（支持 {sorted(SUPPORTED_EXTS)}）")
@@ -93,12 +153,19 @@ def ingest(
         todo.append((f, digest))
 
     t0 = time.time()
+    parse_elapsed = 0.0
     if skipped:
         log(f"⏭️  增量跳过 {len(skipped)} 篇未变更文档")
     if todo:
-        log(f"📄 解析并切分 {len(todo)} 篇文档（{workers} 线程）...")
-        with ThreadPoolExecutor(max_workers=workers) as pool:
-            results = list(pool.map(lambda t: _parse_and_chunk(t[0], chunker), todo))
+        _t_parse = time.time()
+        if async_parse:
+            log(f"📄 异步解析并切分 {len(todo)} 篇文档（asyncio + 线程池，并发 {workers}）...")
+            results = _run_async(_gather_parse(todo, chunker, workers))
+        else:
+            log(f"📄 解析并切分 {len(todo)} 篇文档（{workers} 线程）...")
+            with ThreadPoolExecutor(max_workers=workers) as pool:
+                results = list(pool.map(lambda t: _parse_and_chunk(t[0], chunker), todo))
+        parse_elapsed = time.time() - _t_parse
 
         all_chunks: list[Chunk] = []
         per_doc: dict[str, int] = {}
@@ -123,6 +190,13 @@ def ingest(
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=1), encoding="utf-8")
 
+    ***REMOVED*** ---- 入库成功 → 知识库版本 +1，让所有旧问答缓存立即失效 ----
+    ***REMOVED*** 放在最后一步：只有索引真正写成功才失效，否则会把还能用的缓存白白清掉。
+    cache_version = 0
+    if per_doc:
+        from . import cache as qa_cache
+        cache_version = qa_cache.bump_kb_version()
+
     stats = {
         "docs": per_doc,
         "skipped": skipped,
@@ -130,9 +204,13 @@ def ingest(
         "collection_count": collection.count(),
         "bm25_chunks": n_bm25,
         "elapsed": time.time() - t0,
+        "parse_elapsed": parse_elapsed,
+        "async_parse": bool(async_parse),
+        "cache_version": cache_version,
     }
     log(f"✅ 入库完成：新入库 {len(per_doc)} 篇 / 跳过 {len(skipped)} 篇 / "
-        f"库内共 {collection.count()} 块 / 用时 {stats['elapsed']:.1f}s")
+        f"库内共 {collection.count()} 块 / 用时 {stats['elapsed']:.1f}s"
+        + (f"（解析 {parse_elapsed:.1f}s）" if per_doc else ""))
     return stats
 
 
@@ -153,21 +231,55 @@ def chat(
     use_llm_rewrite: bool = True,
     audit_enabled: bool = True,
     return_hits: bool = False,
+    use_cache: bool = True,
 ) -> dict:
     """多轮对话统一入口：chat(message, history) -> answer, sources, ...
 
     流程：输入安全检查（拦截注入/超长） → 查询改写（规则+LLM 指代消解）
-    → 混合检索 → 生成（含引用编号校验与自动重生成） → 审计日志。
+    → **Redis 问答缓存** → 混合检索 → 生成（含引用编号校验与自动重生成） → 审计日志。
     输入被拦截时抛出 security.InputBlocked（拦截记录已写入日志）。
+
+    use_cache: 是否允许命中/写入 Redis 问答缓存（Redis 不可用时自动降级为不走缓存）。
     """
     from .security import audit, check_input
     from .rewrite import rewrite_query
+    from . import cache as qa_cache
 
     clean = check_input(message)
     history = history or []
     rw = rewrite_query(clean, history, use_llm=use_llm_rewrite)
     model = model or LLM_MODEL
     retriever = retriever or load_retriever(INDEX_DIR)
+
+    ***REMOVED*** ---- Redis 问答缓存查询（高频问题直接返回，跳过检索与生成） ----
+    ***REMOVED*** 键用改写前的原始问题：改写依赖 history，同一原始问题在不同会话里会被改写
+    ***REMOVED*** 成不同检索式，但最终答案应当一致；且若拿改写后的问题做键，缓存命中率会被
+    ***REMOVED*** 历史上下文人为拉低，失去"高频问答对"的意义。
+    ckey = None
+    if use_cache and qa_cache.available():
+        ckey = qa_cache.cache_key(clean, mode, k_final, model)
+        cached = qa_cache.get(ckey)
+        if os.getenv("RAG_CACHE_DEBUG"):
+            print(f"[cache-debug] key={ckey} hit={bool(cached)}", file=sys.stderr)
+        if cached:
+            cached.update({
+                "question": message,
+                "query_used": cached.get("query_used") or clean,
+                "mode": mode,
+                "blocked": False,
+                "cache_hit": True,
+                ***REMOVED*** 缓存命中 = 零生成耗时，延迟真实反映"直接返回"的收益
+                "latency": 0.0,
+                "retrieval_latency": 0.0,
+            })
+            cached.pop("cache_hit_ts", None)
+            if audit_enabled:
+                audit({"type": "chat_cache_hit", "question": message,
+                       "cache_key": ckey, "mode": mode, "model": model,
+                       "answer": cached.get("answer", "")})
+            if not return_hits:
+                cached.pop("hits", None)
+            return cached
 
     from .config import EXPAND_QUERY
 
@@ -250,6 +362,13 @@ def chat(
             "forged_citations": result["forged_citations"],
             "latency": round(result["latency"], 3),
         })
+    ***REMOVED*** ---- 写入 Redis 问答缓存（只缓存成功生成的答案） ----
+    if ckey:
+        to_cache = {k: v for k, v in result.items() if k != "hits"}
+        to_cache.pop("cache_hit", None)
+        ok = qa_cache.set(ckey, to_cache)
+        if os.getenv("RAG_CACHE_DEBUG"):
+            print(f"[cache-debug] set key={ckey} ok={ok}", file=sys.stderr)
     if not return_hits:
         result.pop("hits", None)
     return result

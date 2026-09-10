@@ -420,15 +420,35 @@ if prompt:
 
         answer, reasoning = None, ""
         gen_error = None
-        try:
-            answer, reasoning, usage, elapsed, ttft = stream_answer(
-                model, history, system_prompt, rw["query"],
-                temperature, thinking_on, budget, max_tokens,
-            )
-        except Exception as e:  ***REMOVED*** noqa: BLE001
-            gen_error = e
-            answer, usage, elapsed, ttft = None, None, time.time() - t0, None
-            st.error(f"调用模型失败：{e}")
+        ***REMOVED*** Redis 问答缓存：命中则直接复用上次答案，跳过生成（最高频、最贵的环节）。
+        ***REMOVED*** 只在未启用联网搜索时缓存 —— 搜索结果随时间和网络变化，缓存会返回过期信息。
+        from rag import cache as qa_cache
+
+        cache_key = None
+        cached_hit = None
+        if qa_cache.available() and not enable_web:
+            cache_key = qa_cache.cache_key(rw["query"], f"{retrieval_mode}|stream", top_k, model)
+            cached_hit = qa_cache.get(cache_key)
+
+        if cached_hit:
+            answer = cached_hit.get("answer", "")
+            reasoning = cached_hit.get("reasoning", "")
+            usage = None
+            elapsed, ttft = 0.0, 0.0
+            st.caption("⚡ 命中 Redis 问答缓存（未调用大模型）")
+        else:
+            try:
+                answer, reasoning, usage, elapsed, ttft = stream_answer(
+                    model, history, system_prompt, rw["query"],
+                    temperature, thinking_on, budget, max_tokens,
+                )
+            except Exception as e:  ***REMOVED*** noqa: BLE001
+                gen_error = e
+                answer, usage, elapsed, ttft = None, None, time.time() - t0, None
+                st.error(f"调用模型失败：{e}")
+            if cache_key and answer:
+                qa_cache.set(cache_key, {"answer": answer, "reasoning": reasoning,
+                                         "query_used": rw["query"], "model": model})
 
         ***REMOVED*** 修复：Web 界面此前完全不写运行指标（只有 CLI / pipeline.chat 会写），
         ***REMOVED*** 导致 scripts/metrics_report.py 看到的全是命令行数据、错误率恒为 0。

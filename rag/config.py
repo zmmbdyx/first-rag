@@ -78,3 +78,19 @@ EXPAND_QUERY = os.getenv("EXPAND_QUERY", "0") == "1"    ***REMOVED*** 是否用 
 RERANK_ENABLED = os.getenv("RERANK_ENABLED", "auto")    ***REMOVED*** auto | on | off
 RERANK_MODEL = os.getenv("RERANK_MODEL", "BAAI/bge-reranker-base")
 RERANK_CANDIDATES = int(os.getenv("RERANK_CANDIDATES", "20"))  ***REMOVED*** 送入重排的候选数
+
+***REMOVED*** ---------- 入库并发 ----------
+INGEST_WORKERS = int(os.getenv("INGEST_WORKERS", "4"))          ***REMOVED*** 解析并发度
+ASYNC_INGEST = os.getenv("ASYNC_INGEST", "1") == "1"            ***REMOVED*** 异步解析（asyncio+线程池）
+
+***REMOVED*** ---------- 服务化（FastAPI） ----------
+API_HOST = os.getenv("API_HOST", "0.0.0.0")
+API_PORT = int(os.getenv("API_PORT", "8000"))
+API_KEYS = [k.strip() for k in os.getenv("API_KEYS", "").split(",") if k.strip()]  ***REMOVED*** 逗号分隔；空=不鉴权
+
+***REMOVED*** ---------- Redis 问答缓存 ----------
+***REMOVED*** 详见 rag/cache.py：Redis 不可用时全部降级为 no-op，不影响主流程。
+REDIS_URL = os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0")
+CACHE_ENABLED = os.getenv("CACHE_ENABLED", "auto")              ***REMOVED*** auto | on | off
+CACHE_TTL = int(os.getenv("CACHE_TTL", "1800"))                 ***REMOVED*** 秒
+CACHE_PREFIX = os.getenv("CACHE_PREFIX", "rag:qa")

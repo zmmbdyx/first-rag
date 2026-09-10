@@ -1,0 +1,28 @@
+{
+  "ts": "2026-09-10T20:51:25",
+  "dir": "data\\corpus",
+  "docs": 31,
+  "workers": 8,
+  "repeat": 3,
+  "median": {
+    "serial": {
+      "parse_elapsed": 0.3588433265686035,
+      "elapsed": 13.424581289291382,
+      "chunks": 159
+    },
+    "thread": {
+      "parse_elapsed": 0.3204178810119629,
+      "elapsed": 13.51757287979126,
+      "chunks": 159
+    },
+    "async": {
+      "parse_elapsed": 0.32742977142333984,
+      "elapsed": 13.507023811340332,
+      "chunks": 159
+    }
+  },
+  "parse_gain_thread_vs_serial_pct": 10.7,
+  "parse_gain_async_vs_serial_pct": 8.8,
+  "total_gain_async_vs_serial_pct": -0.6,
+  "parse_speedup_async_vs_serial": 1.1
+}

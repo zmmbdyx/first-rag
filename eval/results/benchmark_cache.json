@@ -1,0 +1,36 @@
+{
+  "ts": "2026-09-10T20:33:25",
+  "cache_available": true,
+  "redis_url": "redis://127.0.0.1:6379/0",
+  "mode": "hybrid",
+  "model": "qwen3.5-omni-plus",
+  "questions": 5,
+  "rounds": 1,
+  "cold_ms": {
+    "mean": 4826.581573486328,
+    "p50": 4642.696857452393,
+    "p95": 7096.38524055481
+  },
+  "warm_ms": {
+    "mean": 0.2350330352783203,
+    "p50": 0.1926422119140625,
+    "p95": 0.3867149353027344
+  },
+  "baseline_ms": {
+    "mean": 5054.251551628113,
+    "p50": 4385.958909988403,
+    "p95": 9162.373304367065
+  },
+  "speedup_vs_cold": 20535.76,
+  "latency_reduction_pct": 52.2,
+  "hit_rate": 0.5,
+  "cache_stats": {
+    "hit": 6,
+    "miss": 5,
+    "error": 0,
+    "enabled": true,
+    "ttl": 1800,
+    "url": "redis://127.0.0.1:6379/0",
+    "hit_rate": 0.5455
+  }
+}

@@ -6,7 +6,7 @@
 升级前在 30 题评测上端到端准确率从基线 **84.6% 提升到 96.2%**，升级后评测体系扩展至 22 篇语料 / 206 题
 （详见 `eval/results/` 下各报告）。
 
-> 技术栈：Python · Chroma · sentence-transformers(text2vec-base-chinese) · BM25(jieba) · OpenAI 兼容大模型 · Streamlit
+> 技术栈：Python · Chroma · sentence-transformers(text2vec-base-chinese) · BM25(jieba) · OpenAI 兼容大模型 · **FastAPI（服务化）** · Streamlit（演示界面） · **Redis（问答缓存）** · Docker
 
 ---
 
@@ -33,6 +33,10 @@
 | 📊 效果评测 | 22 篇语料 / **243 题**（单轮 156 + 多轮 16 + **多跳 15** + **同义改写 8** + **对抗错误前提 12** + 拒答 36），五项指标（Recall/MRR/准确率/忠实度/相关性），95% bootstrap 置信区间、按文档类型与题型分项、配对显著性检验、RRF 网格搜索与 BM25 变体消融、Reranker 开关对比 |
 | ⚡ 性能与规模化 | MD5 增量入库、多线程解析、ONNX/INT8 嵌入加速对比、1000 篇入库与 P50/P95 延迟基准、Milvus 迁移脚本、**运行指标落库（P50/P95/P99、错误率、Token 消耗，`scripts/metrics_report.py`）与阈值告警** |
 | 🛡️ LangChain 使用 | 嵌入层经 `langchain_huggingface.HuggingFaceEmbeddings` 封装加载（失败自动回退 sentence-transformers 直连）；重排序因 langchain-community 0.4.x 移除压缩器组件而直接采用其同源实现 `sentence_transformers.CrossEncoder`——组件选型以可用性与质量为准，不为用而用 |
+| 🚀 服务化 API | `api_server.py`：FastAPI 提供 `/ask`、`/ask/stream`(SSE)、`/ingest`、`/health`、`/cache/stats` 等端点，Pydantic 校验请求体，可选 Bearer / X-API-Key 鉴权；与 Streamlit **共用同一套 `rag/` 核心包**，不重复实现任何 RAG 逻辑 |
+| ⚡ Redis 问答缓存 | 高频问答对命中即直接返回，跳过检索与生成：实测**冷启动 4.83s → 命中 0.24ms**（本机 Redis，5 题 × 3 轮）。键含 `模式/模型/top_k/KB版本`，**入库自动失效**；Redis 不可用时全部降级为 no-op，不影响可用性 |
+| 🐳 容器化部署 | `Dockerfile`（非 root 运行 + HEALTHCHECK + 依赖分层缓存）+ `docker-compose.yml`（redis + api + ui 三服务，模型缓存与向量库持久化到卷） |
+| 🔀 异步入库 | `ingest(..., async_parse=True)`：asyncio 事件循环 + `asyncio.to_thread` 并发解析，Semaphore 限流防止提交上千文件打爆内存；**实测解析阶段与线程池持平**（详见 `eval/results/benchmark_parse_concurrency.json`），真正省时的是 MD5 增量跳过 |
 
 ***REMOVED******REMOVED*** 3. 系统架构
 
@@ -69,6 +73,8 @@ flowchart TB
 | **BM25 + RRF 融合** | 纯向量 / 加权分数融合 | 向量对型号、编号、专有名词等精确匹配不敏感，BM25 恰好补位；RRF 只用排名不比对数分数，免去两路分数归一化的调参 |
 | **结构感知切分** | 固定窗口滑动切分 | 制度类文档答案高度集中在"某个小节"，跨章节的固定窗口会切断答案并混入无关章节内容（评测中基线的 3 个检索失败全部源于此）；保留章节路径还让溯源能到段落级 |
 | **OpenAI 兼容接口** | 各厂商私有 SDK | 一套代码任意切换 DeepSeek/通义/智谱/OpenAI，项目只耦合协议不耦合厂商 |
+| **FastAPI + Streamlit 双形态** | 只做其一 | 两者共用 `rag/` 核心包：FastAPI 用于服务化与系统集成（前端分离、供其他服务调用），Streamlit 用于交互式演示与调参。核心逻辑零 UI 依赖，换壳成本极低 |
+| **Redis 缓存问答对** | 进程内 LRU / 不缓存 | 制度类问答的访问高度重复（同一问题被多人反复问）。缓存在 Redis 而非进程内，是为了多 worker/多实例共享命中；入库时按 KB 版本整体失效，避免返回过期答案。**未部署 Redis 时自动降级，不阻塞主流程** |
 | **Streamlit** | FastAPI + 前端 / Gradio | 演示与自用优先：流式渲染、侧边栏调参、文件上传均内置；核心逻辑全部在 `rag/` 包中，与 UI 解耦，迁移到 FastAPI 只需换壳 |
 
 ***REMOVED******REMOVED*** 5. 效果评测
@@ -143,7 +149,73 @@ python scripts/ask.py "咖啡机保修几年" --mode vector   ***REMOVED*** 对�
 
 ***REMOVED*** 5. Web 演示界面
 streamlit run app.py
+
+***REMOVED*** 6. 服务化 API（FastAPI）
+uvicorn api_server:app --host 0.0.0.0 --port 8000
+***REMOVED***   文档： http://127.0.0.1:8000/docs
+***REMOVED***   示例： curl -X POST http://127.0.0.1:8000/ask \
+***REMOVED***            -H "Content-Type: application/json" \
+***REMOVED***            -d '{"question":"咖啡机C3保修多久？","mode":"hybrid","k":5}'
+
+***REMOVED*** 7. 容器化一键起服务（redis + api + ui）
+docker compose up -d --build
 ```
+
+***REMOVED******REMOVED******REMOVED*** Redis 问答缓存（可选但推荐）
+
+制度类知识库的访问高度重复，缓存高频问答对可以把「检索 + 生成」整段省掉：
+
+```bash
+***REMOVED*** 本机启动 Redis
+docker run -d -p 6379:6379 redis:7-alpine
+***REMOVED*** 或 Windows 本地：redis-server
+```
+
+在 `.env` 中配置（默认值已可用）：
+
+```ini
+REDIS_URL=redis://127.0.0.1:6379/0
+CACHE_ENABLED=auto     ***REMOVED*** auto：连得上就启用 | on：必须启用 | off：关闭
+CACHE_TTL=1800         ***REMOVED*** 秒
+```
+
+**实测收益**（`scripts/benchmark_cache.py`，本机 Redis + 真实大模型，5 题 × 3 轮）：
+
+| 口径 | 平均延迟 | P50 | P95 |
+|---|---|---|---|
+| 冷启动（未命中，走完整链路） | 4826.6 ms | 4642.7 ms | 7096.4 ms |
+| **缓存命中（直接返回）** | **0.24 ms** | 0.19 ms | 0.39 ms |
+| 无缓存基线（同题全链路） | 5054.3 ms | 4386.0 ms | 9162.4 ms |
+
+- 命中相对冷启动 **≈20000×**（4.83s → 0.24ms）；
+- 在 50% 命中率的混合流量下，整体延迟降低约 **52%**；
+- **收益大小取决于访问重复率**——命中省掉的是 LLM 生成（约 4.5s）与检索（约 50ms），
+  首次提问或长尾问题仍需走完整链路，因此不能把"命中延迟"当成"平均延迟"。
+
+失效机制：缓存键包含知识库版本号，`ingest()` 成功后版本 +1 并清理旧命名空间，
+保证**入库后不会返回过期答案**。Redis 不可用时 `rag/cache.py` 全部方法降级为 no-op。
+
+***REMOVED******REMOVED******REMOVED*** 异步入库与并发模型（实测结论）
+
+`ingest()` 的解析阶段支持 asyncio + 线程池并发（`ASYNC_INGEST=1`，默认开启），
+用 Semaphore 限制并发度。三份基准脚本分别测量不同层面：
+
+```bash
+python scripts/benchmark_parse_concurrency.py --dir data/corpus   ***REMOVED*** 纯解析阶段
+python scripts/benchmark_async_ingest.py --dir data/corpus        ***REMOVED*** 完整入库
+```
+
+**诚实的实测结论**（见 `eval/results/`）：
+
+- 在 **22 篇制度文档**上：解析阶段串行 0.36s / 线程池 0.32s / asyncio 0.33s，
+  差异约 10%，但**解析只占入库总耗时 13.4s 的 2.5%**，总耗时差异 <1%
+  （瓶颈是嵌入向量化，它是批处理且不随并发模型变化）；
+- 在 4.91MB 放大的文档上解析耗时拉到 0.42s，三者仍在噪声范围内；
+- 根因：`parsers.py` 的切分与后处理是**纯 Python CPU 计算**，受 GIL 限制，
+  并发只能重叠阻塞式 IO，无法并行 CPU。
+
+因此并发解析的价值在于**代码结构更清晰、限流可控**，而不是数量级提速；
+真正省时间的是 **MD5 增量入库**（1000 篇重跑仅 1.25s）。这一点如实记录，不做夸大。
 
 **用自己的文档**：`python scripts/build_kb.py D:\你的文档目录`（支持文件或目录，自动按扩展名解析；
 同一文档重复入库自动覆盖旧块）。
@@ -204,6 +276,9 @@ MODEL_OPTIONS=qwen-plus@aliyun,deepseek-chat@deepseek,glm-4-flash@zhipu
 ```
 rag/
 ├── app.py                  ***REMOVED*** Streamlit 演示界面（多轮对话 + 流式回答 + 引用来源展示）
+├── api_server.py           ***REMOVED*** FastAPI 服务化入口（/ask、/ask/stream、/ingest、/health）
+├── Dockerfile              ***REMOVED*** 生产镜像（非 root + HEALTHCHECK + 依赖分层）
+├── docker-compose.yml      ***REMOVED*** redis + api + ui 三服务编排
 ├── rag/                    ***REMOVED*** 核心包（与 UI 解耦，可独立复用）
 │   ├── parsers.py          ***REMOVED***   PDF/Word/TXT/MD → 结构化 Block（标题层级/页码/结构化表格）
 │   ├── chunking.py         ***REMOVED***   智能切分（章节感知+句子边界+重叠+表格分组）与朴素切分基线
@@ -211,19 +286,25 @@ rag/
 │   ├── vector_store.py     ***REMOVED***   Chroma 封装（幂等入库/查询/导出）
 │   ├── bm25.py             ***REMOVED***   BM25 索引（jieba 分词 4 种变体 + 自定义词典，持久化）
 │   ├── retriever.py        ***REMOVED***   统一检索入口：vector / keyword / hybrid(RRF, k/p 可调)
+│   ├── cache.py            ***REMOVED***   Redis 问答缓存（KB 版本失效 + 不可用时优雅降级）
 │   ├── rewrite.py          ***REMOVED***   多轮查询改写（规则 + LLM 两步式）
 │   ├── security.py         ***REMOVED***   注入拦截/输入过滤/引用校验/审计日志
 │   ├── stats.py            ***REMOVED***   bootstrap 置信区间与配对显著性检验
 │   ├── llm.py              ***REMOVED***   带引用的答案生成 + 五维评测判分（judge/忠实度/相关性）
-│   ├── pipeline.py         ***REMOVED***   入库（MD5 增量）与 chat/ask 编排
+│   ├── pipeline.py         ***REMOVED***   异步入库（MD5 增量）与 chat/ask 编排
 │   └── config.py           ***REMOVED***   全部配置（.env 驱动）
 ├── scripts/
 │   ├── build_kb.py         ***REMOVED*** 入库 CLI（支持指定目录、重建、朴素切分开关）
 │   ├── ask.py              ***REMOVED*** 问答 CLI（多轮交互、来源与命中路径展示）
 │   ├── make_samples.py     ***REMOVED*** 生成 v1 评测示例文档（4 篇）
-│   ├── make_corpus.py      ***REMOVED*** 生成升级版语料（22 篇）与 206 题评测集
+│   ├── make_corpus.py      ***REMOVED*** 生成升级版语料（22 篇）与评测集
 │   ├── run_eval.py         ***REMOVED*** 评测 v2：四配置消融 + 五项指标 + bootstrap CI + 显著性
 │   ├── tune_retrieval.py   ***REMOVED*** RRF 网格搜索 / BM25 变体对比 / 查询扩展实验
+│   ├── benchmark_cache.py  ***REMOVED*** Redis 问答缓存收益基准（冷/热/无缓存三口径）
+│   ├── benchmark_parse_concurrency.py  ***REMOVED*** 解析阶段并发模型对比（串行/线程/asyncio）
+│   ├── benchmark_async_ingest.py       ***REMOVED*** 完整入库并发对比
+│   ├── check_docker_config.py          ***REMOVED*** Docker 配置静态校验（compose 语法/引用/指令）
+│   ├── verify_api_e2e.py   ***REMOVED*** API 端到端验证（上传入库→缓存失效→新文档可检索）
 │   ├── benchmark_scale.py  ***REMOVED*** 1000 篇入库/增量/延迟/内存基准
 │   ├── benchmark_embedding.py  ***REMOVED*** PyTorch vs ONNX fp32/int8 编码加速对比
 │   ├── capture_screenshots.py  ***REMOVED*** Playwright 自动操作界面并截图（README 截图来源）
@@ -237,7 +318,7 @@ rag/
 │   ├── corpus/             ***REMOVED*** 升级版语料（22 篇：制度/合同/说明书/表格/FAQ/技术文档）
 │   └── user_dict.txt       ***REMOVED*** jieba 自定义词典（型号/缩写/术语）
 ├── screenshots/            ***REMOVED*** 系统运行截图（由 scripts/capture_screenshots.py 自动生成）
-└── tests/                  ***REMOVED*** 38 个单元测试（解析/切分/表格/BM25/改写/安全/统计/去重）
+└── tests/                  ***REMOVED*** 50 个单元测试（解析/切分/表格/BM25/改写/安全/统计/缓存/并发）
 ```
 
 ***REMOVED******REMOVED*** 9. 关键实现细节
@@ -261,9 +342,12 @@ rag/
 - [x] 忠实度 / 答案相关性指标（RAGAS 式，LLM 实现）
 - [x] 提示注入防御、引用校验与审计日志
 - [x] MD5 增量入库、ONNX/INT8 加速、Milvus 迁移脚本
-- [ ] 重排序（bge-reranker 或 LLM Listwise Rerank）作为混合检索后的第三层
+- [x] 重排序（bge-reranker 或 LLM Listwise Rerank）作为混合检索后的第三层
+- [x] FastAPI 服务化（`api_server.py`）+ Docker 容器化（Dockerfile / compose）
+- [x] Redis 问答缓存（KB 版本失效 + 不可用时优雅降级）
 - [ ] 评测扩展：接入 RAGAS 官方实现做交叉校验
 - [ ] Chroma 多集合分片的自动化路由
+- [ ] 缓存预热与命中率监控看板（当前只有 /cache/stats 计数）
 
 ***REMOVED******REMOVED*** License
 

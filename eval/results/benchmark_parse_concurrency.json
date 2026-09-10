@@ -1,0 +1,27 @@
+{
+  "ts": "2026-09-10T20:48:30",
+  "dir": ".bench_big",
+  "docs": 6,
+  "total_mb": 4.91,
+  "workers": 8,
+  "repeat": 3,
+  "chunker": "smart",
+  "median_s": {
+    "serial": 0.4198,
+    "thread": 0.4325,
+    "async": 0.4093
+  },
+  "speedup_vs_serial": {
+    "serial": 1.0,
+    "thread": 0.971,
+    "async": 1.026
+  },
+  "chunks": {
+    "serial": 28804,
+    "thread": 28804,
+    "async": 28804
+  },
+  "thread_vs_serial_pct": -3.0,
+  "async_vs_serial_pct": 2.5,
+  "async_vs_thread_pct": 5.4
+}

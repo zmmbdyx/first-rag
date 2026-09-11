@@ -5,7 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from backend.api.deps import require_api_key
+from backend.api.deps import UserContext, get_user_context, require_api_key
 from backend.models import get_db
 from backend.schemas import (
     ConversationCreate,
@@ -34,12 +34,28 @@ def _to_out(conv) -> ConversationOut:
     )
 
 
+def _require_owned(db: Session, conversation_id: str, user: UserContext):
+    """取会话并校验归属；不存在与无权限都返回 404。
+
+    刻意用 404 而不是 403：403 会暴露"这个 ID 确实存在"，
+    让攻击者可以枚举他人的会话 ID。
+    """
+    conv = cs.get_conversation(db, conversation_id)
+    if conv is None or not cs.owned_by(conv, user.user_id):
+        raise HTTPException(status_code=404, detail="会话不存在")
+    return conv
+
+
 @router.post("", response_model=ConversationOut, status_code=201, summary="创建新对话")
-def create_conversation(payload: ConversationCreate | None = None, db: Session = Depends(get_db)):
+def create_conversation(
+    payload: ConversationCreate | None = None,
+    db: Session = Depends(get_db),
+    user: UserContext = Depends(get_user_context),
+):
     """新建一个空会话；标题缺省为「新对话」，首条消息到达时会自动改写。"""
     title = payload.title if payload else None
     model = payload.model if payload else None
-    conv = cs.create_conversation(db, title=title, model=model)
+    conv = cs.create_conversation(db, title=title, model=model, owner_id=user.user_id)
     return _to_out(conv)
 
 
@@ -48,17 +64,26 @@ def list_conversations(
     limit: int = Query(default=200, ge=1, le=1000),
     offset: int = Query(default=0, ge=0),
     db: Session = Depends(get_db),
+    user: UserContext = Depends(get_user_context),
 ):
-    """按更新时间倒序返回会话列表（最近活动的排最前）。"""
-    return [_to_out(c) for c in cs.list_conversations(db, limit=limit, offset=offset)]
+    """按更新时间倒序返回**当前用户自己的**会话列表。
+
+    带身份时只返回自己的会话；不带身份（本地单用户）时返回全部，
+    以兼容既有部署与开发环境。
+    """
+    owner = user.user_id or None
+    return [_to_out(c) for c in cs.list_conversations(db, limit=limit, offset=offset,
+                                                      owner_id=owner)]
 
 
 @router.get("/{conversation_id}/messages", response_model=list[MessageOut], summary="获取对话的全部消息")
-def get_messages(conversation_id: str, db: Session = Depends(get_db)):
+def get_messages(
+    conversation_id: str,
+    db: Session = Depends(get_db),
+    user: UserContext = Depends(get_user_context),
+):
     """按时间正序返回全部消息，assistant 消息带引用来源与耗时统计。"""
-    conv = cs.get_conversation(db, conversation_id)
-    if conv is None:
-        raise HTTPException(status_code=404, detail="会话不存在")
+    _require_owned(db, conversation_id, user)
 
     out: list[MessageOut] = []
     for m in cs.list_messages(db, conversation_id):
@@ -86,7 +111,12 @@ def get_messages(conversation_id: str, db: Session = Depends(get_db)):
 
 
 @router.delete("/{conversation_id}", summary="删除对话")
-def delete_conversation(conversation_id: str, db: Session = Depends(get_db)):
+def delete_conversation(
+    conversation_id: str,
+    db: Session = Depends(get_db),
+    user: UserContext = Depends(get_user_context),
+):
+    _require_owned(db, conversation_id, user)
     if not cs.delete_conversation(db, conversation_id):
         raise HTTPException(status_code=404, detail="会话不存在")
     return {"ok": True, "conversation_id": conversation_id}
@@ -94,8 +124,12 @@ def delete_conversation(conversation_id: str, db: Session = Depends(get_db)):
 
 @router.put("/{conversation_id}/title", response_model=ConversationOut, summary="重命名对话")
 def rename_conversation(
-    conversation_id: str, payload: ConversationRename, db: Session = Depends(get_db)
+    conversation_id: str,
+    payload: ConversationRename,
+    db: Session = Depends(get_db),
+    user: UserContext = Depends(get_user_context),
 ):
+    _require_owned(db, conversation_id, user)
     conv = cs.rename_conversation(db, conversation_id, payload.title)
     if conv is None:
         raise HTTPException(status_code=404, detail="会话不存在")

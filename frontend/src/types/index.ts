@@ -62,6 +62,15 @@ export interface ChatRequest {
   regenerate?: boolean
 }
 
+/** 检索置信度分档（后端统一判定，前端只负责展示）。 */
+export interface Confidence {
+  tier: 'high' | 'medium' | 'low'
+  score: number
+  basis: string
+  hint: string
+  refuse: boolean
+}
+
 /** SSE done 事件的负载。 */
 export interface ChatDone {
   message_id?: number | null
@@ -78,6 +87,12 @@ export interface ChatDone {
   citation_warning?: string
   query_used?: string
   rewrite_method?: string
+  /** 贯穿本次请求的追踪 ID，用户报障时可直接提供 */
+  request_id?: string
+  /** 检索置信度；low 时后端已直接拒答（未调用大模型） */
+  confidence?: Confidence
+  /** 值为 "confidence" 表示本次是按阈值拒答，而非模型自己说不知道 */
+  refused_by?: string
 }
 
 /** POST /api/upload 响应。 */
@@ -121,6 +136,7 @@ export interface StreamingState {
 /** SSE 事件联合类型（由 lib/sse.ts 解析产出）。 */
 export type SSEEvent =
   | { type: 'conversation'; data: { conversation_id: string; title: string } }
+  | { type: 'trace'; data: { request_id: string } }
   | { type: 'rewrite'; data: { query: string; method: string } }
   | { type: 'sources'; data: SourceItem[] }
   | { type: 'status'; data: { stage: string } }

@@ -45,14 +45,41 @@ backend/
 
 | 方法 | 路径 | 说明 |
 |---|---|---|
-| `POST` | `/api/chat` | SSE 流式问答 |
+| `POST` | `/api/chat` | SSE 流式问答（按 `X-User-Groups` 做文档级权限过滤；低置信直接拒答） |
 | `POST` | `/api/conversations` | 新建会话 |
-| `GET` | `/api/conversations` | 会话列表（按更新时间倒序） |
-| `GET` | `/api/conversations/{id}/messages` | 某会话全部消息 |
+| `GET` | `/api/conversations` | 会话列表（**仅当前用户**，带身份时按 owner 过滤） |
+| `GET` | `/api/conversations/{id}/messages` | 某会话全部消息（校验归属，越权返回 404） |
 | `DELETE` | `/api/conversations/{id}` | 删除会话 |
 | `PUT` | `/api/conversations/{id}/title` | 重命名会话 |
-| `POST` | `/api/upload` | 上传文档（PDF/Word/TXT/Markdown） |
-| `GET` | `/api/health` | 服务与知识库状态 |
+| `POST` | `/api/upload` | 上传文档（可带 `?perm_tags=hr` 指定密级；需管理员密钥） |
+| `GET` | `/api/documents` | 文档清单 + 密级 + `untagged_count`（未归类数） |
+| `PUT` | `/api/documents/{name}/tags` | 修改文档密级（需 `ADMIN_KEYS`） |
+| `DELETE` | `/api/documents/{name}` | 删除文档及其全部向量（需 `ADMIN_KEYS`） |
+| `POST` | `/api/documents/backfill-tags` | 给无标签的历史文档补密级（默认 dry-run，需 `ADMIN_KEYS`） |
+| `POST` | `/api/feedback` | 回答反馈 👍/👎（在线质量信号，与 `request_id` 关联） |
+| `GET` | `/api/health` | 服务与知识库状态 **免鉴权** |
+
+### 权限、置信度与可追溯（v3.1）
+
+**ACL**：检索按 `X-User-Groups`（默认头名，可用 `ACL_GROUPS_HEADER` 配置）过滤文档。
+`public` 全员可见、`admin` 组可见全部、其余按标签取交集；无标签文档在
+`RAG_ACL_STRICT=1` 下仅管理员可见（fail-closed）。**问答缓存键里带用户组**，
+避免 A 组检索到的答案被返回给 B 组。
+
+> ⚠️ 这些头必须由可信网关注入并**覆盖**客户端同名头，否则客户端可伪造成任意组。
+
+**置信度**：按重排分数 sigmoid 后的相关概率分三档 —— `high` 直答、
+`medium` 直答并在前端提示"仅供参考"、`low` **不调用大模型**直接拒答。
+阈值见 `RAG_ANSWER_THRESHOLD` / `RAG_CAUTION_THRESHOLD`。
+
+**可追溯**：每次问答写入 `chat_requests` 明细表（`request_id` / `user_hash` / 置信度分档 /
+权限组 / token / 各段耗时），`request_id` 经 SSE `trace` 事件下发前端，用户报障可直接提供。
+
+**审计**：`logs/audit-YYYYMMDD.jsonl`，落盘前做 PII 掩码（手机号/身份证/邮箱/银行卡/
+API Key/私钥/IP），支持按 `AUDIT_RETENTION_DAYS` 清理；`AUDIT_STORE_TEXT=0` 可完全不落原文。
+
+**离线验证**：`python scripts/check_governance.py`（判定逻辑）与
+`python scripts/verify_acl_e2e.py`（真实 HTTP 端到端）。
 
 ### SSE 事件协议
 

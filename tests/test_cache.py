@@ -239,12 +239,13 @@ def test_gather_parse_respects_concurrency_limit(tmp_path, monkeypatch):
 
     real = pipeline._parse_and_chunk
 
-    def slow(path, chunker):
+    def slow(path, chunker, perm_tags=None):
+        """签名需与 pipeline._parse_and_chunk 保持一致（其后新增了 perm_tags 参数）。"""
         live["cur"] += 1
         live["max"] = max(live["max"], live["cur"])
         try:
             time.sleep(0.05)
-            return real(path, chunker)
+            return real(path, chunker, perm_tags=perm_tags)
         finally:
             live["cur"] -= 1
 

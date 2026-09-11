@@ -45,30 +45,38 @@ def collect_files(paths: list[str | Path]) -> list[Path]:
     return files
 
 
-def _parse_and_chunk(path: Path, chunker: str):
+def _parse_and_chunk(path: Path, chunker: str, perm_tags: list[str] | None = None):
     parsed = parse_file(path)
     if chunker == "naive":
         chunks = naive_chunk(flatten_doc_text(parsed), parsed.doc_name)
     else:
         chunks = smart_chunk(parsed)
+    # 权限标签在此统一注入：切分器本身不关心权限，由入库入口决定，
+    # 保证同一份文档的所有 chunk 拿到一致的密级。
+    if perm_tags:
+        for c in chunks:
+            c.perm_tags = list(perm_tags)
     return parsed.doc_name, chunks
 
 
 # ---------- 异步入库：解析阶段真并发 ----------
 
-async def _parse_and_chunk_async(path: Path, chunker: str, sem: "asyncio.Semaphore"):
+async def _parse_and_chunk_async(path: Path, chunker: str, sem: "asyncio.Semaphore",
+                                 perm_tags: list[str] | None = None):
     """在线程池里执行阻塞式解析（PyMuPDF/python-docx 是同步库，且底层释放 GIL）。
 
     用 Semaphore 限制并发上限，避免一次提交上千个文件把内存打满。
     """
     async with sem:
-        return await asyncio.to_thread(_parse_and_chunk, path, chunker)
+        # perm_tags 用关键字传递：便于测试替换 _parse_and_chunk 时保持兼容
+        return await asyncio.to_thread(_parse_and_chunk, path, chunker, perm_tags=perm_tags)
 
 
-async def _gather_parse(todo: list, chunker: str, workers: int):
+async def _gather_parse(todo: list, chunker: str, workers: int,
+                        perm_tags: list[str] | None = None):
     """并发解析全部待处理文档，**保持与 todo 相同的顺序**返回。"""
     sem = asyncio.Semaphore(max(1, workers))
-    tasks = [_parse_and_chunk_async(f, chunker, sem) for f, _ in todo]
+    tasks = [_parse_and_chunk_async(f, chunker, sem, perm_tags) for f, _ in todo]
     return await asyncio.gather(*tasks)
 
 
@@ -111,6 +119,7 @@ def ingest(
     incremental: bool = True,
     workers: int = 4,
     async_parse: bool | None = None,
+    perm_tags: list[str] | None = None,
 ) -> dict:
     """解析 → 切分 → 向量化 → 写入 Chroma → 重建 BM25。
 
@@ -120,6 +129,9 @@ def ingest(
     并发模型：解析阶段默认走 **asyncio 事件循环 + 线程池**（`asyncio.to_thread`），
     相比串行解析能显著压缩入库墙钟时间；`async_parse=False` 可退回串行/线程池
     两种旧路径（用于基准对比）。
+
+    ``perm_tags``：文档级权限标签，写入每个 chunk 的元数据供检索过滤。
+    不传则用 ``RAG_ACL_DEFAULT_TAGS``（默认 ``["public"]``）。
     """
     from .config import ASYNC_INGEST
 
@@ -160,11 +172,12 @@ def ingest(
         _t_parse = time.time()
         if async_parse:
             log(f"📄 异步解析并切分 {len(todo)} 篇文档（asyncio + 线程池，并发 {workers}）...")
-            results = _run_async(_gather_parse(todo, chunker, workers))
+            results = _run_async(_gather_parse(todo, chunker, workers, perm_tags))
         else:
             log(f"📄 解析并切分 {len(todo)} 篇文档（{workers} 线程）...")
             with ThreadPoolExecutor(max_workers=workers) as pool:
-                results = list(pool.map(lambda t: _parse_and_chunk(t[0], chunker), todo))
+                results = list(pool.map(
+                    lambda t: _parse_and_chunk(t[0], chunker, perm_tags), todo))
         parse_elapsed = time.time() - _t_parse
 
         all_chunks: list[Chunk] = []

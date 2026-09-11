@@ -96,7 +96,23 @@ def _append_log(path: Path, record: dict) -> None:
         pass # 日志失败不影响主流程
 
 
-def audit(event: dict) -> None:
-    """问答审计日志：完整 prompt、检索结果、答案与引用映射。"""
-    event = {"time": time.strftime("%Y-%m-%d %H:%M:%S"), **event}
-    _append_log(AUDIT_LOG, event)
+def audit(event: dict) -> dict:
+    """问答审计日志。
+
+    实现已迁移到 ``rag.audit``：落盘前做 **PII 脱敏**、按天分文件、支持保留期清理。
+    此前这里直接写 ``logs/audit.jsonl``，把完整 prompt、检索结果与答案原文
+    无脱敏地长期留存（手机号/邮箱/身份证/API Key 全在文件里），是明确的
+    合规风险。现在统一走脱敏通道。
+
+    保留本函数作为入口，是为了让既有调用方（pipeline / backend）无需改动。
+    """
+    from . import audit as _audit
+
+    return _audit.audit(event)
+
+
+def redact_text(text: str) -> str:
+    """对外暴露的 PII 脱敏（审计与调试用）。"""
+    from .audit import redact_text as _redact
+
+    return _redact(text)[0]

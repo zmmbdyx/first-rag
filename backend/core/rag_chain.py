@@ -30,6 +30,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from rag import cache as qa_cache
+from rag.confidence import Confidence, assess, refusal_payload
 from rag.config import FINAL_TOP_K, RETRIEVAL_MODE
 from rag.metrics import estimate_tokens
 from rag.metrics import record as record_metric
@@ -84,6 +85,13 @@ class ChatParams:
     max_tokens: int | None = 2048
     use_cache: bool = True
     history: list[dict] = field(default_factory=list)
+    # ---- 权限与可追溯（前后端分离后新增）----
+    # user_groups 为空表示受信上下文（内部调用）；API 层必须显式传入，
+    # 否则检索侧不会做任何权限过滤。
+    user_groups: list[str] = field(default_factory=list)
+    # 贯穿 API→检索→生成→审计→指标的关联键
+    request_id: str = ""
+    user_id: str = ""
 
 
 # 上传时为了防止同名覆盖，落盘文件名会带 "时间戳_随机串_" 前缀；
@@ -141,10 +149,11 @@ def build_context(hits: list[Hit]) -> str:
 
 
 # ---------------------------------------------------------------- 检索
-def retrieve_sync(params: ChatParams) -> tuple[list[Hit], str, str, float]:
-    """同步执行「改写 + 检索」，返回 (hits, query_used, rewrite_method, 检索耗时)。
+def retrieve_sync(params: ChatParams) -> tuple[list[Hit], str, str, float, Confidence]:
+    """同步执行「改写 + 权限过滤检索 + 置信度评估」。
 
-    放到线程池里跑，避免阻塞事件循环。
+    返回 (hits, query_used, rewrite_method, 检索耗时, 置信度)。放到线程池里跑，
+    避免阻塞事件循环。
     """
     retriever = get_retriever()
     if retriever is None:
@@ -162,15 +171,18 @@ def retrieve_sync(params: ChatParams) -> tuple[list[Hit], str, str, float]:
     method = rw.get("method", "none")
 
     t0 = time.time()
-    hits = retriever.retrieve(query_used, mode=params.mode, k_final=params.top_k)
-    return hits, query_used, method, time.time() - t0
+    # user_groups 必须显式传入：为空时检索层不做权限过滤（受信上下文）。
+    # 缓存的 key 里也带上了用户组，避免把 A 组可见的答案返给 B 组。
+    hits = retriever.retrieve(query_used, mode=params.mode, k_final=params.top_k,
+                              user_groups=params.user_groups)
+    return hits, query_used, method, time.time() - t0, assess(hits, query_used)
 
 
 # ---------------------------------------------------------------- 主流程
 async def stream_rag(params: ChatParams) -> AsyncIterator[tuple[str, Any]]:
     """执行一次完整问答，逐事件 yield。"""
     try:
-        hits, query_used, rewrite_method, retrieval_latency = await asyncio.to_thread(
+        hits, query_used, rewrite_method, retrieval_latency, confidence = await asyncio.to_thread(
             retrieve_sync, params
         )
     except InputBlocked as e:
@@ -186,11 +198,40 @@ async def stream_rag(params: ChatParams) -> AsyncIterator[tuple[str, Any]]:
     if rewrite_method != "none":
         yield ("rewrite", {"query": query_used, "method": rewrite_method})
 
+    # ---- 置信度门限：低置信直接拒答，不调用大模型 ----
+    # 这一步把"无答案"从**模型自觉**变成**系统保证**：无论提示词怎么写，
+    # 系统都不会在明显不相关的资料上硬答。同时省掉一次生成调用（成本与延迟）。
+    if confidence.refuse:
+        payload = refusal_payload(confidence)
+        yield ("content", payload["answer"])
+        yield ("done", {
+            "answer": payload["answer"],
+            "reasoning": "",
+            "query_used": query_used,
+            "rewrite_method": rewrite_method,
+            "retrieval_latency": retrieval_latency,
+            "latency": retrieval_latency,
+            "ttft": 0.0,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cache_hit": False,
+            "citations": [],
+            "forged_citations": [],
+            "citation_warning": "",
+            "confidence": confidence.to_dict(),
+            "refused_by": "confidence",
+            "error": "",
+        })
+        return
+
     # ---- Redis 问答缓存：命中则跳过最贵的生成环节（与旧版口径一致）----
     cache_key = None
     if params.use_cache and qa_cache.available():
+        # 缓存键必须带上用户组：否则 A 组检索到的答案会被返回给 B 组（越权）。
         cache_key = qa_cache.cache_key(
-            query_used, f"{params.mode}|stream", params.top_k, params.model or ""
+            query_used,
+            f"{params.mode}|stream|acl={','.join(sorted(params.user_groups))}",
+            params.top_k, params.model or "",
         )
         cached = qa_cache.get(cache_key)
         if cached:
@@ -323,5 +364,6 @@ async def stream_rag(params: ChatParams) -> AsyncIterator[tuple[str, Any]]:
         "citation_warning": (
             f"回答引用了不存在的编号 {forged}，内容可能不可靠。" if forged else ""
         ),
+        "confidence": confidence.to_dict(),
         "error": gen_error,
     })

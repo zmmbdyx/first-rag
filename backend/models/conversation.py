@@ -31,6 +31,10 @@ class Conversation(Base):
 
     id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_uuid)
     title: Mapped[str] = mapped_column(String(200), default="新对话", nullable=False)
+    # 会话归属：用于**按用户隔离**。此前没有该字段，GET /api/conversations
+    # 会返回所有人的会话 —— 多用户场景下的越权读。
+    # 空字符串表示"未启用用户隔离"（本地开发/单用户），此时沿用旧行为放行。
+    owner_id: Mapped[str] = mapped_column(String(128), default="", nullable=False, index=True)
     # 是否已由用户手动重命名：重命名后不再自动改标题
     title_locked: Mapped[bool] = mapped_column(default=False, nullable=False)
     model: Mapped[str | None] = mapped_column(String(120), default=None)

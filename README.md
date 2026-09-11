@@ -331,11 +331,16 @@ python scripts/check_docker_config.py
 ```bash
 python scripts/check_backend.py        # 后端：配置/建表/CRUD/路由契约（离线，不需要 API Key）
 python scripts/check_auth.py           # 鉴权：放行/401/Bearer/X-API-Key/多密钥（离线）
+python scripts/check_governance.py     # 治理：ACL 判定 / 置信度分档 / 审计脱敏 / 明细追溯 / 会话隔离
+python scripts/check_metrics_wiring.py # 验证 /api/chat 确实写入运行指标
 python scripts/verify_backend_e2e.py   # 后端端到端：会话 CRUD + 上传 + SSE 流式 + 持久化
 python scripts/verify_regenerate.py    # 重新生成是覆盖语义（历史中不出现重复提问）
-python scripts/verify_frontend.py      # 前端验收：Playwright 走一遍真实交互并断言（27 项）
+python scripts/verify_acl_e2e.py       # **文档级 ACL 端到端**：不同用户组检索结果不同
+python scripts/verify_model_passing.py # 模型下拉框真的生效（切到非默认模型）
+python scripts/verify_frontend.py      # 前端验收：Playwright 走一遍真实交互并断言（30 项）
 python scripts/capture_frontend.py     # 生成界面截图到 screenshots/frontend/
 python scripts/check_docker_config.py  # Docker 配置静态校验
+python scripts/audit_eval_validity.py  # 核验评测集是否"太容易"（重复度/答案唯一性）
 ```
 
 ### 6.5 Redis 问答缓存（可选但推荐）
@@ -601,15 +606,109 @@ rag/
   用 SHA-256 摘要 + `secrets.compare_digest` 常量时间比较，避免明文进日志与按字符比较的时序侧信道；
   `/api/health` 刻意豁免，因为容器 HEALTHCHECK 与前端"知识库是否就绪"都要能无凭据访问。
 
-## 10. API Key 安全与脱敏
+## 10. 安全、权限与合规
 
-### 10.1 脱敏现状（v3.0 已复核）
+> 这一节记录一次**架构评审后的整改**。评审结论是：检索链路达到生产水准，但缺的是
+> 权限、PII、追踪、新鲜度这四类企业级基础设施。下面逐项说明整改前后的差异与验证方式。
+
+### 10.1 文档级权限（ACL）—— 此前完全缺失
+
+**整改前**：`collection.query()` 不带任何过滤条件，任何能访问服务的人都能检索到全部文档；
+会话表没有归属字段，`GET /api/conversations` 返回**所有人**的会话与提问历史。
+
+**现在**：
+
+- 每个 chunk 入库时带 `perm_tags`（默认 `public`），上传时用 `?perm_tags=hr,admin` 指定密级；
+- 检索按请求头 `X-User-Groups` 过滤：`public` 全员可见、`admin` 组可见全部、
+  其余按标签与用户组取交集；**无标签**的文档在严格模式（`RAG_ACL_STRICT=1`）下仅管理员可见（fail-closed）；
+- 权限过滤发生在检索之后，因此开启过滤时会按 `RAG_ACL_OVERSAMPLE`（默认 3×）放大召回量，
+  避免过滤后 top-k 缩水；
+- **问答缓存键里带上用户组** —— 否则 A 组检索到的答案会被返回给 B 组（缓存层面的越权）；
+- 会话按 owner 隔离，`create/rename/delete/messages` 全部校验归属，越权一律返回 **404**（而非 403，
+  避免通过状态码枚举他人会话 ID）。
+
+**验证**：`python scripts/verify_acl_e2e.py` 走真实 API —— 上传一份 `hr` 密级文档后，
+`it` 组的引用来源里**不含**该文档且回答为"无法回答"，`hr` 与 `admin` 组可见。
+
+**迁移历史数据**：升级前入库的 chunk 没有标签（宽松模式下等同公开）。开启严格模式前先调
+`GET /api/documents`（返回 `untagged_count`）与 `POST /api/documents/backfill-tags`（默认 dry-run）
+看清有哪些文档待归类，**逐份确认密级**后再写入 —— 无脑补成 public 会把本该保密的文档变成公开。
+
+### 10.2 置信度门限 —— 把"无答案"从模型自觉变成系统保证
+
+**整改前**：检索结果无条件拼进 prompt，拒答与否全靠提示词里一句"如果资料中没有相关信息请拒答"，
+拒答正确率因此只有 89.2%，跨领域提问会出现"硬答"。
+
+**现在**：按重排分数（CrossEncoder logit → sigmoid 相关概率）三档处理：
+
+| 档位 | 条件（默认阈值） | 动作 |
+|---|---|---|
+| `high` | ≥ 0.35 | 直接作答 |
+| `medium` | ≥ 0.15 | 作答，前端显式提示"检索置信度偏低，请核对引用" |
+| `low` | < 0.15 | **不调用大模型**，直接返回拒答话术与改进建议 |
+
+阈值可用 `RAG_ANSWER_THRESHOLD` / `RAG_CAUTION_THRESHOLD` 调整；置空则退回旧行为。
+低置信直接拒答同时**省掉一次生成调用**（成本与延迟双降）。
+
+**验证**：`python scripts/check_governance.py` 覆盖高/中/低/空结果四种输入的分档与拒答标记。
+
+### 10.3 审计日志 PII 脱敏与保留期
+
+**整改前**：`logs/audit.jsonl` 直接写**完整 prompt、检索结果与答案原文**，手机号、邮箱、
+身份证、API Key 全部明文长期留存，且无轮转、无保留期。
+
+**现在**（`rag/audit.py`）：
+
+- 落盘前对手机号 / 身份证 / 邮箱 / 银行卡 / API Key / Bearer Token / 私钥 / IP 做掩码，
+  并在事件里记录 `_redactions` 命中统计；
+- 按天分文件（`audit-YYYYMMDD.jsonl`），支持 `purge_expired()` 按 `AUDIT_RETENTION_DAYS`（默认 90 天）清理；
+- `AUDIT_STORE_TEXT=0` 可只存长度与哈希、**完全不落原文**（合规最强档）。
+- 说明：脱敏是"最大限度降低风险"，不是合规级匿名化；真正的合规方案是不落原文 + 独立加密存储。
+
+### 10.4 可追溯与成本归因
+
+**整改前**：`chat_metrics` 只有 `(ts, model, mode, 延迟, token, error)`，没有用户维度也没有请求维度 ——
+用户报障"这条回答错了"时无法定位它用了哪次检索；也算不清哪个部门在烧 token。
+
+**现在**：新增 `chat_requests` 明细表，每次问答一行：`request_id`（贯穿 API→检索→生成→审计）、
+`user_hash`（哈希而非明文）、`conversation_id` / `message_id`、`confidence_tier` / `top_score`、
+`refused`、`acl_groups`（用于审计越权尝试）、token 与各段耗时。
+`request_id` 通过 SSE `trace` 事件下发给前端，界面上以 `#xxxxxxxx` 展示，用户可直接报给你。
+
+```bash
+# 按 request_id 回放一次请求（读了什么、置信度多少、走没走缓存）
+python -c "from rag.metrics import get_request; print(get_request('你的request_id'))"
+# 按用户聚合 token 消耗（成本归因）
+python -c "from rag.metrics import cost_by_user; print(cost_by_user(last_n_days=7))"
+```
+
+### 10.5 在线质量信号与"被遗忘权"
+
+- **反馈回流**：前端 👍/👎 此前只是本地 state（刷新即丢），现在经 `POST /api/feedback` 落库，
+  并与 `request_id` 关联 —— 可回放"差评当时检索到了什么"，是发现评测集未覆盖失败模式最廉价的手段。
+- **文档管理**：新增 `GET /api/documents`（清单 + 密级 + 未归类数）、
+  `PUT /api/documents/{name}/tags`（改密级）、`DELETE /api/documents/{name}`（删除文档及其全部向量），
+  后两者需要**独立的管理员密钥 `ADMIN_KEYS`** —— 问答密钥不应具备删库能力。
+- ⚠️ 删除文档后必须让问答缓存失效（递增 KB 版本），否则会继续返回"删前生成、还在引用该文档"的答案。
+  这一条是实测踩出来的：删除接口初版没有动缓存，表现就是"删了但还检索得到"。
+
+### 10.6 部署 ACL 的前置条件（重要）
+
+`X-User-Groups` / `X-User-Id` 必须由**可信网关注入并覆盖**客户端传入的同名头。
+若服务直接暴露且未做覆盖，客户端可伪造成任意组，ACL 形同虚设。生产部署二选一：
+
+1. 用 API 网关剥掉外部同名头再注入内部头（推荐，改动最小）；
+2. 关闭该机制，改为校验签名 JWT 并从中取 `groups` claim。
+
+头部名可配置：`ACL_GROUPS_HEADER` / `ACL_USER_HEADER`。
+
+### 10.7 API Key 与脱敏现状（已复核）
 
 - Key 只存放在 `.env`（已被 `.gitignore` 排除，**不在** git 历史中），代码一律通过 `os.getenv` 读取；
 - 仓库提供 `.env.example` 与 `frontend/.env.example` 模板，只含占位符，不含任何真实密钥、真实端点或个人信息；
 - 后端新增配置同样走环境变量：`DATABASE_URL` / `UPLOAD_DIR` / `CORS_ORIGINS`（见 `backend/config.py`），
   大模型与向量库配置**复用** `rag/config.py` 已有的 `.env` 契约，不重复定义、也不新增密钥落地点；
-- `chroma_db/`、`*.pkl`、`backend/data/`（SQLite 会话库）、`backend/uploads/`、`frontend/dist/`、`node_modules/`
+- `chroma_db/`、`*.pkl`、`backend/data/`（SQLite 会话库）、`backend/uploads/`、`logs/`、`frontend/dist/`、`node_modules/`
   等运行产物一律不入库；
 - 全历史审计：`python scripts/audit_secrets.py`（CI 已接入 `.github/workflows/secret-scan.yml`，
   每次 push/PR 扫描全部历史），覆盖 `sk-` 密钥、Bearer Token、私有推理端点、内网 IP/域名、手机号、身份证号、邮箱等；
@@ -633,6 +732,7 @@ rag/
 > 而不是自动改写源码——检测与改写分离，才不会再发生这类事故。
 
 ## 11. Roadmap
+
 
 - [x] 表格结构化解析（表头携带切分、跨页合并）与表格专项评测题
 - [x] 多轮对话与查询改写（规则 + LLM）

@@ -78,21 +78,25 @@ def save_upload(filename: str, stream, max_bytes: int | None = None) -> tuple[Pa
     return dest, file_id, size
 
 
-def ingest_file(path: Path) -> dict:
-    """把已落盘的文件向量化入库，并让常驻检索器重新加载。"""
+def ingest_file(path: Path, perm_tags: list[str] | None = None) -> dict:
+    """把已落盘的文件向量化入库，并让常驻检索器重新加载。
+
+    ``perm_tags`` 为文档级权限标签；不传则用 ``RAG_ACL_DEFAULT_TAGS``（默认 public）。
+    """
     stats = ingest(
         [path],
         index_dir=INDEX_DIR,
         collection_name=COLLECTION_NAME,
         incremental=True,
         quiet=True,
+        perm_tags=perm_tags,
     )
     # 入库会重建 BM25 索引，常驻检索器必须重建才能看到新块
     reload_retriever(rebuild_bm25_if_empty=False)
     return stats
 
 
-def process_upload(filename: str, stream) -> UploadResult:
+def process_upload(filename: str, stream, perm_tags: list[str] | None = None) -> UploadResult:
     """完整处理一次上传：校验 → 落盘 → （可选）入库。"""
     safe = sanitize_filename(filename)
     suffix = Path(safe).suffix.lower()
@@ -116,7 +120,7 @@ def process_upload(filename: str, stream) -> UploadResult:
         return result
 
     try:
-        stats = ingest_file(path)
+        stats = ingest_file(path, perm_tags=perm_tags)
         docs = stats.get("docs") or {}
         result.chunks = sum(int(v) for v in docs.values())
         result.collection_count = int(stats.get("collection_count") or 0)

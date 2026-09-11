@@ -14,6 +14,7 @@ import {
   fetchConversations,
   fetchMessages,
   fetchHealth,
+  submitFeedback,
 } from '@/lib/api'
 import { streamChat } from '@/lib/sse'
 import { useAppStore } from '@/store/useAppStore'
@@ -23,6 +24,29 @@ export const queryKeys = {
   conversations: ['conversations'] as const,
   messages: (id: string) => ['messages', id] as const,
   health: ['health'] as const,
+}
+
+/**
+ * 提交回答反馈（👍/👎）。
+ *
+ * 失败静默：反馈是"锦上添花"的信号，不能因为它失败就打扰用户。
+ */
+export async function sendFeedback(payload: {
+  vote: 'up' | 'down'
+  requestId?: string
+  conversationId?: string
+  messageId?: number | null
+}): Promise<void> {
+  try {
+    await submitFeedback({
+      vote: payload.vote,
+      request_id: payload.requestId ?? '',
+      conversation_id: payload.conversationId ?? '',
+      message_id: payload.messageId ?? null,
+    })
+  } catch {
+    /* 忽略：不影响主流程 */
+  }
 }
 
 /** 会话列表（按更新时间倒序，后端已排好）。 */
@@ -67,6 +91,8 @@ export function useChat() {
     setStreamSources,
     setStreamStage,
     setStreamError,
+    setStreamTrace,
+    setStreamConfidence,
     endStream,
   } = useAppStore.getState()
 
@@ -131,6 +157,9 @@ export function useChat() {
             case 'sources':
               setStreamSources(evt.data)
               break
+            case 'trace':
+              setStreamTrace(evt.data.request_id)
+              break
             case 'rewrite':
               setStreamStage(`已结合上下文改写查询：${evt.data.query}`)
               break
@@ -148,6 +177,8 @@ export function useChat() {
               setStreamError(evt.data.detail)
               break
             case 'done':
+              // 保留置信度用于展示（low 表示后端已按阈值拒答，未调用大模型）
+              if (evt.data.confidence) setStreamConfidence(evt.data.confidence)
               break
           }
         }
@@ -177,6 +208,8 @@ export function useChat() {
       setStreamSources,
       setStreamStage,
       setStreamError,
+      setStreamTrace,
+      setStreamConfidence,
       endStream,
     ],
   )

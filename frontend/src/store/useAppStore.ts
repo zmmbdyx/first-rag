@@ -9,7 +9,7 @@
 
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { SourceItem } from '@/types'
+import type { Confidence, SourceItem } from '@/types'
 
 export type Theme = 'light' | 'dark'
 
@@ -26,6 +26,10 @@ export interface StreamState {
   /** 阶段提示文案，如「正在检索知识库…」「正在思考…」 */
   stage: string
   error: string
+  /** 本次请求的追踪 ID（后端 trace 事件下发，用于排障与反馈关联） */
+  requestId: string
+  /** 检索置信度（后端判定；low 表示已按阈值拒答） */
+  confidence: Confidence | null
 }
 
 const EMPTY_STREAM: StreamState = {
@@ -35,6 +39,8 @@ const EMPTY_STREAM: StreamState = {
   sources: [],
   stage: '',
   error: '',
+  requestId: '',
+  confidence: null,
 }
 
 interface AppState {
@@ -77,6 +83,8 @@ interface AppState {
   setStreamSources: (sources: SourceItem[]) => void
   setStreamStage: (stage: string) => void
   setStreamError: (error: string) => void
+  setStreamTrace: (requestId: string) => void
+  setStreamConfidence: (c: Confidence | null) => void
   endStream: () => void
   isGenerating: (conversationId?: string | null) => boolean
 }
@@ -138,6 +146,10 @@ export const useAppStore = create<AppState>()(
         set((s) => (s.stream.conversationId ? { stream: { ...s.stream, stage } } : {})),
       setStreamError: (error) =>
         set((s) => (s.stream.conversationId ? { stream: { ...s.stream, error, stage: '' } } : {})),
+      setStreamTrace: (requestId) =>
+        set((s) => (s.stream.conversationId ? { stream: { ...s.stream, requestId } } : {})),
+      setStreamConfidence: (c) =>
+        set((s) => (s.stream.conversationId ? { stream: { ...s.stream, confidence: c } } : {})),
       endStream: () => set({ stream: { ...EMPTY_STREAM } }),
       isGenerating: (conversationId) => {
         const id = get().stream.conversationId

@@ -59,7 +59,10 @@ PATTERNS: list[tuple[str, re.Pattern]] = [
 ALLOW = re.compile(
     r"(你的密钥|你的key|sk-xxx|sk-yyy|sk-your|placeholder|example\.com|"
     r"sk-abcdefghijklmnop1234|110101199003077777|test@example|"
-    r"liming@email\.com|138\*{4}5678|@email\.com)",
+    r"liming@email\.com|138\*{4}5678|@email\.com|"
+    # 测试夹具里刻意使用的"全 0"假号码：脱敏规则要验证自身有效，
+    # 就必须喂一个**格式合法**的号码给它；这是明显占位符，不该让审计失败。
+    r"13800000000)",
     re.I,
 )
 

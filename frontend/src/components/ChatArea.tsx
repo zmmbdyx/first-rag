@@ -67,9 +67,17 @@ interface ChatAreaProps {
   loading: boolean
   onSuggestion: (q: string) => void
   onRegenerate: () => void
+  /** 回答反馈回流（👍/👎） */
+  onVote?: (vote: 'up' | 'down', ctx: { requestId: string; conversationId: string }) => void
 }
 
-export function ChatArea({ messages, loading, onSuggestion, onRegenerate }: ChatAreaProps) {
+export function ChatArea({
+  messages,
+  loading,
+  onSuggestion,
+  onRegenerate,
+  onVote,
+}: ChatAreaProps) {
   const stream = useAppStore((s) => s.stream)
   const activeId = useAppStore((s) => s.activeId)
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -139,6 +147,11 @@ export function ChatArea({ messages, loading, onSuggestion, onRegenerate }: Chat
               retrievalLatency={m.retrieval_latency}
               ttft={m.ttft}
               onRegenerate={i === lastAssistantIndex ? onRegenerate : undefined}
+              onVote={
+                onVote && m.role === 'assistant'
+                  ? (vote) => onVote(vote, { requestId: '', conversationId: activeId ?? '' })
+                  : undefined
+              }
             />
           ))}
 
@@ -154,8 +167,19 @@ export function ChatArea({ messages, loading, onSuggestion, onRegenerate }: Chat
                 reasoning={stream.reasoning}
                 sources={stream.sources}
                 error={stream.error}
+                confidence={stream.confidence}
+                requestId={stream.requestId}
                 streaming
                 pending={!stream.content && !stream.error}
+                onVote={
+                  onVote
+                    ? (vote) =>
+                        onVote(vote, {
+                          requestId: stream.requestId,
+                          conversationId: activeId ?? '',
+                        })
+                    : undefined
+                }
               />
             </>
           )}

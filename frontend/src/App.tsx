@@ -6,7 +6,7 @@ import { ChatArea } from '@/components/ChatArea'
 import { InputBox } from '@/components/InputBox'
 import { Sidebar } from '@/components/Sidebar'
 import { IconAlert, IconMenu, Logo } from '@/components/Icons'
-import { queryKeys, useChat, useConversations, useHealth, useMessages } from '@/hooks/useChat'
+import { queryKeys, sendFeedback, useChat, useConversations, useHealth, useMessages } from '@/hooks/useChat'
 import { applyTheme, useAppStore } from '@/store/useAppStore'
 
 export default function App() {
@@ -53,6 +53,14 @@ export default function App() {
     qc.removeQueries({ queryKey: queryKeys.messages('') })
     setSidebarOpen(false)
   }, [qc, setActiveId, setSidebarOpen])
+
+  // 回答反馈回流：👍/👎 直接落库，成为可用的在线质量信号
+  const onVote = useCallback(
+    (vote: 'up' | 'down', ctx: { requestId: string; conversationId: string }) => {
+      void sendFeedback({ vote, requestId: ctx.requestId, conversationId: ctx.conversationId })
+    },
+    [],
+  )
 
   const onSuggestion = useCallback(
     (q: string) => {
@@ -155,6 +163,7 @@ export default function App() {
           loading={messagesLoading}
           onSuggestion={onSuggestion}
           onRegenerate={regenerate}
+          onVote={onVote}
         />
 
         {/* 输入区 */}

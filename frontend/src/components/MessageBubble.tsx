@@ -6,7 +6,7 @@
  */
 
 import { useState } from 'react'
-import type { SourceItem } from '@/types'
+import type { Confidence, SourceItem } from '@/types'
 import { MarkdownRenderer } from '@/components/MarkdownRenderer'
 import { SourceCards } from '@/components/SourceCards'
 import { useCopy } from '@/hooks/useCopy'
@@ -17,6 +17,7 @@ import {
   IconChevron,
   IconCopy,
   IconRefresh,
+  IconSparkle,
   IconThumbDown,
   IconThumbUp,
   Logo,
@@ -92,7 +93,13 @@ interface MessageBubbleProps {
   retrievalLatency?: number
   ttft?: number
   citationWarning?: string
+  /** 检索置信度：medium 时提示"仅供参考"；low 表示这是系统按阈值拒答 */
+  confidence?: Confidence | null
+  /** 本次请求的追踪 ID（排障与反馈关联用） */
+  requestId?: string
   onRegenerate?: () => void
+  /** 赞/踩回流：交给上层落库，成为在线质量信号 */
+  onVote?: (vote: 'up' | 'down') => void
 }
 
 export function MessageBubble({
@@ -108,10 +115,20 @@ export function MessageBubble({
   retrievalLatency = 0,
   ttft = 0,
   citationWarning = '',
+  confidence = null,
+  requestId = '',
   onRegenerate,
+  onVote,
 }: MessageBubbleProps) {
   const { copied, copy } = useCopy()
   const [vote, setVote] = useState<'up' | 'down' | null>(null)
+
+  const castVote = (v: 'up' | 'down') => {
+    const next = vote === v ? null : v
+    setVote(next)
+    // 只上报"点选"，取消选中的不上报（避免噪声）
+    if (next) onVote?.(next)
+  }
 
   // ---------------- 用户消息 ----------------
   if (role === 'user') {
@@ -144,6 +161,28 @@ export function MessageBubble({
           <div className="mb-2 flex items-start gap-2 rounded-xl border border-danger/30 bg-danger/5 px-3 py-2 text-[12.5px] text-danger">
             <IconAlert size={14} className="mt-0.5 shrink-0" />
             <span>{citationWarning}</span>
+          </div>
+        )}
+
+        {/* 置信度提示：low = 系统按阈值拒答（未调用大模型），medium = 仅供参考 */}
+        {confidence && confidence.tier !== 'high' && confidence.hint && (
+          <div
+            className={`mb-2 flex items-start gap-2 rounded-xl border px-3 py-2 text-[12.5px] ${
+              confidence.tier === 'low'
+                ? 'border-line bg-surface text-ink-soft'
+                : 'border-brand/30 bg-brand/5 text-brand'
+            }`}
+            data-testid={`confidence-${confidence.tier}`}
+          >
+            <IconSparkle size={14} className="mt-0.5 shrink-0" />
+            <span>
+              {confidence.hint}
+              {confidence.score > 0 && (
+                <span className="ml-1 text-ink-muted">
+                  （相关度 {Math.round(confidence.score * 100)}%）
+                </span>
+              )}
+            </span>
           </div>
         )}
 
@@ -197,7 +236,7 @@ export function MessageBubble({
             <button
               type="button"
               className={`icon-btn h-7 w-7 ${vote === 'up' ? 'text-brand' : ''}`}
-              onClick={() => setVote((v) => (v === 'up' ? null : 'up'))}
+              onClick={() => castVote('up')}
               title="回答得不错"
               aria-label="点赞"
               aria-pressed={vote === 'up'}
@@ -207,16 +246,30 @@ export function MessageBubble({
             <button
               type="button"
               className={`icon-btn h-7 w-7 ${vote === 'down' ? 'text-danger' : ''}`}
-              onClick={() => setVote((v) => (v === 'down' ? null : 'down'))}
-              title="回答需要改进"
+              onClick={() => castVote('down')}
+              title="回答需要改进（会记录以便改进检索）"
               aria-label="点踩"
               aria-pressed={vote === 'down'}
             >
               <IconThumbDown size={15} />
             </button>
 
+            {vote && (
+              <span className="ml-1 text-[11px] text-ink-muted">
+                {vote === 'up' ? '感谢反馈' : '已记录，会用于改进'}
+              </span>
+            )}
+
             {meta.length > 0 && (
               <span className="ml-2 text-[11px] text-ink-muted">{meta.join(' · ')}</span>
+            )}
+            {requestId && (
+              <span
+                className="ml-2 cursor-help text-[10px] text-ink-muted/60"
+                title={`追踪 ID：${requestId}（报障时请提供）`}
+              >
+                #{requestId.slice(0, 8)}
+              </span>
             )}
           </div>
         )}

@@ -12,9 +12,10 @@ naive_chunk：固定窗口滑动的朴素切分，仅用于评测对比基线。
 
 import hashlib
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from .config import CHUNK_SIZE, MIN_CHUNK_CHARS, NAIVE_CHUNK_SIZE, NAIVE_STRIDE, OVERLAP_SENTENCES
+from .config import ACL_DEFAULT_TAGS
 from .parsers import ParsedDoc, render_table
 
 _RE_SENT = re.compile(r"[^。！？!?；;\n]+(?:[。！？!?；;]+|\n+|$)")
@@ -32,6 +33,13 @@ class Chunk:
     section_path: str # 例："入职与试用期 > 试用期"，空字符串表示无结构
     page: int | None
     text: str
+    # 文档级权限标签（ACL）。入库时写入向量库 metadata，检索时按用户组过滤。
+    # 默认 ["public"]；敏感文档应在入库时显式指定，如 ["hr"]、["finance","admin"]。
+    perm_tags: list[str] = field(default_factory=lambda: list(ACL_DEFAULT_TAGS))
+    # 制度类文档的生效/失效元数据：用于过滤已废止文档、以及冲突时优先新版
+    effective_from: str = ""
+    effective_to: str = ""
+    doc_version: str = ""
 
     @property
     def header(self) -> str:

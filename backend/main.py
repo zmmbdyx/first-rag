@@ -15,14 +15,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from backend.api import chat, conversations, upload
+from backend.api import chat, conversations, documents, feedback, upload
 from backend.api.deps import auth_enabled
 from backend.config import settings
 from backend.core.vectorstore import collection_count, reload_retriever, retriever_ready
 from backend.models import init_db
 from backend.schemas import HealthResponse
 from rag import cache as qa_cache
-from rag.config import COLLECTION_NAME, MODEL_OPTIONS
+from rag.config import ACL_ENABLED, ACL_STRICT, COLLECTION_NAME, MODEL_OPTIONS
 
 STARTED_AT = time.time()
 
@@ -48,6 +48,14 @@ async def lifespan(app: FastAPI):
         print("[backend] API Key 鉴权已启用（/api/health 豁免，便于健康探针）")
     else:
         print("[backend] API Key 鉴权未启用（API_KEYS 为空；生产部署请配置）")
+
+    if ACL_ENABLED:
+        mode = "严格(fail-closed)" if ACL_STRICT else "宽松(未打标签视为公开)"
+        print(f"[backend] 文档级权限过滤已启用：{mode}；"
+              f"用户组来自请求头 {settings.acl_groups_header}")
+    else:
+        print("[backend] ⚠️ 文档级权限过滤已关闭（RAG_ACL_ENABLED=0）："
+              "任何调用方都能检索到全部文档")
     yield
 
 
@@ -55,11 +63,13 @@ app = FastAPI(
     title="企业知识库 RAG 问答 API",
     description=(
         "前后端分离架构的后端服务：FastAPI + 检索增强生成。\n\n"
-        "- `POST /api/chat`：SSE 流式问答，逐 token 推送并附带引用来源\n"
-        "- `/api/conversations`：会话与消息历史管理\n"
+        "- `POST /api/chat`：SSE 流式问答，逐 token 推送并附带引用来源；"
+        "按 `X-User-Groups` 做**文档级权限过滤**，低置信度问题直接拒答\n"
+        "- `/api/conversations`：会话与消息历史管理（按用户隔离）\n"
         "- `POST /api/upload`：文档上传并向量化入库\n"
+        "- `/api/documents`：文档清单 / 改密级 / 删除（需 `ADMIN_KEYS`）\n"
     ),
-    version="3.0.0",
+    version="3.1.0",
     lifespan=lifespan,
 )
 
@@ -75,6 +85,8 @@ app.add_middleware(
 app.include_router(chat.router)
 app.include_router(conversations.router)
 app.include_router(upload.router)
+app.include_router(documents.router)
+app.include_router(feedback.router)
 
 
 @app.get("/api/health", response_model=HealthResponse, tags=["system"], summary="健康检查")

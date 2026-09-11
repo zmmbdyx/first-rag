@@ -20,17 +20,20 @@ from __future__ import annotations
 
 import asyncio
 import json
+import uuid
 from collections.abc import AsyncIterator
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 
-from backend.api.deps import require_api_key
+from backend.api.deps import UserContext, get_user_context, require_api_key
 from backend.config import settings
 from backend.core.rag_chain import ChatParams, stream_rag
 from backend.models import session_scope
 from backend.schemas import ChatRequest, SourceItem
 from backend.services import conversation_service as cs
+from rag.metrics import record_request
+from rag.security import audit
 
 router = APIRouter(prefix="/api", tags=["chat"])
 
@@ -47,13 +50,20 @@ def _sse(event: str, data: object) -> str:
     return f"event: {event}\ndata: {payload}\n\n"
 
 
-async def _generate(req: ChatRequest) -> AsyncIterator[str]:
+async def _generate(req: ChatRequest, user: UserContext) -> AsyncIterator[str]:
     """SSE 事件生成器：负责持久化与事件封装，RAG 编排交给 rag_chain。"""
+    request_id = uuid.uuid4().hex[:16]
+
     # ---- 1) 会话与历史（放进线程：SQLAlchemy 是同步的）----
     def _prepare() -> tuple[str, list[dict], str, str | None, str]:
         """返回 (会话ID, 历史, 标题, 会话模型, 本轮实际提问)。"""
         with session_scope() as db:
-            conv = cs.get_or_create_conversation(db, req.conversation_id, model=req.model)
+            conv = cs.get_or_create_conversation(
+                db, req.conversation_id, model=req.model, owner_id=user.user_id
+            )
+            if conv.owner_id and user.user_id and conv.owner_id != user.user_id:
+                # 会话不属于当前用户：拒绝写入（防越权往别人的会话里插消息）
+                raise PermissionError("无权访问该会话")
 
             if req.regenerate:
                 # 重新生成：复用最近一条用户提问，并删除它之后的回答（覆盖而非追加）
@@ -75,11 +85,16 @@ async def _generate(req: ChatRequest) -> AsyncIterator[str]:
         # 没有可重跑的提问属于客户端用法问题
         yield _sse("error", {"detail": str(e), "code": "nothing_to_regenerate"})
         return
+    except PermissionError as e:
+        yield _sse("error", {"detail": str(e), "code": "forbidden"})
+        return
     except Exception as e:  # noqa: BLE001
         yield _sse("error", {"detail": f"会话初始化失败：{e}", "code": "db_error"})
         return
 
     yield _sse("conversation", {"conversation_id": conv_id, "title": title})
+    # 把 request_id 告诉前端：用户报障时可直接给出该 ID 用于排障
+    yield _sse("trace", {"request_id": request_id})
 
     params = ChatParams(
         message=message,
@@ -91,6 +106,9 @@ async def _generate(req: ChatRequest) -> AsyncIterator[str]:
         thinking=bool(req.thinking),
         use_cache=req.use_cache,
         history=history,
+        user_groups=user.groups,
+        request_id=request_id,
+        user_id=user.user_id,
     )
 
     # ---- 2) 跑 RAG 链，边收边转发 ----
@@ -135,6 +153,7 @@ async def _generate(req: ChatRequest) -> AsyncIterator[str]:
 
     # ---- 3) 落库助手回答，并推送收尾事件 ----
     done_payload.setdefault("model", params.model or "")
+    persisted: dict = {}
     if not wrote:
         persisted = await asyncio.to_thread(
             _persist, conv_id, "".join(answer_parts), "".join(reasoning_parts),
@@ -144,6 +163,13 @@ async def _generate(req: ChatRequest) -> AsyncIterator[str]:
         done_payload["title"] = persisted.get("title", title)
 
     done_payload["conversation_id"] = conv_id
+    done_payload["request_id"] = request_id
+
+    # ---- 4) 明细指标 + 审计：让"这条回答为什么错"与"谁在烧 token"可回答 ----
+    await asyncio.to_thread(
+        _record_trace, request_id, user, conv_id, done_payload, sources, params
+    )
+
     # answer / reasoning 已经作为增量推过了，收尾事件不再重复整个正文
     yield _sse("done", {k: v for k, v in done_payload.items() if k not in ("answer", "reasoning")})
 
@@ -161,6 +187,67 @@ def _meta(params: ChatParams) -> dict:
         "completion_tokens": 0,
         "cache_hit": False,
     }
+
+
+def _record_trace(
+    request_id: str,
+    user: UserContext,
+    conv_id: str,
+    done: dict,
+    sources: list[SourceItem],
+    params: ChatParams,
+) -> None:
+    """写明细指标与审计日志（失败绝不影响问答）。"""
+    conf = done.get("confidence") or {}
+    try:
+        record_request(
+            request_id,
+            conversation_id=conv_id,
+            message_id=done.get("message_id"),
+            user_hash=user.user_hash,
+            model=done.get("model", ""),
+            mode=params.mode,
+            query_used=done.get("query_used", ""),
+            retrieval_ms=float(done.get("retrieval_latency") or 0.0) * 1000,
+            gen_ms=float(done.get("latency") or 0.0) * 1000,
+            total_ms=(float(done.get("retrieval_latency") or 0.0)
+                      + float(done.get("latency") or 0.0)) * 1000,
+            prompt_tokens=done.get("prompt_tokens", 0),
+            completion_tokens=done.get("completion_tokens", 0),
+            n_hits=len(sources),
+            top_score=conf.get("score"),
+            confidence_tier=conf.get("tier", ""),
+            confidence_basis=conf.get("basis", ""),
+            refused=done.get("refused_by") == "confidence",
+            acl_groups=user.groups,
+            cache_hit=done.get("cache_hit", False),
+            error=done.get("error", ""),
+        )
+    except Exception:  # noqa: BLE001
+        pass
+
+    try:
+        audit({
+            "type": "chat",
+            "request_id": request_id,
+            "user_hash": user.user_hash,
+            "user_groups": user.groups,
+            "conversation_id": conv_id,
+            "question": params.message,
+            "query_used": done.get("query_used", ""),
+            "model": done.get("model", ""),
+            "n_hits": len(sources),
+            "sources": [s.location for s in sources],
+            "confidence": conf,
+            "refused_by": done.get("refused_by", ""),
+            "answer": done.get("answer", ""),
+            "forged_citations": done.get("forged_citations", []),
+            "cache_hit": done.get("cache_hit", False),
+            "latency": done.get("latency", 0.0),
+            "error": done.get("error", ""),
+        })
+    except Exception:  # noqa: BLE001
+        pass
 
 
 def _persist(
@@ -196,12 +283,17 @@ def _persist(
 
 
 @router.post("/chat", summary="对话（SSE 流式输出）", dependencies=[Depends(require_api_key)])
-async def chat_stream(req: ChatRequest) -> StreamingResponse:
+async def chat_stream(
+    req: ChatRequest, user: UserContext = Depends(get_user_context)
+) -> StreamingResponse:
     """接收消息并以 ``text/event-stream`` 逐 token 推送回答与引用来源。
 
-    ``regenerate=true`` 时复用最近一条用户提问重跑，并覆盖它之后的回答
-    （而不是在历史里再追加一条相同的提问）。
+    - ``regenerate=true`` 时复用最近一条用户提问重跑，并覆盖它之后的回答
+      （而不是在历史里再追加一条相同的提问）；
+    - 检索按请求头里的**用户组**做文档级权限过滤（见 ``X-User-Groups``）；
+    - 低置信度问题由系统直接拒答，不调用大模型。
     """
     if not req.regenerate and not req.message.strip():
         raise HTTPException(status_code=400, detail="message 不能为空（regenerate=true 时除外）")
-    return StreamingResponse(_generate(req), media_type="text/event-stream", headers=SSE_HEADERS)
+    return StreamingResponse(_generate(req, user), media_type="text/event-stream",
+                             headers=SSE_HEADERS)

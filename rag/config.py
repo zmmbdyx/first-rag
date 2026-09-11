@@ -77,11 +77,52 @@ EXPAND_QUERY = os.getenv("EXPAND_QUERY", "0") == "1" # 是否用 LLM 做查询�
 # ---------- 重排序（Reranker） ----------
 RERANK_ENABLED = os.getenv("RERANK_ENABLED", "auto") # auto | on | off
 RERANK_MODEL = os.getenv("RERANK_MODEL", "BAAI/bge-reranker-base")
-RERANK_CANDIDATES = int(os.getenv("RERANK_CANDIDATES", "20")) # 送入重排的候选数
+RERANK_CANDIDATES = int(os.getenv("RERANK_CANDIDATES", "10")) # 送入重排的候选数（越小越快）
 
 # ---------- 入库并发 ----------
 INGEST_WORKERS = int(os.getenv("INGEST_WORKERS", "4")) # 解析并发度
 ASYNC_INGEST = os.getenv("ASYNC_INGEST", "1") == "1" # 异步解析（asyncio+线程池）
+
+# ---------- 文档级权限（ACL） ----------
+# 每个 chunk 入库时带 perm_tags 标签；检索时按调用方的用户组过滤。
+#   RAG_ACL_ENABLED=1     检索时启用权限过滤（默认开）
+#   RAG_ACL_STRICT=1      严格模式：未打标签的 chunk 不对普通用户可见
+#   RAG_ACL_DEFAULT_TAGS  未显式指定标签时使用的默认标签
+#
+# 默认（宽松）模式下"未打标签"视为公开，好处是升级到带 ACL 的版本后历史索引
+# 不会突然全部检索不到；但生产部署应开启 RAG_ACL_STRICT=1 并重新入库，
+# 让"没打标签"默认变成拒绝（fail-closed）而不是放行（fail-open）。
+ACL_ENABLED = os.getenv("RAG_ACL_ENABLED", "1") == "1"
+ACL_STRICT = os.getenv("RAG_ACL_STRICT", "0") == "1"
+ACL_DEFAULT_TAGS = [t.strip() for t in os.getenv("RAG_ACL_DEFAULT_TAGS", "public").split(",") if t.strip()]
+ACL_PUBLIC_TAG = "public"
+# 带该标签的用户可看全部文档（管理员/审计角色）
+ACL_ADMIN_TAG = os.getenv("RAG_ACL_ADMIN_TAG", "admin")
+
+# ---------- 相关性阈值与分级拒答 ----------
+# 按重排分数（CrossEncoder logit，sigmoid 后为 0~1 的相关概率）分档：
+#   >= ANSWER_THRESHOLD   直答
+#   >= CAUTION_THRESHOLD  直答但提示"仅供参考"
+#   <  CAUTION_THRESHOLD  不生成，直接拒答并给出建议
+# 关闭重排时退化为按向量余弦相似度判定（尺度不同，见 core/confidence.py 说明）。
+# 置为空串/none 表示不做门限（保持旧行为）。
+_thr_answer = os.getenv("RAG_ANSWER_THRESHOLD", "0.35")
+_thr_caution = os.getenv("RAG_CAUTION_THRESHOLD", "0.15")
+ANSWER_THRESHOLD = float(_thr_answer) if _thr_answer.lower() not in ("", "none") else None
+CAUTION_THRESHOLD = float(_thr_caution) if _thr_caution.lower() not in ("", "none") else None
+
+# ---------- 审计日志（PII 与保留期） ----------
+AUDIT_ENABLED = os.getenv("AUDIT_ENABLED", "1") == "1"
+# 审计落盘前是否对 PII 做脱敏
+AUDIT_REDACT = os.getenv("AUDIT_REDACT", "1") == "1"
+# 是否保存答案/上下文原文（关闭则只留长度摘要与哈希，隐私最强但排障变弱）
+AUDIT_STORE_TEXT = os.getenv("AUDIT_STORE_TEXT", "1") == "1"
+AUDIT_RETENTION_DAYS = int(os.getenv("AUDIT_RETENTION_DAYS", "90"))
+
+# ---------- 重排调优 ----------
+# 早停：若第 1 名领先第 2 名超过该分差，则认为顺序已稳定，跳过剩余候选计算。
+# 默认 0 表示不早停（保持原行为）。
+RERANK_EARLY_STOP_MARGIN = float(os.getenv("RERANK_EARLY_STOP_MARGIN", "0.0"))
 
 # ---------- 服务化（FastAPI） ----------
 API_HOST = os.getenv("API_HOST", "0.0.0.0")

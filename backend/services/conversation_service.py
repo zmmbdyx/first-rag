@@ -43,12 +43,14 @@ def create_conversation(
     title: str | None = None,
     model: str | None = None,
     conversation_id: str | None = None,
+    owner_id: str = "",
 ) -> Conversation:
     """新建会话。``conversation_id`` 可由前端指定（便于先发消息后落库）。"""
     conv = Conversation(
         title=(title or "新对话").strip()[:200] or "新对话",
         title_locked=bool(title),  # 用户显式给了标题就算锁定，不再自动改名
         model=model,
+        owner_id=(owner_id or "")[:128],
     )
     if conversation_id:
         conv.id = conversation_id[:32]
@@ -62,8 +64,21 @@ def get_conversation(db: Session, conversation_id: str) -> Conversation | None:
     return db.get(Conversation, conversation_id)
 
 
+def owned_by(conv: Conversation | None, owner_id: str) -> bool:
+    """会话是否属于该用户。
+
+    未启用用户隔离时（双方都为空）一律放行，避免破坏单用户与既有数据；
+    只要任一方带了身份就必须一致。
+    """
+    if conv is None:
+        return False
+    if not conv.owner_id and not owner_id:
+        return True
+    return conv.owner_id == owner_id
+
+
 def get_or_create_conversation(
-    db: Session, conversation_id: str, model: str | None = None
+    db: Session, conversation_id: str, model: str | None = None, owner_id: str = ""
 ) -> Conversation:
     """取会话，不存在则按给定 ID 创建。
 
@@ -72,21 +87,34 @@ def get_or_create_conversation(
     """
     conv = get_conversation(db, conversation_id)
     if conv is None:
-        conv = create_conversation(db, model=model, conversation_id=conversation_id)
-    elif model and not conv.model:
+        return create_conversation(db, model=model, conversation_id=conversation_id,
+                                   owner_id=owner_id)
+
+    changed = False
+    if model and not conv.model:
         conv.model = model
+        changed = True
+    # 老数据（owner_id 为空）首次带身份访问时认领归属，
+    # 否则历史会话在启用隔离后会对所有人不可见、也无法被本人找回。
+    if owner_id and not conv.owner_id:
+        conv.owner_id = owner_id[:128]
+        changed = True
+    if changed:
         db.commit()
     return conv
 
 
-def list_conversations(db: Session, limit: int = 200, offset: int = 0) -> list[Conversation]:
-    """按更新时间倒序返回会话列表（最近的排最前）。"""
-    stmt = (
-        select(Conversation)
-        .order_by(desc(Conversation.updated_at))
-        .limit(limit)
-        .offset(offset)
-    )
+def list_conversations(db: Session, limit: int = 200, offset: int = 0,
+                       owner_id: str | None = None) -> list[Conversation]:
+    """按更新时间倒序返回会话列表（最近的排最前）。
+
+    ``owner_id`` 不为 None 时**只返回该用户的会话** —— 这是多用户隔离的关键：
+    此前无条件返回全部会话，任何人都能看到别人的完整提问历史。
+    """
+    stmt = select(Conversation)
+    if owner_id is not None:
+        stmt = stmt.where(Conversation.owner_id == owner_id)
+    stmt = stmt.order_by(desc(Conversation.updated_at)).limit(limit).offset(offset)
     return list(db.scalars(stmt).all())
 
 

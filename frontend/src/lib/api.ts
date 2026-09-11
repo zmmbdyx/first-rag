@@ -115,3 +115,23 @@ export function uploadDocument(file: File): Promise<UploadResponse> {
   // 不设置 Content-Type，交给 request() 的 isFormData 分支处理
   return request<UploadResponse>('/upload', { method: 'POST', body: form })
 }
+
+/**
+ * POST /api/feedback —— 回答反馈（👍/👎）。
+ *
+ * 在线质量信号：把差评与当次 request_id 关联，就能回放"这条回答当时
+ * 检索到了什么、置信度多少"。这是发现"离线评测集没覆盖到的失败模式"
+ * 最廉价的手段，也是改造前完全缺失的一环（赞踩只是本地 state，刷新即丢）。
+ */
+export function submitFeedback(payload: {
+  vote: 'up' | 'down'
+  request_id?: string
+  conversation_id?: string
+  message_id?: number | null
+  comment?: string
+}): Promise<{ ok: boolean; vote: string }> {
+  return request<{ ok: boolean; vote: string }>('/feedback', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}

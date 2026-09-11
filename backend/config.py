@@ -52,6 +52,21 @@ class Settings(BaseSettings):
     # 或 X-API-Key 请求头。
     api_keys: str = Field(default="", description="服务端密钥，逗号分隔；空=不鉴权")
 
+    # ---------- 权限（ACL）----------
+    # 用户组来源请求头。真实部署应由网关/SSO 注入（如 OIDC 的 groups claim），
+    # 前端**不应**自行填写；保留可配置是为了适配不同网关的命名习惯。
+    acl_groups_header: str = Field(
+        default="X-User-Groups",
+        description="承载用户组的请求头名，逗号分隔，如 'hr,finance'",
+    )
+    # 用户标识头（成本归因与审计用）。只取哈希入库，不留明文。
+    acl_user_header: str = Field(default="X-User-Id", description="用户标识请求头名")
+
+    # ---------- 管理接口密钥 ----------
+    # 故意与 API_KEYS 分开：普通问答密钥不应具备删除文档、修改文档密级的能力。
+    # 留空表示不校验（仅建议本地开发）。
+    admin_keys: str = Field(default="", description="管理接口专用密钥；空=不限制")
+
     # ---------- 会话数据库 ----------
     # 默认 SQLite；生产可换成 Postgres，连接串形如
     #   postgresql+psycopg://<db_user>:<db_password>@<db_host>:5432/rag
@@ -81,6 +96,10 @@ class Settings(BaseSettings):
     @property
     def api_key_list(self) -> list[str]:
         return [k.strip() for k in self.api_keys.split(",") if k.strip()]
+
+    @property
+    def admin_key_list(self) -> list[str]:
+        return [k.strip() for k in self.admin_keys.split(",") if k.strip()]
 
     @property
     def upload_path(self) -> Path:

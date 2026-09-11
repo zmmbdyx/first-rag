@@ -5,6 +5,7 @@
 接 Prometheus/企业微信 webhook 只需替换 alert() 的落地方式）。
 """
 
+import hashlib
 import logging
 import math
 import sqlite3
@@ -33,6 +34,37 @@ CREATE TABLE IF NOT EXISTS chat_metrics (
 CREATE INDEX IF NOT EXISTS idx_ts ON chat_metrics(ts);
 """
 
+# 每次问答的**明细**（可追溯到具体请求）：用于回答"这条回答为什么错"
+# 与"哪个部门在烧 token"两个此前无法回答的问题。
+#   request_id    贯穿 API→检索→生成→审计的关联键
+#   user_hash     用户/租户标识的哈希（不存明文，兼顾归因与隐私）
+#   conversation_id / message_id  关联到具体会话与回答
+#   confidence_tier / top_score   检索置信度，用于分析"低置信仍作答"的比例
+#   refused       是否被置信度门限拦下（未调用大模型）
+#   acl_groups    本次检索使用的权限组（审计越权尝试）
+_DETAIL_SCHEMA = """
+CREATE TABLE IF NOT EXISTS chat_requests (
+    request_id TEXT PRIMARY KEY,
+    ts TEXT,
+    conversation_id TEXT,
+    message_id INTEGER,
+    user_hash TEXT,
+    model TEXT, mode TEXT,
+    query_used TEXT,
+    retrieval_ms REAL, gen_ms REAL, total_ms REAL,
+    prompt_tokens INTEGER, completion_tokens INTEGER,
+    n_hits INTEGER,
+    top_score REAL,
+    confidence_tier TEXT, confidence_basis TEXT,
+    refused INTEGER DEFAULT 0,
+    acl_groups TEXT,
+    cache_hit INTEGER DEFAULT 0,
+    error TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_req_ts ON chat_requests(ts);
+CREATE INDEX IF NOT EXISTS idx_req_user ON chat_requests(user_hash);
+"""
+
 
 def record(model: str, mode: str, retrieval_ms: float, gen_ms: float,
            prompt_tokens: int = 0, completion_tokens: int = 0, error: bool = False) -> None:
@@ -56,6 +88,100 @@ def record(model: str, mode: str, retrieval_ms: float, gen_ms: float,
         logging.warning("metrics 落库失败: %s", e)
     except OSError as e: # 磁盘/权限问题
         logging.warning("metrics 落库失败: %s", e)
+
+
+def hash_identity(value: str | None) -> str:
+    """把用户/租户标识哈希后入库：既能按人归因成本，又不留存明文标识。"""
+    if not value:
+        return ""
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()[:16]
+
+
+def record_request(request_id: str, **fields) -> None:
+    """写入一次问答的明细行（可追溯到具体请求）。失败不影响主流程。"""
+    if not request_id:
+        return
+    cols = {
+        "request_id": request_id,
+        "ts": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "conversation_id": fields.get("conversation_id", ""),
+        "message_id": fields.get("message_id"),
+        "user_hash": fields.get("user_hash", ""),
+        "model": fields.get("model", ""),
+        "mode": fields.get("mode", ""),
+        "query_used": fields.get("query_used", ""),
+        "retrieval_ms": round(float(fields.get("retrieval_ms") or 0.0), 1),
+        "gen_ms": round(float(fields.get("gen_ms") or 0.0), 1),
+        "total_ms": round(float(fields.get("total_ms") or 0.0), 1),
+        "prompt_tokens": int(fields.get("prompt_tokens") or 0),
+        "completion_tokens": int(fields.get("completion_tokens") or 0),
+        "n_hits": int(fields.get("n_hits") or 0),
+        "top_score": (round(float(fields["top_score"]), 4)
+                      if fields.get("top_score") is not None else None),
+        "confidence_tier": fields.get("confidence_tier", ""),
+        "confidence_basis": fields.get("confidence_basis", ""),
+        "refused": int(bool(fields.get("refused"))),
+        "acl_groups": ",".join(fields.get("acl_groups") or []),
+        "cache_hit": int(bool(fields.get("cache_hit"))),
+        "error": str(fields.get("error") or "")[:500],
+    }
+    try:
+        DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+        con = sqlite3.connect(DB_PATH)
+        try:
+            con.executescript(_DETAIL_SCHEMA)
+            con.execute(
+                "INSERT OR REPLACE INTO chat_requests ("
+                + ",".join(cols) + ") VALUES (" + ",".join("?" * len(cols)) + ")",
+                tuple(cols.values()))
+            con.commit()
+        finally:
+            con.close()
+    except (sqlite3.Error, OSError) as e:
+        logging.warning("metrics 明细落库失败: %s", e)
+
+
+def get_request(request_id: str) -> dict | None:
+    """按 request_id 取回明细，用于排障（"这条回答为什么错"）。"""
+    if not request_id or not DB_PATH.exists():
+        return None
+    try:
+        con = sqlite3.connect(DB_PATH)
+        try:
+            con.executescript(_DETAIL_SCHEMA)
+            con.row_factory = sqlite3.Row
+            row = con.execute("SELECT * FROM chat_requests WHERE request_id = ?",
+                              (request_id,)).fetchone()
+            return dict(row) if row else None
+        finally:
+            con.close()
+    except (sqlite3.Error, OSError):
+        return None
+
+
+def cost_by_user(last_n_days: int = 7, limit: int = 50) -> list[dict]:
+    """按用户聚合 token 消耗（成本归因）。"""
+    if not DB_PATH.exists():
+        return []
+    try:
+        con = sqlite3.connect(DB_PATH)
+        try:
+            con.executescript(_DETAIL_SCHEMA)
+            con.row_factory = sqlite3.Row
+            rows = con.execute(
+                "SELECT user_hash, COUNT(*) AS n,"
+                " SUM(prompt_tokens) AS prompt_tokens,"
+                " SUM(completion_tokens) AS completion_tokens,"
+                " AVG(total_ms) AS avg_ms"
+                " FROM chat_requests WHERE ts >= datetime('now', ?)"
+                " GROUP BY user_hash ORDER BY (SUM(prompt_tokens)+SUM(completion_tokens)) DESC"
+                " LIMIT ?",
+                (f"-{int(last_n_days)} days", int(limit))).fetchall()
+            return [dict(r) for r in rows]
+        finally:
+            con.close()
+    except (sqlite3.Error, OSError):
+        return []
 
 
 def _check_alerts() -> None:

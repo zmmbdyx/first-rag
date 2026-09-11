@@ -32,6 +32,7 @@ from typing import Any
 from rag import cache as qa_cache
 from rag.config import FINAL_TOP_K, RETRIEVAL_MODE
 from rag.metrics import estimate_tokens
+from rag.metrics import record as record_metric
 from rag.retriever import Hit
 from rag.rewrite import rewrite_query
 from rag.security import InputBlocked, check_input, validate_citations
@@ -39,6 +40,21 @@ from rag.security import InputBlocked, check_input, validate_citations
 from backend.core.streaming import build_messages, stream_chat
 from backend.core.vectorstore import get_retriever
 from backend.schemas import SourceItem
+
+
+def _safe_record(model: str | None, mode: str, retrieval_ms: float, gen_ms: float,
+                 prompt_tokens: int = 0, completion_tokens: int = 0, error: bool = False) -> None:
+    """落一条运行指标；**绝不**让指标写入失败影响问答主流程。
+
+    补齐这一环是必要的：旧版 Streamlit（app.py）与 CLI（pipeline.chat）都会写指标，
+    而重构后的 /api/chat 一度完全不写——logs/metrics.db 里看不到任何来自新前端的
+    流量，P95 与错误率告警对最主力的链路形同虚设。
+    """
+    try:
+        record_metric(model or "", mode, retrieval_ms, gen_ms,
+                      prompt_tokens, completion_tokens, error=error)
+    except Exception:  # noqa: BLE001 — 指标失败不影响回答
+        pass
 
 # 与旧版 Streamlit/CLI 完全一致的系统提示词（含安全规则与引用标注要求）
 SYSTEM_PROMPT_TEMPLATE = """你是一个专业的AI助手，请严格基于以下参考资料回答用户问题。
@@ -185,6 +201,8 @@ async def stream_rag(params: ChatParams) -> AsyncIterator[tuple[str, Any]]:
             if answer:
                 yield ("content", answer)
             _, forged = validate_citations(answer, len(hits))
+            # 缓存命中：生成耗时与 token 都是 0（确实没调模型），照实记录
+            _safe_record(params.model, params.mode, retrieval_latency * 1000, 0.0, 0, 0)
             yield ("done", {
                 "answer": answer,
                 "reasoning": reasoning,
@@ -286,6 +304,9 @@ async def stream_rag(params: ChatParams) -> AsyncIterator[tuple[str, Any]]:
             pass
 
     _, forged = validate_citations(answer, len(hits)) if answer else ([], [])
+    # 落库运行指标（含失败样本），让 P95 与错误率告警覆盖新前端链路
+    _safe_record(params.model, params.mode, retrieval_latency * 1000, elapsed * 1000,
+                 p_tok, c_tok, error=bool(gen_error))
     yield ("done", {
         "answer": answer,
         "reasoning": reasoning,

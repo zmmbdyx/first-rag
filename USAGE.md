@@ -109,10 +109,11 @@ Web 下拉、CLI `--model`、评测判分（`JUDGE_MODEL=模型名@别名`）全
 ## 6. 效果评测（可选，面试展示用）
 
 ```bash
-python scripts/make_corpus.py # 生成 22 篇语料 + 206 题评测集
-python scripts/run_eval.py # 四配置全量评测（五项指标+置信区间）
-python scripts/run_eval.py --retrieval-only # 只跑检索指标（不需要 API Key）
-python scripts/run_eval.py --legacy # 30 题小评测回归
+python scripts/make_corpus.py # 生成 31 篇语料 + 244 题评测集（v2）
+python scripts/run_eval.py # 全配置全量评测（五项指标+置信区间，需 API Key）
+python scripts/run_eval.py --retrieval-only # 只跑检索指标（秒级，不需要 API Key）
+python scripts/audit_eval_validity.py # 校验评测集是否"太容易"（语料重复度/答案唯一性）
+python scripts/run_eval.py --legacy # 30 题小评测回归（样本小，仅作回归）
 python scripts/tune_retrieval.py # RRF 网格搜索 / BM25 变体 / 查询扩展
 python scripts/benchmark_scale.py # 1000 篇入库与延迟基准
 python scripts/benchmark_embedding.py # PyTorch vs ONNX int8 编码加速

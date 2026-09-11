@@ -186,7 +186,7 @@ export function useChat() {
     async (message: string) => {
       const text = message.trim()
       if (!text) return
-      const { activeId, setActiveId, setDraft } = useAppStore.getState()
+      const { activeId, setActiveId, setDraft, model, mode, topK } = useAppStore.getState()
 
       let conversationId = activeId
       if (!conversationId) {
@@ -196,7 +196,18 @@ export function useChat() {
         setActiveId(conversationId)
       }
       setDraft('')
-      await runStream({ message: text, conversation_id: conversationId }, text)
+      // 必须带上界面选择的模型/检索参数：此前漏传 model，导致模型下拉框形同虚设，
+      // 后端一律回落到 .env 的 LLM_MODEL（运行指标里 model 字段也会是空的）。
+      await runStream(
+        {
+          message: text,
+          conversation_id: conversationId,
+          ...(model ? { model } : {}),
+          ...(mode ? { mode } : {}),
+          ...(topK ? { top_k: topK } : {}),
+        },
+        text,
+      )
     },
     [qc, runStream],
   )

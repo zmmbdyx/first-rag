@@ -1,6 +1,6 @@
 /** 三栏式布局：左侧边栏（可折叠/移动端抽屉）+ 中央对话区 + 底部输入区。 */
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { ChatArea } from '@/components/ChatArea'
 import { InputBox } from '@/components/InputBox'
@@ -26,12 +26,15 @@ export default function App() {
   const { data: messages = [], isLoading: messagesLoading } = useMessages(activeId)
   const stream = useAppStore((s) => s.stream)
 
-  // 模型选择：默认取后端清单第一项
+  // 模型选择：默认取后端清单第一项。
+  // 放在 store 里而不是组件局部 state —— useChat 发送时要读取它，
+  // 通过 props 传递曾导致漏传（下拉框点了不生效）。
   const models = health?.models ?? []
-  const [model, setModel] = useState('')
+  const model = useAppStore((s) => s.model)
+  const setModel = useAppStore((s) => s.setModel)
   useEffect(() => {
     if (!model && models.length > 0) setModel(models[0])
-  }, [models, model])
+  }, [models, model, setModel])
 
   // 主题落到 <html>（Tailwind darkMode: 'class'）
   useEffect(() => {

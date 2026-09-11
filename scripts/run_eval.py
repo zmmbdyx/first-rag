@@ -41,11 +41,25 @@ EVAL_INDEX_DIR = EVAL_DIR / ".eval_db"
 CORPUS_DIR = ROOT / "data" / "corpus"
 SAMPLES_DIR = ROOT / "data" / "samples"
 
+# 评测配置。
+#
+# ⚠️ 关于 rerank：这里必须**显式**写出开关。此前这一项是缺省的，而
+# Retriever.retrieve(rerank_on=None) 会回落到 RERANK_ENABLED（默认 "auto"），
+# 于是"智能切分+混合检索"实际上是在**开启重排**的情况下测出来的——报告却
+# 只字未提，读者会以为那是纯混合检索的成绩。对照数据（eval/results/
+# rerank_compare.md）：关重排 R@5=97.9%/R@1=78.0%，开重排 R@5=100%/R@1=88.5%。
+# 显式写死 + 写进 _meta，才能保证报告与配置一致、结果可复现。
 CONFIGS = {
-    "baseline": {"label": "基线：固定窗口切分+纯向量", "chunker": "naive", "mode": "vector", "rewrite": False},
-    "smart_vector": {"label": "智能切分+纯向量", "chunker": "smart", "mode": "vector", "rewrite": False},
-    "hybrid": {"label": "智能切分+混合检索", "chunker": "smart", "mode": "hybrid", "rewrite": False},
-    "full": {"label": "完整系统(混合检索+多轮改写)", "chunker": "smart", "mode": "hybrid", "rewrite": True},
+    "baseline": {"label": "基线：固定窗口切分+纯向量", "chunker": "naive", "mode": "vector",
+                 "rewrite": False, "rerank": False},
+    "smart_vector": {"label": "智能切分+纯向量", "chunker": "smart", "mode": "vector",
+                     "rewrite": False, "rerank": False},
+    "hybrid_no_rerank": {"label": "智能切分+混合检索（关闭重排）", "chunker": "smart",
+                         "mode": "hybrid", "rewrite": False, "rerank": False},
+    "hybrid": {"label": "智能切分+混合检索（开启重排）", "chunker": "smart", "mode": "hybrid",
+               "rewrite": False, "rerank": True},
+    "full": {"label": "完整系统(混合检索+重排+多轮改写)", "chunker": "smart", "mode": "hybrid",
+             "rewrite": True, "rerank": True},
 }
 
 _norm = lambda s: re.sub(r"[^\w\u4e00-\u9fff]+", "", s.lower()) # noqa: E731
@@ -430,11 +444,15 @@ def write_report(results: dict, args) -> Path:
 
 def main():
     ap = argparse.ArgumentParser(description="RAG 效果评测 v2")
-    ap.add_argument("--configs", default="baseline,smart_vector,hybrid,full")
+    # 默认跑这一组：能一次看清"切分 / 混合检索 / 重排"三者各自的贡献，
+    # 且 hybrid_no_rerank 与 hybrid 只差一个重排开关，可直接对照。
+    ap.add_argument("--configs",
+                    default="baseline,smart_vector,hybrid_no_rerank,hybrid,full")
     ap.add_argument("--questions", default=str(EVAL_DIR / "questions_v2.jsonl"))
     ap.add_argument("--corpus", default=str(CORPUS_DIR))
     ap.add_argument("--legacy", action="store_true", help="使用 v1 的 30 题回归评测")
-    ap.add_argument("--retrieval-only", action="store_true")
+    ap.add_argument("--retrieval-only", action="store_true",
+                    help="只跑检索指标（不需要 API Key，秒级完成）")
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--k", type=int, default=FINAL_TOP_K)
     ap.add_argument("--bootstrap", type=int, default=1000)
@@ -464,6 +482,11 @@ def main():
     print(f"评测集：{len(questions)} 题（可回答 {n_ans}，拒答 {len(questions) - n_ans}）"
           f"｜语料：{len(list(corpus.glob('*')))} 篇｜配置：{names}")
 
+    # 记录每个配置的实际重排开关，以及进程级的 RERANK_ENABLED / 模型名。
+    # 没有这一段，报告就无法自证"到底开没开重排"——正是本次修正的缺陷。
+    from rag import reranker as _reranker
+    from rag.config import RERANK_ENABLED, RERANK_MODEL
+
     results = {"_meta": {
         "n_questions": len(questions), "n_answerable": n_ans,
         "n_unanswerable": len(questions) - n_ans,
@@ -473,6 +496,10 @@ def main():
         "time": time.strftime("%Y-%m-%d %H:%M:%S"),
         "final_top_k": args.k, "retrieval_only": args.retrieval_only,
         "questions_file": qpath.name,
+        "rerank_per_config": {n: bool(CONFIGS[n].get("rerank")) for n in names},
+        "rerank_env": RERANK_ENABLED,
+        "rerank_model": RERANK_MODEL,
+        "rerank_model_available": _reranker.rerank_available(),
     }}
 
     for name in names:

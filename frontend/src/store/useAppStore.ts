@@ -13,6 +13,9 @@ import type { SourceItem } from '@/types'
 
 export type Theme = 'light' | 'dark'
 
+/** 检索模式，与后端 mode 参数一致。 */
+export type RetrievalMode = 'vector' | 'keyword' | 'hybrid'
+
 /** 一次正在进行的流式生成。 */
 export interface StreamState {
   /** 正在生成回答的会话 ID；null 表示当前没有生成任务 */
@@ -55,6 +58,17 @@ interface AppState {
   draft: string
   setDraft: (v: string) => void
 
+  // ---- 模型与检索参数（真正发给后端的值）----
+  // 放在 store 而不是组件局部 state：useChat 发送时要读取它们。
+  // 局部 state 只能靠 props 层层传递，很容易漏 —— 此前就漏传了 model，
+  // 结果模型下拉框点了不生效，后端一律回落到 .env 的 LLM_MODEL。
+  model: string
+  setModel: (m: string) => void
+  mode: RetrievalMode
+  setMode: (m: RetrievalMode) => void
+  topK: number
+  setTopK: (k: number) => void
+
   // ---- 流式生成 ----
   stream: StreamState
   startStream: (conversationId: string) => void
@@ -91,6 +105,15 @@ export const useAppStore = create<AppState>()(
 
       draft: '',
       setDraft: (v) => set({ draft: v }),
+
+      // 默认值：模型留空表示"用后端 .env 的默认模型"，由界面在拿到
+      // /api/health 的模型清单后填入第一项。
+      model: '',
+      setModel: (m) => set({ model: m }),
+      mode: 'hybrid',
+      setMode: (m) => set({ mode: m }),
+      topK: 5,
+      setTopK: (k) => set({ topK: k }),
 
       stream: { ...EMPTY_STREAM },
       startStream: (conversationId) =>
